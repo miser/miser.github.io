@@ -1,9 +1,9 @@
 # Change to true for Disqus comments
 disqus:
-  comments: false
-  disqus_shortname: 'https-lenpaul-github-io-lagrange'
+  comments: true
+  disqus_shortname: 'mblof'
 
-google-ID: 'UA-112060364-1'
+# google-ID: 'UA-112060364-1'
 
 menu:
 - {name: 'About', path: 'menu', url: 'about.html'}
@@ -26,6 +26,6 @@ pagination:
 
 sharing_button_prompt: 'Feel free to share!'
 
-related_posts: 'You may also enjoy:'
+# related_posts: 'You may also enjoy:'
 
-post_date_prefix: 'Written on'
+# post_date_prefix: 'Written on'
