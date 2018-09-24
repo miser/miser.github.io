@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://miser.github.io/"/>
-  <updated>2018-09-07T15:24:59.191Z</updated>
+  <updated>2018-09-24T06:22:12.014Z</updated>
   <id>https://miser.github.io/</id>
   
   <author>
@@ -17,164 +17,51 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>Hello World</title>
-    <link href="https://miser.github.io/2018/09/07/h5/"/>
-    <id>https://miser.github.io/2018/09/07/h5/</id>
-    <published>2018-09-07T15:24:58.140Z</published>
-    <updated>2018-09-07T15:24:59.191Z</updated>
+    <title>出差菲律宾</title>
+    <link href="https://miser.github.io/2018/09/24/traveling-to-the-philippines/"/>
+    <id>https://miser.github.io/2018/09/24/traveling-to-the-philippines/</id>
+    <published>2018-09-24T06:45:00.000Z</published>
+    <updated>2018-09-24T06:22:12.014Z</updated>
     
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>]]></content>
+    <content type="html"><![CDATA[<p>入职没多久，因为菲律宾项目的版本更新，和一后端、一测试，三人组队前往当地做上线支持。<br><img src="/images/traveling-to-the-philippines1.jpg" alt="Drag Racing"></p>]]></content>
     
     <summary type="html">
     
       
       
-        &lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.
+        &lt;p&gt;入职没多久，因为菲律宾项目的版本更新，和一后端、一测试，三人组队前往当地做上线支持。&lt;br&gt;&lt;img src=&quot;/images/traveling-to-the-philippines1.jpg&quot; alt=&quot;Drag Racing&quot;&gt;&lt;/p&gt;
+
       
     
     </summary>
     
-      <category term="haha" scheme="https://miser.github.io/categories/haha/"/>
+      <category term="工作" scheme="https://miser.github.io/categories/%E5%B7%A5%E4%BD%9C/"/>
     
-    
-      <category term="He Mi" scheme="https://miser.github.io/tags/He-Mi/"/>
-    
-      <category term="I" scheme="https://miser.github.io/tags/I/"/>
     
   </entry>
   
   <entry>
-    <title>Hello World</title>
-    <link href="https://miser.github.io/2018/09/07/h4/"/>
-    <id>https://miser.github.io/2018/09/07/h4/</id>
-    <published>2018-09-07T15:24:52.570Z</published>
-    <updated>2018-09-07T15:25:01.440Z</updated>
+    <title>一家公司的好坏，先看HR部门</title>
+    <link href="https://miser.github.io/2018/07/20/the-quality-of-a-company-first-look-at-HR-department/"/>
+    <id>https://miser.github.io/2018/07/20/the-quality-of-a-company-first-look-at-HR-department/</id>
+    <published>2018-07-20T09:01:34.000Z</published>
+    <updated>2018-09-24T06:12:26.318Z</updated>
     
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.
-      
-    
-    </summary>
-    
-      <category term="haha" scheme="https://miser.github.io/categories/haha/"/>
-    
-    
-      <category term="He Mi" scheme="https://miser.github.io/tags/He-Mi/"/>
-    
-      <category term="I" scheme="https://miser.github.io/tags/I/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Hello World</title>
-    <link href="https://miser.github.io/2018/09/07/h3/"/>
-    <id>https://miser.github.io/2018/09/07/h3/</id>
-    <published>2018-09-07T15:24:47.114Z</published>
-    <updated>2018-09-07T15:24:48.296Z</updated>
-    
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>]]></content>
+    <content type="html"><![CDATA[<p><strong>面对茫茫的公司，如何去判断一家公司是否靠谱呢？</strong></p><p>除非你关注一家公司很久了或有内线，不然光从面试过程中你真的很难说这家公司好与坏。我会比较看重HR部门，为什么？</p><p>1.我老婆就是资深HR，深知这个部门的重要性，和被忽视性。</p><p>2.如果整个面试沟通过程中，HR部门显得很薄弱，说明该公司的组织架构不清晰，处于混沌阶段，有风险。</p><p>3.如果HR部门的素质不够，那么入职了，我也觉得后续会有麻烦，比如交金、请假等等的沟通也比较头疼。</p><p>HR需要情商智商双在线，如果一家公司拥有这样的HR说明它重视这个部门，为看似不赚钱的部门买了不少单，说明公司盈利或者业务稳定。就如，肚子饿了，只要能填饱肚子基本什么都会吃（精力只有在业务赚钱上），而真的去吃山珍海味说明有钱（会有精力把其它相关部门做好）。好的HR是对公司和员工的双保险！</p><p><strong>一些小经历</strong></p><ul><li>记得很多年前，手上同时拿到了盛大创新院和某社交平台的offer，该平台HR电话问我意向，我说我去创新院，她接着问我地址，我说在浦东软件园（入职的项目组正好从总部搬出来）。这HR就很嘲讽的语气说盛大在张江怎么在什么软件园呢，一顿巴拉巴拉。从此之后该社交平台我就再也不用了，确实这几年这平台不怎么样了。</li><li>前几天去某中型公司（两、三百号人左右），技术上方向不太符合，HR都没把我送出门，我从很内部的会议室自己摸索着出门，从中感受出该公司的冷漠。</li><li>有时候HR太高冷了，毕竟不是聊技术有话题，又是伤感情的薪酬环节，不知道怎么聊了，之前聊得再愉快到了这戛然而止。</li><li>电话通知我拿到offer了，但是电话那头先把我贬下，然后提出薪资结构等等。既然我不好，为什么给我offer呢？此地无银三百两的告诉我你要我去，但要压我价嘛。其实很多时候既然能谈到这部基本双方都有意向了，薪资是一方面，还有其他，避重就轻的说点吸引人的东西，不是更好，增加砝码吗？一个HR在多次和面试者沟通后，还不知道面试者除了薪资还想要什么，那么是失败的。</li></ul><p><strong>面试别不耐烦，多与不同人聊是好事，也是学习</strong></p><p>聊得人越多，你越能知道公司和团队的素质，是否和自己匹配。</p><p>有些面试官做技术做产品太久了，不太和陌生人打交道，说的话、问的问题常常情商不在线，给我的感觉就是要花很长时间和团队磨合，一般自己心里会亮起警报。</p><p><strong>总结</strong></p><p>一场愉快的面试，是双方的尊重。面试者答应了就该准时出席，把自己所知所想告诉对方，自我的梳理和反思；面试官面了就该好好对待，可以从被面试者身上学到新的思维维度，把公司团队的产品介绍下，也算是一种推广。人与人相处，尤其是陌生人相处是需要有礼节的，你永远不知道坐在你对面的人，他背后有什么样的能量。</p>]]></content>
     
     <summary type="html">
     
       
       
-        &lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.
+        &lt;p&gt;&lt;strong&gt;面对茫茫的公司，如何去判断一家公司是否靠谱呢？&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;除非你关注一家公司很久了或有内线，不然光从面试过程中你真的很难说这家公司好与坏。我会比较看重HR部门，为什么？&lt;/p&gt;
+&lt;p&gt;1.我老婆就是资深HR，深知这个部门的重要性，和被忽
       
     
     </summary>
     
-      <category term="haha" scheme="https://miser.github.io/categories/haha/"/>
+      <category term="工作" scheme="https://miser.github.io/categories/%E5%B7%A5%E4%BD%9C/"/>
     
-    
-      <category term="He Mi" scheme="https://miser.github.io/tags/He-Mi/"/>
-    
-      <category term="I" scheme="https://miser.github.io/tags/I/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Hello World</title>
-    <link href="https://miser.github.io/2018/09/07/h2/"/>
-    <id>https://miser.github.io/2018/09/07/h2/</id>
-    <published>2018-09-07T15:24:40.196Z</published>
-    <updated>2018-09-07T15:24:42.408Z</updated>
-    
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.
-      
-    
-    </summary>
-    
-      <category term="haha" scheme="https://miser.github.io/categories/haha/"/>
-    
-    
-      <category term="He Mi" scheme="https://miser.github.io/tags/He-Mi/"/>
-    
-      <category term="I" scheme="https://miser.github.io/tags/I/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Hello World</title>
-    <link href="https://miser.github.io/2018/09/07/h1/"/>
-    <id>https://miser.github.io/2018/09/07/h1/</id>
-    <published>2018-09-07T15:24:18.444Z</published>
-    <updated>2018-09-07T15:24:19.749Z</updated>
-    
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.
-      
-    
-    </summary>
-    
-      <category term="haha" scheme="https://miser.github.io/categories/haha/"/>
-    
-    
-      <category term="He Mi" scheme="https://miser.github.io/tags/He-Mi/"/>
-    
-      <category term="I" scheme="https://miser.github.io/tags/I/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Hello World</title>
-    <link href="https://miser.github.io/2018/09/07/hello-world/"/>
-    <id>https://miser.github.io/2018/09/07/hello-world/</id>
-    <published>2018-09-07T08:27:42.933Z</published>
-    <updated>2018-09-07T09:07:27.835Z</updated>
-    
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.
-      
-    
-    </summary>
-    
-      <category term="haha" scheme="https://miser.github.io/categories/haha/"/>
-    
-    
-      <category term="He Mi" scheme="https://miser.github.io/tags/He-Mi/"/>
-    
-      <category term="I" scheme="https://miser.github.io/tags/I/"/>
     
   </entry>
   
