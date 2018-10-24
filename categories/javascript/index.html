@@ -2,7 +2,7 @@
 <html class="has-navbar-fixed-top">
 <head>
     <meta charset="utf-8">
-<title>一家公司的好坏，先看HR部门 - Miser 胡言</title>
+<title>Category: javascript - Miser 胡言</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
@@ -95,91 +95,55 @@
     </div>
 </nav>
 
-    <section class="section">
+    <section class="section section-heading">
     <div class="container">
-    <article class="article content gallery" itemscope itemprop="blogPost">
+        <div class="content">
+            <h5><i class="far fa-folder"></i>javascript</h5>
+        </div>
+    </div>
+</section>
+<section class="section">
+    <div class="container">
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
-            一家公司的好坏，先看HR部门
+            <a href="/2018/10/23/js-capture-error/" itemprop="url">前端错误捕获提交错误日志</a>
         
     </h1>
     <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
         <span class="column is-narrow">
-            <time datetime="2018-07-20T10:01:34.000Z" itemprop="datePublished">Jul 20 2018</time>
+            <time datetime="2018-10-23T10:29:29.089Z" itemprop="datePublished">Oct 23 2018</time>
         </span>
         
         <span class="column is-narrow article-category">
             <i class="far fa-folder"></i>
-            <a class="article-category-link" href="/categories/工作/">工作</a>
+            <a class="article-category-link" href="/categories/javascript/">javascript</a>
         </span>
         
         
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <p><strong>面对茫茫的公司，如何去判断一家公司是否靠谱呢？</strong></p>
-<p>除非你关注一家公司很久了或有内线，不然光从面试过程中你真的很难说这家公司好与坏。我会比较看重HR部门，为什么？</p>
-<p>1.我老婆就是资深HR，深知这个部门的重要性，和被忽视性。</p>
-<p>2.如果整个面试沟通过程中，HR部门显得很薄弱，说明该公司的组织架构不清晰，处于混沌阶段，有风险。</p>
-<p>3.如果HR部门的素质不够，那么入职了，我也觉得后续会有麻烦，比如交金、请假等等的沟通也比较头疼。</p>
-<p>HR需要情商智商双在线，如果一家公司拥有这样的HR说明它重视这个部门，为看似不赚钱的部门买了不少单，说明公司盈利或者业务稳定。就如，肚子饿了，只要能填饱肚子基本什么都会吃（精力只有在业务赚钱上），而真的去吃山珍海味说明有钱（会有精力把其它相关部门做好）。好的HR是对公司和员工的双保险！<br><a id="more"></a><br><strong>一些小经历</strong></p>
-<ul>
-<li>记得很多年前，手上同时拿到了盛大创新院和某社交平台的offer，该平台HR电话问我意向，我说我去创新院，她接着问我地址，我说在浦东软件园（入职的项目组正好从总部搬出来）。这HR就很嘲讽的语气说盛大在张江怎么在什么软件园呢，一顿巴拉巴拉。从此之后该社交平台我就再也不用了，确实这几年这平台不怎么样了。</li>
-<li>前几天去某中型公司（两、三百号人左右），技术上方向不太符合，HR都没把我送出门，我从很内部的会议室自己摸索着出门，从中感受出该公司的冷漠。</li>
-<li>有时候HR太高冷了，毕竟不是聊技术有话题，又是伤感情的薪酬环节，不知道怎么聊了，之前聊得再愉快到了这戛然而止。</li>
-<li>电话通知我拿到offer了，但是电话那头先把我贬下，然后提出薪资结构等等。既然我不好，为什么给我offer呢？此地无银三百两的告诉我你要我去，但要压我价嘛。其实很多时候既然能谈到这部基本双方都有意向了，薪资是一方面，还有其他，避重就轻的说点吸引人的东西，不是更好，增加砝码吗？一个HR在多次和面试者沟通后，还不知道面试者除了薪资还想要什么，那么是失败的。</li>
-</ul>
-<p><strong>面试别不耐烦，多与不同人聊是好事，也是学习</strong></p>
-<p>聊得人越多，你越能知道公司和团队的素质，是否和自己匹配。</p>
-<p>有些面试官做技术做产品太久了，不太和陌生人打交道，说的话、问的问题常常情商不在线，给我的感觉就是要花很长时间和团队磨合，一般自己心里会亮起警报。</p>
-<p><strong>总结</strong></p>
-<p>一场愉快的面试，是双方的尊重。面试者答应了就该准时出席，把自己所知所想告诉对方，自我的梳理和反思；面试官面了就该好好对待，可以从被面试者身上学到新的思维维度，把公司团队的产品介绍下，也算是一种推广。人与人相处，尤其是陌生人相处是需要有礼节的，你永远不知道坐在你对面的人，他背后有什么样的能量。</p>
-
+        <h4 id="为什么需要捕获？"><a href="#为什么需要捕获？" class="headerlink" title="为什么需要捕获？"></a>为什么需要捕获？</h4><p>前端代码运行在客户端的浏览器里，当客户端（浏览器）出现任何问题，在没有错误日志的情况下，我们都是不知道问题发生在哪，我们只能依靠猜测或者自己不断尝试才知道，或者永远不知道问题。</p>
+<h4 id="客户端怎么捕获？"><a href="#客户端怎么捕获？" class="headerlink" title="客户端怎么捕获？"></a>客户端怎么捕获？</h4><p>1.通过window.onerror，可惜只能获得基础的js错误，Promise、async/await 里的错误无法捕获，它收到同源决策的影响</p>
+<p>2.Promise 通过<strong>catch</strong>方法</p>
+<p>3.async/await 通过 <strong>try - catch</strong></p>
+<p>4.Vue可以通过全局Vue.config.errorHandler去获得非Promise、async/await里的错误，可以理解为Vue里的window.onerror</p>
+        <p class="article-more-link">
+            <a href="/2018/10/23/js-capture-error/#more">Read More</a>
+        </p>
     
     </div>
     
-    
-    <div class="columns is-mobile is-multiline article-nav">
-        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
-            
-            <a href="/2018/09/24/traveling-to-the-philippines/">出差菲律宾</a>
-            
-        </span>
-        <span class="column is-12-mobile is-half-desktop is-hidden-mobile article-nav-next">
-            
-        </span>
-    </div>
     
 </article>
 
 
 
 
-<div class="comments">
-    <h3 class="title is-4">Comments</h3>
     
-<script>
-    var disqus_config = function () {
-        this.page.url = 'https://miser.github.io/2018/07/20/the-quality-of-a-company-first-look-at-HR-department/';
-        this.page.identifier = '2018/07/20/the-quality-of-a-company-first-look-at-HR-department/';
-        
-        this.language = 'en';
-        
-    };
-    (function() {
-        var d = document, s = d.createElement('script');  
-        s.src = '//' + 'mblof' + '.disqus.com/embed.js';
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
-    })();
-</script>
-
-<div id="disqus_thread">
     
-    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-</div>
-</div>
-
     </div>
 </section>
     <footer class="footer">
