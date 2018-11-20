@@ -37,15 +37,33 @@
     
     
     
+    
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-129526171-1');
+</script>
+
+
+    
 
 
     <style type="text/css">
+        body {
+            font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono", monospace;
+            color: #586e75;
+            line-height: 1.6;
+            background-color: #fdf6e3;
+        }
     	.gallery-item .caption {
     		text-align: center;
     	}
-    	/*.content:not(:last-child) {
-    		margin-bottom: 5rem;
-		}*/
+        ul.adv {
+            margin-bottom: 60px;
+        }
     </style>
 </head>
 <body>
@@ -220,7 +238,9 @@
     
     
     <div class="columns is-mobile is-multiline article-nav">
-        <span class="column is-12-mobile is-half-desktop is-hidden-mobile article-nav-prev">
+        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
+            
+            <a href="/2018/11/17/vue-component-extends/">Vue Component 继承与复用</a>
             
         </span>
         <span class="column is-12-mobile is-half-desktop  article-nav-next">
@@ -234,8 +254,11 @@
 
 
 
-
 <div class="comments">
+    <ul class="adv">
+  <li>欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a>前端组，<a href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3" target="_blank">岗位信息</a></li>
+  <li>同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank">爱眠物</a></li>
+</ul>
     <h3 class="title is-4">Comments</h3>
     
 <script>
@@ -333,6 +356,9 @@
         });
     })(jQuery);
 </script>
+
+    
+    
 
     
 
