@@ -1,3 +1,4 @@
+
 # Hexo Configuration
 ## Docs: https://hexo.io/docs/configuration.html
 ## Source: https://github.com/hexojs/hexo/
@@ -35,7 +36,7 @@ titlecase: false # Transform title into titlecase
 external_link: true # Open external links in new tab
 filename_case: 0
 render_drafts: false
-post_asset_folder: false
+post_asset_folder: true
 relative_link: false
 future: true
 highlight:
@@ -72,9 +73,19 @@ pagination_dir: page
 
 # Extensions
 ## Plugins: https://hexo.io/plugins/
-plugins: hexo-generate-feed
+# plugins: hexo-generate-feed
 ## Themes: https://hexo.io/themes/
-theme: maupassant
+theme: minos
+
+# Navigation bar menu links.
+logo:
+  text: 胡言
+menu:
+  Archives: /archives
+  # Lifestyle: /categories/LifeStyle
+  # Music: /categories/Music
+  # Technology: /categories/Technology
+  # About: /about
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
@@ -82,3 +93,25 @@ deploy:
   type: git
   repo: https://github.com/miser/miser.github.io
   branch: master
+
+# minos
+article:
+  readtime: false
+
+comment:
+  type: disqus
+  shortname: mblof
+
+plugins:
+  mathjax: true
+  gallery: true
+  google-analytics:
+    tracking_id: UA-129526171-1
+
+navbar_links:
+  Twitter:
+    icon: fab fa-twitter
+    url: https://twitter.com/ud_miser
+  GitHub:
+    icon: fab fa-github
+    url: https://github.com/miser
