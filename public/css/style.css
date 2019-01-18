@@ -121,69 +121,71 @@ a.tag.article-tag {
   .article a[target="_blank"] .fa-external-link-alt {
     margin-left: .3rem;
     width: .8rem; }
-  .article blockquote.colorquote {
-    position: relative; }
-    .article blockquote.colorquote:before {
-      content: " ";
-      position: absolute;
-      top: 50%;
-      left: -14.5px;
-      margin-top: -12px;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      text-align: center;
-      color: white;
-      background-size: 16px 16px;
-      background-position: 4px 4px;
-      background-repeat: no-repeat; }
-    .article blockquote.colorquote.info {
-      border-color: #209cee;
-      background-color: #def0fd; }
-      .article blockquote.colorquote.info:before {
-        background-color: #209cee;
-        background-image: url("../images/info.svg"); }
-    .article blockquote.colorquote.success {
-      border-color: #23d160;
-      background-color: #cbf6da; }
-      .article blockquote.colorquote.success:before {
-        background-color: #23d160;
-        background-image: url("../images/check.svg"); }
-    .article blockquote.colorquote.warning {
-      border-color: #ffdd57;
-      background-color: #fff6d1; }
-      .article blockquote.colorquote.warning:before {
-        background-color: #ffdd57;
-        background-image: url("../images/question.svg"); }
-    .article blockquote.colorquote.danger {
-      border-color: #ff3860;
-      background-color: #ffb3c2; }
-      .article blockquote.colorquote.danger:before {
-        background-color: #ff3860;
-        background-image: url("../images/exclamation.svg"); }
-  .article blockquote.pullquote {
-    float: right;
-    max-width: 50%;
-    font-size: 1.15rem;
-    position: relative; }
-    @media screen and (max-width: 768px) {
-      .article blockquote.pullquote {
-        float: none;
-        max-width: 100%; } }
-    .article blockquote.pullquote:before {
-      content: " ";
-      position: absolute;
-      top: 5px;
-      left: 5px;
-      width: 3rem;
-      height: 3rem;
-      opacity: 0.1;
-      background: url("../images/quote-left.svg") 0 0/3rem 3rem no-repeat; }
-  .article blockquote footer cite {
-    font-style: normal; }
-    .article blockquote footer cite:before {
-      content: "—";
-      padding: 0 .3em; }
+  .article blockquote {
+    padding: .1em 1.5em; }
+    .article blockquote.colorquote {
+      position: relative; }
+      .article blockquote.colorquote:before {
+        content: " ";
+        position: absolute;
+        top: 50%;
+        left: -14.5px;
+        margin-top: -12px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        text-align: center;
+        color: white;
+        background-size: 16px 16px;
+        background-position: 4px 4px;
+        background-repeat: no-repeat; }
+      .article blockquote.colorquote.info {
+        border-color: #209cee;
+        background-color: #def0fd; }
+        .article blockquote.colorquote.info:before {
+          background-color: #209cee;
+          background-image: url("../images/info.svg"); }
+      .article blockquote.colorquote.success {
+        border-color: #23d160;
+        background-color: #cbf6da; }
+        .article blockquote.colorquote.success:before {
+          background-color: #23d160;
+          background-image: url("../images/check.svg"); }
+      .article blockquote.colorquote.warning {
+        border-color: #ffdd57;
+        background-color: #fff6d1; }
+        .article blockquote.colorquote.warning:before {
+          background-color: #ffdd57;
+          background-image: url("../images/question.svg"); }
+      .article blockquote.colorquote.danger {
+        border-color: #ff3860;
+        background-color: #ffb3c2; }
+        .article blockquote.colorquote.danger:before {
+          background-color: #ff3860;
+          background-image: url("../images/exclamation.svg"); }
+    .article blockquote.pullquote {
+      float: right;
+      max-width: 50%;
+      font-size: 1.15rem;
+      position: relative; }
+      @media screen and (max-width: 768px) {
+        .article blockquote.pullquote {
+          float: none;
+          max-width: 100%; } }
+      .article blockquote.pullquote:before {
+        content: " ";
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        width: 3rem;
+        height: 3rem;
+        opacity: 0.1;
+        background: url("../images/quote-left.svg") 0 0/3rem 3rem no-repeat; }
+    .article blockquote footer cite {
+      font-style: normal; }
+      .article blockquote footer cite:before {
+        content: "—";
+        padding: 0 .3em; }
   .article .gist table tr:hover {
     background: transparent; }
   .article .gist table td {
