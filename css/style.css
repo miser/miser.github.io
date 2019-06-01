@@ -1,9 +1,68 @@
 @charset "UTF-8";
-body, button, input, select, textarea {
+body,
+button,
+input,
+select,
+textarea {
   /*font-family: $family-serif;*/
-  font: 14px "lucida grande", "lucida sans unicode", lucida, "Helvetica Neue", helvetica, "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif; }
+  font: 14px 'lucida grande', 'lucida sans unicode', lucida, 'Helvetica Neue', helvetica, 'Hiragino Sans GB', 'Microsoft YaHei', 'WenQuanYi Micro Hei', sans-serif; }
 
-html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td {
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td {
   margin: 0;
   padding: 0;
   border: 0;
@@ -64,7 +123,7 @@ a.tag.article-tag {
     .article .article-meta a:hover {
       border-bottom-color: black; }
   .article .article-meta {
-    font-size: .9rem;
+    font-size: 0.9rem;
     text-transform: uppercase; }
     @media screen and (max-width: 768px) {
       .article .article-meta {
@@ -76,15 +135,25 @@ a.tag.article-tag {
       margin: 0 0.3rem; }
   .article .article-entry {
     margin-bottom: 3rem; }
-    .article .article-entry h1, .article .article-entry h2, .article .article-entry h3, .article .article-entry h4, .article .article-entry h5, .article .article-entry h6 {
+    .article .article-entry h1,
+    .article .article-entry h2,
+    .article .article-entry h3,
+    .article .article-entry h4,
+    .article .article-entry h5,
+    .article .article-entry h6 {
       cursor: pointer;
       position: relative; }
-      .article .article-entry h1:hover:before, .article .article-entry h2:hover:before, .article .article-entry h3:hover:before, .article .article-entry h4:hover:before, .article .article-entry h5:hover:before, .article .article-entry h6:hover:before {
+      .article .article-entry h1:hover:before,
+      .article .article-entry h2:hover:before,
+      .article .article-entry h3:hover:before,
+      .article .article-entry h4:hover:before,
+      .article .article-entry h5:hover:before,
+      .article .article-entry h6:hover:before {
         content: '#';
         position: absolute;
         right: 100%; }
   .article .article-more-link a {
-    font-size: .9rem;
+    font-size: 0.9rem;
     color: darkgray;
     border-bottom: 1px dotted transparent; }
     .article .article-more-link a:hover {
@@ -113,20 +182,20 @@ a.tag.article-tag {
     .article .article-nav .article-nav-prev,
     .article .article-nav .article-nav-next {
       text-align: center; } }
-  .article a[target="_blank"]:after {
+  .article a[target='_blank']:after {
     display: none;
-    content: "\f35d";
-    font-size: .8rem;
-    font-family: "Font Awesome 5 Solid"; }
-  .article a[target="_blank"] .fa-external-link-alt {
-    margin-left: .3rem;
-    width: .8rem; }
+    content: '\f35d';
+    font-size: 0.8rem;
+    font-family: 'Font Awesome 5 Solid'; }
+  .article a[target='_blank'] .fa-external-link-alt {
+    margin-left: 0.3rem;
+    width: 0.8rem; }
   .article blockquote {
-    padding: .1em 1.5em; }
+    padding: 0.1em 1.5em; }
     .article blockquote.colorquote {
       position: relative; }
       .article blockquote.colorquote:before {
-        content: " ";
+        content: ' ';
         position: absolute;
         top: 50%;
         left: -14.5px;
@@ -173,7 +242,7 @@ a.tag.article-tag {
           float: none;
           max-width: 100%; } }
       .article blockquote.pullquote:before {
-        content: " ";
+        content: ' ';
         position: absolute;
         top: 5px;
         left: 5px;
@@ -184,8 +253,8 @@ a.tag.article-tag {
     .article blockquote footer cite {
       font-style: normal; }
       .article blockquote footer cite:before {
-        content: "—";
-        padding: 0 .3em; }
+        content: '—';
+        padding: 0 0.3em; }
   .article .gist table tr:hover {
     background: transparent; }
   .article .gist table td {
@@ -217,7 +286,7 @@ a.tag.article-tag {
   .archive .article:hover {
     border-left-color: black; }
   .archive .article time {
-    font-size: .9rem;
+    font-size: 0.9rem;
     color: darkgray; }
   .archive .article h6 {
     margin: 0; }
@@ -228,7 +297,7 @@ a.tag.article-tag {
         border-bottom-color: darkgray; }
 
 .footer {
-  font-size: .9rem;
+  font-size: 0.9rem;
   background: transparent; }
   .footer .content {
     padding-top: 2rem;
@@ -301,7 +370,8 @@ a.tag.article-tag {
         height: 100%;
         background: #f7f7f7; } }
 
-code, pre {
+code,
+pre {
   font-size: 0.85rem;
   font-family: "Source Code Pro", monospace, "Microsoft YaHei"; }
 
@@ -324,10 +394,10 @@ figure.highlight {
   figure.highlight .gutter {
     background: rgba(200, 200, 200, 0.15); }
   figure.highlight figcaption {
-    padding: .3em .75em;
+    padding: 0.3em 0.75em;
     text-align: left;
     font-style: normal;
-    font-size: .8rem; }
+    font-size: 0.8rem; }
     figure.highlight figcaption span {
       font-weight: 500;
       font-family: "Source Code Pro", monospace, "Microsoft YaHei"; }
