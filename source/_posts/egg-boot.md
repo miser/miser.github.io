@@ -1,13 +1,13 @@
 ---
-title: Egg Boot
+title: Eggjs Boot
 category: javascript
 ---
 
 ### **#Preface**
 
-This article will introduce a web framework called Eggjs for Node.js.
+This article will introduce the boot of [Eggjs](<https://eggjs.org/>) that is a Node.js web framework.
 
-It bases on Koa and customizes your requirement through a large of plugins and middleware, even an own framework. It is very important that you can create a cluster, an agent process, and some workers process when it is run. The cluster makes it stronger. Next, we can understand it by reading the origin code.
+It is based on Koa and can be finished your requirement through a large of plugins and middleware, even an own framework. It is very important that you can create a cluster, an agent process, and some workers process when it is running. The cluster makes it stronger. Next, we can understand it by reading the source code.
 
 Eggjs has a few major libs, egg-core、egg、egg-cluster、egg-bin、egg-scripts and so on.
 
@@ -154,8 +154,6 @@ class EggApplication extends EggCore {
   }
 }
 ```
-
-~~We have more discussion about the above code later. I think the cluster field is complex and maybe need to have a new post about it, but other points must know them.~~
 
 See agent.js and application.js
 
