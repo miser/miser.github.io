@@ -20,7 +20,7 @@ category: travel
 
 ![不是吃货，选海鲜更多是来舟山的仪式感吧](/images/travel-zhoushan/travel-zhoushan-03.png)
 
-![酒店附近的公交车站牌感受下它的荒凉，当时给我一种末世的感觉](/images/travel-zhoushan/travel-zhoushan-02.jpg)
+![酒店附近的公交车站牌感受下它的荒凉，当时给我一种末世的感觉](/images/travel-zhoushan/optimize/travel-zhoushan-02.jpg)
 
 <br/>
 
@@ -28,30 +28,30 @@ category: travel
 
 到了地方，一条长长的海鲜排档位于2层，看不到底。可以边吃边看江海的风景，对面是若干座小岛，突然心中涌上`江枫渔火对愁眠`的诗句，不对情不对景色，但也是唯一的瞬间感觉了。像我这样的1人“小客户”，自然不受各个小店老板们的待见，毕竟人家做的是大桌子生意，我只能在不耐烦的目光中点了3个小菜坐在了离风景最远的角落里——一个小桌子上吃起了我`海鲜大餐`。
 
-![定海海鲜夜排档](/images/travel-zhoushan/travel-zhoushan-04.jpg)
+![定海海鲜夜排档](/images/travel-zhoushan/optimize/travel-zhoushan-04.jpg)
 
-![看不到底的店铺，看不完的人群1](/images/travel-zhoushan/travel-zhoushan-05.jpg )
+![看不到底的店铺，看不完的人群1](/images/travel-zhoushan/optimize/travel-zhoushan-05.jpg )
 
-![吃不完的海鲜1](/images/travel-zhoushan/travel-zhoushan-06.jpg)
+![吃不完的海鲜1](/images/travel-zhoushan/optimize/travel-zhoushan-06.jpg)
 
-![吃不完的海鲜2](/images/travel-zhoushan/travel-zhoushan-07.jpg)
+![吃不完的海鲜2](/images/travel-zhoushan/optimize/travel-zhoushan-07.jpg)
 
-![江枫渔火1](/images/travel-zhoushan/travel-zhoushan-08.jpg)
+![江枫渔火1](/images/travel-zhoushan/optimize/travel-zhoushan-08.jpg)
 
 <video width="100%" muted controls>
   <source id="mp4" src="/images/travel-zhoushan/travel-zhoushan-15.mp4">
   Your browser does not support the video tag.
 </video>
 
-![从角落的小饭桌望出去](/images/travel-zhoushan/travel-zhoushan-09.jpg)
+![从角落的小饭桌望出去](/images/travel-zhoushan/optimize/travel-zhoushan-09.jpg)
 
-![我的盘中餐，蛏子和花甲，基本没沙子，蛏子其实很肥大，我没拍好](/images/travel-zhoushan/travel-zhoushan-10.jpg)
+![我的盘中餐，蛏子和花甲，基本没沙子，蛏子其实很肥大，我没拍好](/images/travel-zhoushan/optimize/travel-zhoushan-10.jpg)
 
-![我的盘中餐，盐爆虾，还行吧](/images/travel-zhoushan/travel-zhoushan-11.jpg)
+![我的盘中餐，盐爆虾，还行吧](/images/travel-zhoushan/optimize/travel-zhoushan-11.jpg)
 
-![我的盘中餐，章鱼炒青椒，触须里囤积了很多汁水，一口下去才知道什么叫爆汁](/images/travel-zhoushan/travel-zhoushan-12.jpg)
+![我的盘中餐，章鱼炒青椒，触须里囤积了很多汁水，一口下去才知道什么叫爆汁](/images/travel-zhoushan/optimize/travel-zhoushan-12.jpg)
 
-![此情此景多少要喝点](/images/travel-zhoushan/travel-zhoushan-13.jpg)
+![此情此景多少要喝点](/images/travel-zhoushan/optimize/travel-zhoushan-13.jpg)
 
 吃完后，走了小几公里到了定海区的商业中心——`凯虹广场`，买了一包薯片回酒店，7点多就没公交回我住的穷乡僻廊，只能花了30多大洋打车回去，此刻心里就决定第二天要租一天车去`朱家尖`逛一圈。
 
@@ -65,43 +65,43 @@ _大阴天_
 
 ![舟山的两端](/images/travel-zhoushan/travel-zhoushan-16.png)
 
-![租的老款马6](/images/travel-zhoushan/travel-zhoushan-17.jpg)
+![租的老款马6](/images/travel-zhoushan/optimize/travel-zhoushan-17.jpg)
 
-![海滩&大青山1](/images/travel-zhoushan/travel-zhoushan-18.jpg)
+![海滩&大青山1](/images/travel-zhoushan/optimize/travel-zhoushan-18.jpg)
 
-![海滩&大青山2](/images/travel-zhoushan/travel-zhoushan-19.jpg)
+![海滩&大青山2](/images/travel-zhoushan/optimize/travel-zhoushan-19.jpg)
 
 ![海滩&大青山 拍照的大概位置](/images/travel-zhoushan/travel-zhoushan-23.png)
 
-![看不到底的店铺，看不完的人群2](/images/travel-zhoushan/travel-zhoushan-20.jpg)
+![看不到底的店铺，看不完的人群2](/images/travel-zhoushan/optimize/travel-zhoushan-20.jpg)
 
-![吃不完的海鲜3](/images/travel-zhoushan/travel-zhoushan-22.jpg)
+![吃不完的海鲜3](/images/travel-zhoushan/optimize/travel-zhoushan-22.jpg)
 
-![我的海鲜面 虾、隔离、🦑丝等等](/images/travel-zhoushan/travel-zhoushan-21.jpg)
+![我的海鲜面 虾、隔离、🦑丝等等](/images/travel-zhoushan/optimize/travel-zhoushan-21.jpg)
 
 吃饱开车，本想继续探索南沙海滩的，毕竟进景点海滩，一路找`野生海滩`过过瘾的，可惜人实在太多，各个主要路口交通管制，一不小心开错，感觉再绕进景区估计很久，就打算去另一个地方`月岙大沙里沙滩`（到了才发现当天没有开放，美景请自行搜索了），途中又开错了路，经过了白山景区，看到了一个画有观音像的石壁。
 
 > 白山景区系观音文化苑所在地，印象普陀剧场为朱家尖最重要的景区之一，其间一座高114.9米的干丈崖上彩绘的一尊观音大立像壁画高69米，面积达2000平方米，被誉为“海上莫高窟”。
 
-![观音像](/images/travel-zhoushan/travel-zhoushan-24.jpg)
+![观音像](/images/travel-zhoushan/optimize/travel-zhoushan-24.jpg)
 
 又兜兜转转的乡间小路，来到了游客相对很少的月岙大沙里沙滩旁的一条沿海小路，很宽阔的江海外也没有什么特别的感觉吧，本想当场掉头回去，可惜车技不佳，只能一直往前开到一个相对比较宽阔的道路掉头，然后，就遇到了很有感觉的地方。
 
-![对面就是月岙大沙里沙滩了](/images/travel-zhoushan/travel-zhoushan-25.jpg)
+![对面就是月岙大沙里沙滩了](/images/travel-zhoushan/optimize/travel-zhoushan-25.jpg)
 
-![江海山1](/images/travel-zhoushan/travel-zhoushan-26.jpg)
+![江海山1](/images/travel-zhoushan/optimize/travel-zhoushan-26.jpg)
 
-![江海山2](/images/travel-zhoushan/travel-zhoushan-27.jpg)
+![江海山2](/images/travel-zhoushan/optimize/travel-zhoushan-27.jpg)
 
 从下面的地图你会发现，一个类似U形弯道的末尾，我把车调头，准备驶离的时候，眼前的小路和海景让我有种莫名的触景生情感，扭曲的小路如同自己的过往，很多事情曲折并不顺利，然而外面的世界又那么的壮阔美丽，想去了解想去看看想去感受，忍不住在车里听了几遍邓紫棋的`后会无期`。
 
-![小路和景色1](/images/travel-zhoushan/travel-zhoushan-28.jpg)
+![小路和景色1](/images/travel-zhoushan/optimize/travel-zhoushan-28.jpg)
 
-![小路和景色2](/images/travel-zhoushan/travel-zhoushan-30.jpg)
+![小路和景色2](/images/travel-zhoushan/optimize/travel-zhoushan-30.jpg)
 
-![小路和景色3](/images/travel-zhoushan/travel-zhoushan-29.jpg)
+![小路和景色3](/images/travel-zhoushan/optimize/travel-zhoushan-29.jpg)
 
-![小路和景色4](/images/travel-zhoushan/travel-zhoushan-31.jpg)
+![小路和景色4](/images/travel-zhoushan/optimize/travel-zhoushan-31.jpg)
 
 ![小路和景色地图位置](/images/travel-zhoushan/travel-zhoushan-32.png)
 
