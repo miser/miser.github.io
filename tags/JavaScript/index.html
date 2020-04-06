@@ -146,10 +146,10 @@
         <p><strong>Node.js 创建子进程的方法常用的有如下几种：</strong></p>
 <p><strong>child_process</strong></p>
 <ul>
-<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_exec_command_options_callback" target="_blank" rel="noopener">exec</a>: 衍生一个 shell 然后在该 shell 中执行 <code>command</code>，并缓冲任何产生的输出，最大缓存1024*1024 个字节。</li>
-<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_execfile_file_args_options_callback" target="_blank" rel="noopener">execFile</a>: 函数类似<code>exec</code>，但默认情况下不会衍生 shell。 相反，指定的可执行文件<code>file</code> 会作为新进程直接地衍生，使其比<code>exec</code> 稍微更高效。和<code>exec</code>一样，它也有最大1024*1204个字节的显示缓存。</li>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_exec_command_options_callback" target="_blank" rel="noopener">exec</a>: 衍生一个 shell 然后在该 shell 中执行 <code>command</code>，并缓冲任何产生的输出，最大缓存 1024*1024 个字节。</li>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_execfile_file_args_options_callback" target="_blank" rel="noopener">execFile</a>: 函数类似<code>exec</code>，但默认情况下不会衍生 shell。 相反，指定的可执行文件<code>file</code> 会作为新进程直接地衍生，使其比<code>exec</code> 稍微更高效。和<code>exec</code>一样，它也有最大 1024*1204 个字节的显示缓存。</li>
 <li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_fork_modulepath_args_options" target="_blank" rel="noopener">fork</a>: 是 <code>spawn</code>的一个特例，专门用于衍生新的 Node.js 进程。 与<code>spawn</code>一样返回<code>ChildProcess</code>对象。 返回的<code>ChildProcess</code>将会内置一个额外的通信通道，允许消息在父进程和子进程之间来回传递。</li>
-<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_spawn_command_args_options" target="_blank" rel="noopener">spawn</a>: 上诉的几个方法其实都是通过spawn实现的。</li>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_spawn_command_args_options" target="_blank" rel="noopener">spawn</a>: 上诉的几个方法其实都是通过 spawn 实现的。</li>
 </ul>
 <p><strong>cluster</strong></p>
 <ul>
