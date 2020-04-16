@@ -1,6 +1,6 @@
 ---
 title: Eggjs Boot
-category: javascript
+category: JavaScript
 ---
 
 ### **#Preface**

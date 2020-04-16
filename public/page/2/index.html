@@ -119,27 +119,32 @@
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
-            <a href="/2018/11/17/vue-component-extends/" itemprop="url">Vue Component 继承与复用</a>
+            <a href="/2020/01/22/express-gateway/" itemprop="url">Express Gateway</a>
         
     </h1>
     <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
         <span class="column is-narrow">
-            <time datetime="2018-11-17T06:45:00.000Z" itemprop="datePublished">Nov 17 2018</time>
+            <time datetime="2020-01-22T15:32:03.586Z" itemprop="datePublished">Jan 22 2020</time>
         </span>
         
         <span class="column is-narrow article-category">
             <i class="far fa-folder"></i>
-            <a class="article-category-link" href="/categories/javascript/">javascript</a>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
         </span>
         
         
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <p>在做Web前端开发的时候会有大量的页面复用的地方，从UI布局到JS的逻辑。早年做后端开发的时候，我们通常可以通过面向对象的编程法式，使用抽象类、接口等等，那么现在前端是否也可以如此呢？</p>
-<p>答案自然是肯定的，所以我们找工作面试的时候常被问及关于JS继承的问题，随之ES6出现了期盼已久的Class，一切都在往更为成熟的方向发展。接下我们以<a href="https://vuejs.org/" target="_blank" rel="noopener">Vue</a>为例，看看怎么去做继承这件事情。</p>
+        <p>为了更好的做BFF层，最近看了一些网关资料，Node.js的网关类库相对薄弱很多，主要有2个</p>
+<ul>
+<li><a href="https://www.express-gateway.io/" target="_blank" rel="noopener">Express Gateway</a></li>
+<li><a href="https://moleculer.services/" target="_blank" rel="noopener">Moleculer</a></li>
+</ul>
+<p>和Lua <a href="https://konghq.com/" target="_blank" rel="noopener">Kong</a>相比缺少很多刚需，比如金丝雀发布、灰度发布等等；和Java Zuul等相比，又少了很多中文文档。但是不管如何这2个是Javascript技术栈的，对于一个Node.js程序工作者来说怎能不香呢？</p>
+<p>今天我们主要介绍<strong>Express Gateway</strong>，背靠强大的Express社区，很多现成的中间件可以运用其中，省去了不少开发成本和风险。一些不是很大的项目或者没有时间慢慢构建底层的团队来说，我觉得可以试试。</p>
         <p class="article-more-link">
-            <a href="/2018/11/17/vue-component-extends/#more">Read More</a>
+            <a href="/2020/01/22/express-gateway/#more">Read More</a>
         </p>
     
     </div>
@@ -153,82 +158,12 @@
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
-            <a href="/2018/10/23/js-capture-error/" itemprop="url">前端错误捕获提交错误日志</a>
+            <a href="/2019/12/30/summary-2019/" itemprop="url">2019 工作总结</a>
         
     </h1>
     <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
         <span class="column is-narrow">
-            <time datetime="2018-10-23T10:29:29.089Z" itemprop="datePublished">Oct 23 2018</time>
-        </span>
-        
-        <span class="column is-narrow article-category">
-            <i class="far fa-folder"></i>
-            <a class="article-category-link" href="/categories/javascript/">javascript</a>
-        </span>
-        
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <h4 id="为什么需要捕获？"><a href="#为什么需要捕获？" class="headerlink" title="为什么需要捕获？"></a>为什么需要捕获？</h4><p>前端代码运行在客户端的浏览器里，当客户端（浏览器）出现任何问题，在没有错误日志的情况下，我们都是不知道问题发生在哪，我们只能依靠猜测或者自己不断尝试才知道，或者永远不知道问题。</p>
-<h4 id="客户端怎么捕获？"><a href="#客户端怎么捕获？" class="headerlink" title="客户端怎么捕获？"></a>客户端怎么捕获？</h4><p>1.通过window.onerror，可惜只能获得基础的js错误，Promise、async/await 里的错误无法捕获，它收到同源决策的影响</p>
-<p>2.Promise 通过<strong>catch</strong>方法</p>
-<p>3.async/await 通过 <strong>try - catch</strong></p>
-<p>4.Vue可以通过全局Vue.config.errorHandler去获得非Promise、async/await里的错误，可以理解为Vue里的window.onerror</p>
-        <p class="article-more-link">
-            <a href="/2018/10/23/js-capture-error/#more">Read More</a>
-        </p>
-    
-    </div>
-    
-    
-</article>
-
-
-
-    
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="/2018/09/30/js-css-image-loading/" itemprop="url">CSS、JS文件对网页的影响</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            <time datetime="2018-09-30T10:18:33.475Z" itemprop="datePublished">Sep 30 2018</time>
-        </span>
-        
-        <span class="column is-narrow article-category">
-            <i class="far fa-folder"></i>
-            <a class="article-category-link" href="/categories/javascript/">javascript</a>
-        </span>
-        
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <p>我们常说浏览器是单线程的，那么我们在加载资源的时候页面是在等待加载完成呢？还是继续执行后续的操作？加载不同资源对浏览器的操作会有相同响应吗？我们可以通过一个一个简单的实验测试来了解。</p>
-        <p class="article-more-link">
-            <a href="/2018/09/30/js-css-image-loading/#more">Read More</a>
-        </p>
-    
-    </div>
-    
-    
-</article>
-
-
-
-    
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="/2018/09/24/traveling-to-the-philippines/" itemprop="url">出差菲律宾</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            <time datetime="2018-09-24T06:45:00.000Z" itemprop="datePublished">Sep 24 2018</time>
+            <time datetime="2019-12-30T15:30:00.000Z" itemprop="datePublished">Dec 30 2019</time>
         </span>
         
         <span class="column is-narrow article-category">
@@ -240,10 +175,12 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <p>入职没多久，因为菲律宾项目的版本更新，和一后端、一测试，三人组队前往当地打怪升级。</p>
-<p><img src="/images/traveling-to-the-philippines/1.jpg" alt="准备起飞"></p>
+        <blockquote>
+<p>It was the best of times, it was the worst of times.</p>
+</blockquote>
+<p>如果真要用一句话形容2019年工作的话，上述的<strong>双城记</strong>节选我觉得是极好。大概2018年尾的时候，公司的前端团队开始用Node.js做些后端业务等相关的工作并积累经验，与现有的Java基础架构做融合，微服务<a href="https://github.com/Netflix/eureka" target="_blank" rel="noopener">Eureka</a>、分布式协调服务<a href="https://zookeeper.apache.org/" target="_blank" rel="noopener">ZooKeeper</a>、分布式配置管理平台<a href="https://disconf.readthedocs.io/zh_CN/latest/" target="_blank" rel="noopener">Discon</a>、应用监控<a href="https://github.com/dianping/cat" target="_blank" rel="noopener">Cat</a>、消息列队<a href="https://rocketmq.apache.org/" target="_blank" rel="noopener">RocketMQ</a>、分布式署存储服务<a href="https://github.com/chrislusf/seaweedfs" target="_blank" rel="noopener">SeaweedFS</a>、数据库<a href="https://www.mysql.com/cn/" target="_blank" rel="noopener">MySQL</a>等等，大量的知识扑面而来。幸好之前有.NET C# + Javascript做Web开发经历，加上一些Node.js开发经验，比如<a href="http://aimianwu.com" target="_blank" rel="noopener">爱眠物</a>等等，上手掌握并不难。基本上每天都有很多东西可以学，上半年忙着产出业务，也忙着封装一些基于<code>Egg.js</code>适合公司项目的基础代码。不过问题也是频发，上面提到的很多东西并非是Node.js生态圈大量使用的，引用一些冷门的第三个类库暴露出了EventLoop被卡住、Memory Leak的情况，下半年忙着优化和排查。</p>
         <p class="article-more-link">
-            <a href="/2018/09/24/traveling-to-the-philippines/#more">Read More</a>
+            <a href="/2019/12/30/summary-2019/#more">Read More</a>
         </p>
     
     </div>
@@ -257,12 +194,45 @@
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
-            <a href="/2018/07/20/the-quality-of-a-company-first-look-at-HR-department/" itemprop="url">一家公司的好坏，先看HR部门</a>
+            <a href="/2019/10/06/travel-zhoushan/" itemprop="url">2019国庆一人初游舟山</a>
         
     </h1>
     <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
         <span class="column is-narrow">
-            <time datetime="2018-07-20T09:01:34.000Z" itemprop="datePublished">Jul 20 2018</time>
+            <time datetime="2019-10-06T06:11:21.849Z" itemprop="datePublished">Oct 6 2019</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/travel/">travel</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>国庆一家三口分开旅行，各有自己的目的地，我选了舟山，离开上海不远，之前从来没有去过。一人的旅行自然应该惬意为主，打着走到哪算哪的政策主张，也给自己埋下不少的坑。</p>
+        <p class="article-more-link">
+            <a href="/2019/10/06/travel-zhoushan/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2019/06/19/bec/" itemprop="url">Set A Flag</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2019-06-19T13:30:00.000Z" itemprop="datePublished">Jun 19 2019</time>
         </span>
         
         <span class="column is-narrow article-category">
@@ -274,14 +244,49 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <p><strong>面对茫茫的公司，如何去判断一家公司是否靠谱呢？</strong></p>
-<p>除非你关注一家公司很久了或有内线，不然光从面试过程中你真的很难说这家公司好与坏。我会比较看重HR部门，为什么？</p>
-<p>1.我老婆就是资深HR，深知这个部门的重要性，和被忽视性。</p>
-<p>2.如果整个面试沟通过程中，HR部门显得很薄弱，说明该公司的组织架构不清晰，处于混沌阶段，有风险。</p>
-<p>3.如果HR部门的素质不够，那么入职了，我也觉得后续会有麻烦，比如交金、请假等等的沟通也比较头疼。</p>
-<p>HR需要情商智商双在线，如果一家公司拥有这样的HR说明它重视这个部门，为看似不赚钱的部门买了不少单，说明公司盈利或者业务稳定。就如，肚子饿了，只要能填饱肚子基本什么都会吃（精力只有在业务赚钱上），而真的去吃山珍海味说明有钱（会有精力把其它相关部门做好）。好的HR是对公司和员工的双保险！<br></p>
+        <h5 id="Practice-speaking-and-listening-pass-the-BEC-exam"><a href="#Practice-speaking-and-listening-pass-the-BEC-exam" class="headerlink" title="Practice speaking and listening, pass the BEC exam."></a>Practice speaking and listening, pass the BEC exam.</h5><p><img src="/images/bec/1.jpeg" alt="book1"><br><img src="/images/bec/2.jpeg" alt="book2"></p>
+
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2019/05/09/egg-boot/" itemprop="url">Eggjs Boot</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2019-05-09T15:01:08.568Z" itemprop="datePublished">May 9 2019</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h3 id="Preface"><a href="#Preface" class="headerlink" title="#Preface"></a><strong>#Preface</strong></h3><p>This article will introduce the boot of <a href="https://eggjs.org/" target="_blank" rel="noopener">Eggjs</a> that is a Node.js web framework.</p>
+<p>It is based on Koa and can satisfy  your requirement through a large of plugins and middleware, even a your own framework. It is very important to create a cluster, an agent process and some worker processes when it is running. The cluster makes it stronger. Next, we can understand it by reading the source code.</p>
+<p>Eggjs has a few major libs, egg-core、egg、egg-cluster、egg-bin、egg-scripts and so on.</p>
+<p><strong>egg-core</strong>: it extends Koa and is as a parent object of every agent and worker.</p>
+<p><strong>egg</strong>: it defines some actions for agent and worker,  you can almost use these actions to create an app of a single process.</p>
+<p><strong>egg-cluster</strong>: it creates a cluster and manages them.</p>
+<p><strong>egg-scripts and Egg-bin</strong>: their job is run the whole app in a different environment.</p>
+<p><br></p>
+<p><em><strong>Tips: We will discuss Eggjs with basing 2.x.x version.</strong></em></p>
+<p><br></p>
         <p class="article-more-link">
-            <a href="/2018/07/20/the-quality-of-a-company-first-look-at-HR-department/#more">Read More</a>
+            <a href="/2019/05/09/egg-boot/#more">Read More</a>
         </p>
     
     </div>
@@ -298,7 +303,7 @@
     <div class="pagination-previous">
         <a href="/">Prev</a>
     </div>
-    <div class="pagination-next is-invisible is-hidden-mobile">
+    <div class="pagination-next">
         <a href="/page/3/">Next</a>
     </div>
     <ul class="pagination-list is-hidden-mobile">
@@ -306,6 +311,10 @@
         <li><a class="pagination-link" href="/">1</a></li>
         
         <li><a class="pagination-link is-current" href="/page/2/">2</a></li>
+        
+        <li><a class="pagination-link" href="/page/3/">3</a></li>
+        
+        <li><a class="pagination-link" href="/page/4/">4</a></li>
         
     </ul>
 </nav>
@@ -316,7 +325,7 @@
     <div class="container">
         <div class="columns content">
             <div class="column is-narrow has-text-centered">
-                &copy; 2019 Miser&nbsp;
+                &copy; 2020 Miser&nbsp;
                 Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a
                         href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
             </div>

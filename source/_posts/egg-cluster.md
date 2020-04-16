@@ -1,6 +1,6 @@
 ---
 title: Egg Cluster 简单介绍
-category: javascript
+category: JavaScript
 ---
 
 如果不清楚什么是Egg.js，希望能移步到它的[官网](https://eggjs.org)简单看下。另外说它是__约定大于配置__的话，我只能说你真的不了解它，或者说不了解框架，哪个框架没有约定？毕竟没有规矩不成方圆，何况是逻辑性的程序呢？官方列出的特性如下：

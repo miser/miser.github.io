@@ -1,6 +1,6 @@
 ---
 title: Vue Component 继承与复用
-category: javascript
+category: JavaScript
 date: 2018-11-17 14:45:00
 ---
 在做Web前端开发的时候会有大量的页面复用的地方，从UI布局到JS的逻辑。早年做后端开发的时候，我们通常可以通过面向对象的编程法式，使用抽象类、接口等等，那么现在前端是否也可以如此呢？

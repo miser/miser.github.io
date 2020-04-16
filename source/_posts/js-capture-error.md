@@ -1,6 +1,6 @@
 ---
 title: 前端错误捕获提交错误日志
-category: javascript
+category: JavaScript
 ---
 
 #### 为什么需要捕获？
