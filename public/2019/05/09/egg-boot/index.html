@@ -1,43 +1,54 @@
 <!DOCTYPE html>
 <html class="has-navbar-fixed-top">
 <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
 <title>Eggjs Boot - Miser 胡言</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, maximum-scale=1"
+/>
 
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css"
+/>
+<meta name="baidu-site-verification" content="CXKjj3fklD" />
+
+<meta name="description" content="This article will introduce the boot of Eggjs that is a Node.js web framework.It is based on Koa and can satisfy  your requirement through a large of plugins and middleware, even a your own framework. It is very important to create a cluster, an agent process and some worker processes when it is running. The cluster makes it stronger. Next, we can understand it by reading the source code." />
+ 
+<meta name="keywords" content="Eggjs Boot,Eggjs启动,Eggjs源码分析" />
+   
+
+<link
+  rel="stylesheet"
+  href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro"
+/>
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css"
+/>
 
 
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css"
+/>
 
 
-
-
-
-
-
-
-
-<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
-
-
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
-
-
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"
+/>
 
 <link rel="stylesheet" href="/css/style.css">
 
 <script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
 
-
-    
-    
-    
-    
-    
-    
+      
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
 <script>
     window.dataLayer = window.dataLayer || [];
@@ -47,9 +58,7 @@
     gtag('config', 'UA-129526171-1');
 </script>
 
-
-    
-
+  
 
     <style type="text/css">
         body {
@@ -123,7 +132,7 @@
     </h1>
     <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
         <span class="column is-narrow">
-            <time datetime="2019-05-09T15:01:08.568Z" itemprop="datePublished">May 9 2019</time>
+            <time datetime="2019-05-09T07:01:08.568Z" itemprop="datePublished">May 9 2019</time>
         </span>
         
         <span class="column is-narrow article-category">
@@ -265,6 +274,14 @@
 <figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// koa/lib/application</span></span><br><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Application</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Emitter</span> </span>&#123;</span><br><span class="line">  callback() &#123;</span><br><span class="line">    <span class="hljs-keyword">const</span> fn = compose(<span class="hljs-keyword">this</span>.middleware);</span><br><span class="line"></span><br><span class="line">    <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.listenerCount(<span class="hljs-string">'error'</span>)) <span class="hljs-keyword">this</span>.on(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">this</span>.onerror);</span><br><span class="line"></span><br><span class="line">    <span class="hljs-keyword">const</span> handleRequest = <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="hljs-keyword">const</span> ctx = <span class="hljs-keyword">this</span>.createContext(req, res);</span><br><span class="line">      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.handleRequest(ctx, fn);</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="hljs-keyword">return</span> handleRequest;</span><br><span class="line">  &#125;</span><br><span class="line">  handleRequest(ctx, fnMiddleware) &#123;</span><br><span class="line">    <span class="hljs-keyword">const</span> res = ctx.res;</span><br><span class="line">    res.statusCode = <span class="hljs-number">404</span>;</span><br><span class="line">    <span class="hljs-keyword">const</span> onerror = <span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> ctx.onerror(err);</span><br><span class="line">    <span class="hljs-keyword">const</span> handleResponse = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> respond(ctx);</span><br><span class="line">    onFinished(res, onerror);</span><br><span class="line">    <span class="hljs-keyword">return</span> fnMiddleware(ctx).then(handleResponse).catch(onerror);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// egg/lib/application</span></span><br><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Application</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">EggApplication</span> </span>&#123;</span><br><span class="line">	handleRequest(ctx, fnMiddleware) &#123;</span><br><span class="line">    <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'request'</span>, ctx)</span><br><span class="line">    <span class="hljs-keyword">super</span>.handleRequest(ctx, fnMiddleware)</span><br><span class="line">    onFinished(ctx.res, () =&gt; <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'response'</span>, ctx))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><strong>In summary, we have know how to boot web app and deal with request in Eggjs.</strong> When we know it, we can easily write some plugins and middlewares to finish the business requirements.</p>
 
+    
+    </div>
+    
+    <div class="columns is-variable is-1 is-multiline is-mobile">
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/Node-js/">#Node.js</a></span>
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/JavaScript/">#JavaScript</a></span>
     
     </div>
     

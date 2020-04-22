@@ -89,9 +89,10 @@ menu:
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
-  type: git
-  repo: https://github.com/miser/miser.github.io
-  branch: master
+  - type: git
+    repo: https://github.com/miser/miser.github.io
+    branch: master
+  - type: baidu_url_submitter
 
 # minos
 article:
@@ -119,3 +120,9 @@ sitemap:
   path: sitemap.xml
 baidusitemap:
   path: baidusitemap.xml
+
+baidu_url_submit:
+  count: 1
+  host: mlib.wang
+  token: B2RgE4J30NMelgy2
+  path: baidu_urls.txt

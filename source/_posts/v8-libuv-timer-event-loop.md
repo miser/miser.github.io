@@ -1,6 +1,12 @@
 ---
 title: libuv & Node.js EventLoop （一）
 category: JavaScript
+keywords: libuv,EventLoop,V8
+description: libuv和Node.js EventLoop关于各个阶段和setTimeout的实现已经做了简单介绍。具体的还是需要看各自版本的代码而定，不能轻易去“相信”网上的介绍，比如最后一个例子就很容易在不同版本出现不同的执行结果。之后，有时间介绍 `nextTick`的回调实现，这个比较复杂。
+tags:
+  - Node.js
+  - JavaScript
+date: 2020-03-01T05:39:36.647Z
 ---
 
 在网络上查询[libuv](https://libuv.org/)和EventLoop相关信息的时候，经常看到不同的文章所表达的意思差距较多，主要原因有二吧：

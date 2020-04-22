@@ -1,9 +1,12 @@
 ---
 title: Node.js 监控中心架构迭代
 category: JavaScript
+keywords: Express,Gateway,Node.js 网关
+description: 为了更好的做BFF层，最近看了一些网关资料，Node.js的网关类库相对薄弱很多。Express Gateway，背靠强大的Express社区，很多现成的中间件可以运用其中，省去了不少开发成本和风险。
 tags:
   - Node.js
   - JavaScript
+date: 2020-04-03T07:17:29.367Z
 ---
 
 之前写了一篇[收集 Node.js 应用的内存堆栈快照和 CPU 火焰图](https://miser.github.io/2020/02/21/node-perf-heapdump-flame-graph/)文章，其中的架构非常粗糙，但是初步算是满足了现在的监控需求。不过随着业务的增长，单台**TCP Server**可定无法满足高可用的需求，一旦出现问题那就没办法持续使用了，所以需要一个重新设计和改造。

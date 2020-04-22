@@ -1,7 +1,7 @@
 ---
 title: Set A Flag
 category: work
-date: 2019-06-19 21:30:00
+date: 2019-06-19T13:30:00.000Z
 ---
 ##### Practice speaking and listening, pass the BEC exam.
 

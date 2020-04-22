@@ -1,6 +1,12 @@
 ---
 title: Eggjs Boot
 category: JavaScript
+keywords: Eggjs Boot,Eggjs启动,Eggjs源码分析
+description: This article will introduce the boot of Eggjs that is a Node.js web framework.It is based on Koa and can satisfy  your requirement through a large of plugins and middleware, even a your own framework. It is very important to create a cluster, an agent process and some worker processes when it is running. The cluster makes it stronger. Next, we can understand it by reading the source code.
+tags:
+  - Node.js
+  - JavaScript
+date: 2019-05-09T15:01:08.568Z
 ---
 
 ### **#Preface**

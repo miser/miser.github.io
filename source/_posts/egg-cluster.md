@@ -1,6 +1,12 @@
 ---
 title: Egg Cluster 简单介绍
 category: JavaScript
+keywords: 进程管理,Eggjs启动,Egg Cluster
+description: Egg.js的进程管理和通信自然不会像文章里说的那么简单，但大体如此。弄清楚它们的工作原理对开发程序、插件、中间件有很大的帮助，个人认为这个才是这个框架的精髓之处。
+tags:
+  - Node.js
+  - JavaScript
+date: 2019-01-18T13:48:01.464Z
 ---
 
 如果不清楚什么是Egg.js，希望能移步到它的[官网](https://eggjs.org)简单看下。另外说它是__约定大于配置__的话，我只能说你真的不了解它，或者说不了解框架，哪个框架没有约定？毕竟没有规矩不成方圆，何况是逻辑性的程序呢？官方列出的特性如下：

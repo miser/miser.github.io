@@ -1,9 +1,12 @@
 ---
 title: 简答梳理Node.js启动子进程的方法（上）
 category: JavaScript
+keywords: Node.js,子进程创建,Node.js源码
+description: Node.js 创建子进程的方法常用的有如下几种。child_process, exec、execFile、fork、spawn；cluster, fork。
 tags:
   - Node.js
   - JavaScript
+date: 2020-04-06T08:09:36.472Z
 ---
 
 **Node.js 创建子进程的方法常用的有如下几种：**
