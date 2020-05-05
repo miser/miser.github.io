@@ -44,17 +44,7 @@
 
 <script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
 
-      
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
 
-    gtag('config', 'UA-129526171-1');
-</script>
-
-  
 
     <style type="text/css">
         body {
@@ -124,7 +114,44 @@
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
-            <a href="/2020/04/06/child_process-exec-fork-spawn/" itemprop="url">简答梳理Node.js启动子进程的方法（上）</a>
+            <a href="/2020/05/03/node-js-net-cluster-fork/" itemprop="url">简单梳理Node.js创建子进程的方法（下）—— cluster</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-05-03T07:24:53.000Z" itemprop="datePublished">May 3 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>前文简单梳理了Node.js使用<strong>child_process</strong>模块创建子进程的4种方法，<code>exec</code>、<code>execFile</code>、<code>fork</code>和<code>spawn</code>。接下来我们看看<strong>cluster</strong>模块如何创建子进程，后续更多内容会介绍cluster.fork启动Net Server时候为何不会因为共同监听同一个端口而不报错。</p>
+<p><strong>cluster</strong></p>
+<ul>
+<li><a href="http://nodejs.cn/api/cluster.html#cluster_cluster_fork_env" target="_blank" rel="noopener">fork</a>: 衍生出一个新的工作进程，这只能通过主进程调用。</li>
+</ul>
+        <p class="article-more-link">
+            <a href="/2020/05/03/node-js-net-cluster-fork/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/04/06/child_process-exec-fork-spawn/" itemprop="url">简单梳理Node.js创建子进程的方法（上）</a>
         
     </h1>
     <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
@@ -153,8 +180,6 @@
 <ul>
 <li><a href="http://nodejs.cn/api/cluster.html#cluster_cluster_fork_env" target="_blank" rel="noopener">fork</a>: 衍生出一个新的工作进程，这只能通过主进程调用。</li>
 </ul>
-<p><br></p>
-<h3 id="翻翻源码看看他们怎么实现的"><a href="#翻翻源码看看他们怎么实现的" class="headerlink" title="翻翻源码看看他们怎么实现的"></a><strong>翻翻源码看看他们怎么实现的</strong></h3>
         <p class="article-more-link">
             <a href="/2020/04/06/child_process-exec-fork-spawn/#more">Read More</a>
         </p>
@@ -274,43 +299,6 @@
 
 
     
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="/2020/02/08/v8-parser-compiler-javascript/" itemprop="url">V8是如何怎么处理JavaScript的</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            <time datetime="2020-02-08T01:18:53.485Z" itemprop="datePublished">Feb 8 2020</time>
-        </span>
-        
-        <span class="column is-narrow article-category">
-            <i class="far fa-folder"></i>
-            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-        </span>
-        
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <blockquote>
-<p>此文介绍的内容已经算是<code>旧闻</code>了，17年的时候就有大量的文章介绍过了，只是2020年伊始的疫情把人困在家里实在无聊，重新翻来几个视频打发下时间，以下文字算是简单梳理，更多的瑰宝需要我们自己翻阅资料研究，<strong>文章中的很多数据应该都过时了吧，仅用来参考吧。</strong></p>
-</blockquote>
-<p><strong>Parer</strong>和<strong>Compiler</strong>是2个重要的过程和概念，理解它们可以帮助开发者根据业务需求写出对V8或其它JavaScript引擎更为“友善”的代码，毕竟花在这两个过程中的成本是巨大的。</p>
-<p><img src="/images/v8-parser-compiler/v8-pare-compile-cost.png" alt="国外几大网站花在Parser上的时间大约在15-20%"></p>
-        <p class="article-more-link">
-            <a href="/2020/02/08/v8-parser-compiler-javascript/#more">Read More</a>
-        </p>
-    
-    </div>
-    
-    
-</article>
-
-
-
-    
     
         
 <nav class="pagination is-centered is-rounded" role="navigation" aria-label="pagination">
@@ -378,39 +366,6 @@
     moment.locale("en-AU");
 </script>
 
-
-    
-    
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-<script>
-    MathJax.Hub.Config({
-        "HTML-CSS": {matchFontHeight: false},
-        SVG: {matchFontHeight: false},
-        CommonHTML: {matchFontHeight: false}
-    });
-</script>
-
-    
-    
-<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
-<script>
-    (function ($) {
-        $(document).ready(function () {
-            if (typeof($.fn.lightGallery) === 'function') {
-                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
-            }
-            if (typeof($.fn.justifiedGallery) === 'function') {
-                $('.justified-gallery').justifiedGallery();
-            }
-        });
-    })(jQuery);
-</script>
-
-    
-    
-
-    
 
 
 <script src="/js/script.js"></script>

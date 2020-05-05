@@ -44,17 +44,7 @@
 
 <script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
 
-      
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
 
-    gtag('config', 'UA-129526171-1');
-</script>
-
-  
 
     <style type="text/css">
         body {
@@ -127,6 +117,43 @@
 </section>
 <section class="section">
     <div class="container">
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2018/10/23/js-capture-error/" itemprop="url">前端错误捕获提交错误日志</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2018-10-23T02:29:29.089Z" itemprop="datePublished">Oct 23 2018</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h4 id="为什么需要捕获？"><a href="#为什么需要捕获？" class="headerlink" title="为什么需要捕获？"></a>为什么需要捕获？</h4><p>前端代码运行在客户端的浏览器里，当客户端（浏览器）出现任何问题，在没有错误日志的情况下，我们都是不知道问题发生在哪，我们只能依靠猜测或者自己不断尝试才知道，或者永远不知道问题。</p>
+<h4 id="客户端怎么捕获？"><a href="#客户端怎么捕获？" class="headerlink" title="客户端怎么捕获？"></a>客户端怎么捕获？</h4><p>1.通过window.onerror，可惜只能获得基础的js错误，Promise、async/await 里的错误无法捕获，它收到同源决策的影响</p>
+<p>2.Promise 通过<strong>catch</strong>方法</p>
+<p>3.async/await 通过 <strong>try - catch</strong></p>
+<p>4.Vue可以通过全局Vue.config.errorHandler去获得非Promise、async/await里的错误，可以理解为Vue里的window.onerror</p>
+        <p class="article-more-link">
+            <a href="/2018/10/23/js-capture-error/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
     
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
@@ -224,39 +251,6 @@
     moment.locale("en-AU");
 </script>
 
-
-    
-    
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-<script>
-    MathJax.Hub.Config({
-        "HTML-CSS": {matchFontHeight: false},
-        SVG: {matchFontHeight: false},
-        CommonHTML: {matchFontHeight: false}
-    });
-</script>
-
-    
-    
-<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
-<script>
-    (function ($) {
-        $(document).ready(function () {
-            if (typeof($.fn.lightGallery) === 'function') {
-                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
-            }
-            if (typeof($.fn.justifiedGallery) === 'function') {
-                $('.justified-gallery').justifiedGallery();
-            }
-        });
-    })(jQuery);
-</script>
-
-    
-    
-
-    
 
 
 <script src="/js/script.js"></script>

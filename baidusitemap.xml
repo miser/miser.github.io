@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://mlib.wang/2020/05/03/node-js-net-cluster-fork/</loc>
+    <lastmod>2020-05-05</lastmod>
+  </url>  <url>
     <loc>https://mlib.wang/2020/04/06/child_process-exec-fork-spawn/</loc>
-    <lastmod>2020-04-22</lastmod>
+    <lastmod>2020-05-03</lastmod>
   </url>  <url>
     <loc>https://mlib.wang/2020/04/03/monitor-hub/</loc>
     <lastmod>2020-04-22</lastmod>
