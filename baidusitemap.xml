@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://mlib.wang/2020/06/28/nodejs-istio-k8s-docker/</loc>
+    <lastmod>2020-06-28</lastmod>
+  </url>  <url>
     <loc>https://mlib.wang/2020/05/03/node-js-net-cluster-fork/</loc>
     <lastmod>2020-05-05</lastmod>
   </url>  <url>
