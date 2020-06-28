@@ -156,49 +156,9 @@
 <p><br></p>
 <h3 id="Node-js-微服务"><a href="#Node-js-微服务" class="headerlink" title="Node.js 微服务"></a>Node.js 微服务</h3><p>自己也做过很长一段时间的全栈，用 Node.js 开发后端业务，把数据吐给前端，不需要等着后端同事返回数据或者来回沟通的烦恼。现在做后端必定会遇到微服务的概念，不同的微服务有自己的 SDK 等工具帮助完成相关的注册发现，大多数情况下它们对 Java 的支持度最好，Node.js 有时候并不友善，要完善你不得不去写一些代码，比如熔断、报警等等，也是带来大量的开发测试成本。如果不幸公司内部 Java 组选择了不支持 Node.js 的架构，那么简直是灾难。</p>
 <p><strong>微服务的 SDK 基本上和网络通讯相关，下文的网络化可以解决这个问题。</strong></p>
-<p><br></p>
-<h3 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h3><p>手动拷贝代码到服务器上 》 Docker 化 》 K8s</p>
-<p>如果没有 K8s，只是 Docker 的话，部署过程还是很僵硬的。有了 K8s：</p>
-<ul>
-<li>自动化的容器部署</li>
-<li>按需扩展、收缩和替换</li>
-<li>Docker 之间的负载均衡</li>
-<li>轻松升级版本和一键回滚</li>
-<li>认证</li>
-<li>服务的发现</li>
-<li>基础的服务监控和监控检查</li>
-<li>…</li>
-</ul>
-<p>K8s 可以相对轻松地管理成千上万的微服务，但是正如前面提到，因为微服务的语言不通，导致不通微服务在网络层面的功能完整性是不同的（SDK 的支持度不同），产生木桶效应。为了避免这个效应要么增加人员投入到不完善的 SDK 开发当中保持其迭代和稳定，要么聚集大量支持度较高的 SDK 开发者去完成业务工作。其实这个都是在浪费人力资源。</p>
-<p><br></p>
-<h3 id="网格化"><a href="#网格化" class="headerlink" title="网格化"></a>网格化</h3><p>网格化增加了服务之间通信的便捷性，解决了微服务不同语言 SDK 的差异问题，每个微服务只要聚焦自身的业务而不再需要关心服务之间的熔断、报警等问题。</p>
-<p>Istio 构建在 K8s 之上，是网格化概念的一个实现，我就以它为例。</p>
-<p><img src="/images/nodejs-istio-k8s-docker/arch.jpg" alt="image-20200628141645374"></p>
-<p>服务 A 和服务 B 并不直接通信，而是通过代理的方式，这个代理基本上支持 HTTP/1.1、HTTP/2、gRPC 或 TCP 等协议。</p>
-<h4 id="Envoy"><a href="#Envoy" class="headerlink" title="Envoy"></a>Envoy</h4><p>在 Istio 中默认使用<strong>Envoy</strong>作为这个代理的实现，我们称之为 Sidecar，把微服务网络通信的 SDK 抽取出来，统一交给这个 Sidecar 管理控制。</p>
-<p>主要的功能：</p>
-<ul>
-<li>HTTP 7 层路由</li>
-<li>支持多种通信协议</li>
-<li>服务发现和动态配置</li>
-<li>健康检查</li>
-<li>高级负载均衡</li>
-<li>将流量行为和数据提取，转发给 Mixer 组件</li>
-</ul>
-<p>原理，K8s 环境中，同一个 Pod 内的不同容器间共享网络栈，使得 Sidecar 可以接管进出这个容器的网络流量。</p>
-<h4 id="Pilot"><a href="#Pilot" class="headerlink" title="Pilot"></a>Pilot</h4><p>配置和管理 Envoy 代理，比如流量规则、超时、熔断等，将这些信息通过通过 API 转我 Envoy 理解的格式，并广播给它们。</p>
-<h4 id="Mixer"><a href="#Mixer" class="headerlink" title="Mixer"></a>Mixer</h4><p>Envoy 通信时候，都会向 Mixer 发出预检请求，验证行为的有效性、上报数据等，为了提高性能可以使用缓存和异步提交数据。</p>
-<p>主要功能：</p>
-<ul>
-<li>策略：Istio 依仗该功能实现限流、黑白名单等功能</li>
-<li>遥测：Istio 通过它收集所有的流量数据</li>
-</ul>
-<h4 id="Citadel"><a href="#Citadel" class="headerlink" title="Citadel"></a>Citadel</h4><p>身份和证书管理</p>
-<h4 id="Galley"><a href="#Galley" class="headerlink" title="Galley"></a>Galley</h4><p>Galley 是 Istio 的配置验证、提取、处理和分发组件。</p>
-<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><p>官方 <a href="https://istio.io/latest/zh/docs/examples/bookinfo/" target="_blank" rel="noopener">Bookinfo 应用</a>，它由 Python、Java、Ruby、Node.js，4 种语言框架组成。实例中实现了多版本切换、金丝雀发布等等。各个模块只要专注在自己的业务领域，不需要关心网络控制。</p>
-<p><img src="/images/nodejs-istio-k8s-docker/book-app.png" alt="Bookinfo 应用 架构"></p>
-<p>网格化逐渐成为未来趋势，很多大厂在对内部系统做大量改造和升级，作为全栈工程师和架构师来说也需要紧跟时代的步伐。</p>
-
+        <p class="article-more-link">
+            <a href="/2020/06/28/nodejs-istio-k8s-docker/#more">Read More</a>
+        </p>
     
     </div>
     
