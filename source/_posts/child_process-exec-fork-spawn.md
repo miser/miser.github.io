@@ -1,5 +1,5 @@
 ---
-title: 简答梳理Node.js启动子进程的方法（上）
+title: 简单梳理Node.js创建子进程的方法（上）
 category: JavaScript
 keywords: Node.js,子进程创建,Node.js源码
 description: Node.js 创建子进程的方法常用的有如下几种。child_process, exec、execFile、fork、spawn；cluster, fork。
@@ -22,11 +22,11 @@ date: 2020-04-06T08:09:36.472Z
 
 - [fork](http://nodejs.cn/api/cluster.html#cluster_cluster_fork_env): 衍生出一个新的工作进程，这只能通过主进程调用。
 
+<!-- more -->
+
 <br/>
 
 ### **翻翻源码看看他们怎么实现的**
-
-<!-- more -->
 
 源码版本和之前的[libuv & Node.js EventLoop （一）](https://miser.github.io/2020/03/01/v8-libuv-timer-event-loop/)一样
 
@@ -51,7 +51,11 @@ date: 2020-04-06T08:09:36.472Z
 **child_process**源码位置
 
 ```javascript
-Node - lib - internal - child_process.js - child_process.js;
+Node 
+  - lib 
+  	- internal 
+  		- child_process.js 
+  	- child_process.js;
 ```
 
 在`lib/child_process.js`文件中，定义了`exec`、`execFile`、`fork`和`spawn`等方法，它们最后都会调用在`lib/internal/child_process.js`文件中的`spawn`方法。

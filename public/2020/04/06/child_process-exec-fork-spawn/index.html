@@ -2,7 +2,7 @@
 <html class="has-navbar-fixed-top">
 <head>
     <meta charset="utf-8" />
-<title>简答梳理Node.js启动子进程的方法（上） - Miser 胡言</title>
+<title>简单梳理Node.js创建子进程的方法（上） - Miser 胡言</title>
 <meta
   name="viewport"
   content="width=device-width, initial-scale=1, maximum-scale=1"
@@ -127,7 +127,7 @@
     <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
-            简答梳理Node.js启动子进程的方法（上）
+            简单梳理Node.js创建子进程的方法（上）
         
     </h1>
     <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
@@ -156,12 +156,12 @@
 <ul>
 <li><a href="http://nodejs.cn/api/cluster.html#cluster_cluster_fork_env" target="_blank" rel="noopener">fork</a>: 衍生出一个新的工作进程，这只能通过主进程调用。</li>
 </ul>
+<a id="more"></a>
 <p><br></p>
-<h3 id="翻翻源码看看他们怎么实现的"><a href="#翻翻源码看看他们怎么实现的" class="headerlink" title="翻翻源码看看他们怎么实现的"></a><strong>翻翻源码看看他们怎么实现的</strong></h3><a id="more"></a>
-<p>源码版本和之前的<a href="https://miser.github.io/2020/03/01/v8-libuv-timer-event-loop/">libuv &amp; Node.js EventLoop （一）</a>一样</p>
+<h3 id="翻翻源码看看他们怎么实现的"><a href="#翻翻源码看看他们怎么实现的" class="headerlink" title="翻翻源码看看他们怎么实现的"></a><strong>翻翻源码看看他们怎么实现的</strong></h3><p>源码版本和之前的<a href="https://miser.github.io/2020/03/01/v8-libuv-timer-event-loop/" target="_blank" rel="noopener">libuv &amp; Node.js EventLoop （一）</a>一样</p>
 <figure class="highlight markdown hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// libuv</span><br><span class="line"><span class="hljs-section">#define UV_VERSION_MAJOR 1</span></span><br><span class="line"><span class="hljs-section">#define UV_VERSION_MINOR 33</span></span><br><span class="line"><span class="hljs-section">#define UV_VERSION_PATCH 1</span></span><br><span class="line"></span><br><span class="line">// V8</span><br><span class="line"><span class="hljs-section">#define V8_MAJOR_VERSION 7</span></span><br><span class="line"><span class="hljs-section">#define V8_MINOR_VERSION 8</span></span><br><span class="line"><span class="hljs-section">#define V8_BUILD_NUMBER 279</span></span><br><span class="line"><span class="hljs-section">#define V8_PATCH_LEVEL 17</span></span><br><span class="line"></span><br><span class="line">// Node.js</span><br><span class="line"><span class="hljs-section">#define NODE_MAJOR_VERSION 14</span></span><br><span class="line"><span class="hljs-section">#define NODE_MINOR_VERSION 0</span></span><br><span class="line"><span class="hljs-section">#define NODE_PATCH_VERSION 0</span></span><br></pre></td></tr></table></figure>
 <p><strong>child_process</strong>源码位置</p>
-<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Node - lib - internal - child_process.js - child_process.js;</span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Node </span><br><span class="line">  - lib </span><br><span class="line">  	- internal </span><br><span class="line">  		- child_process.js </span><br><span class="line">  	- child_process.js;</span><br></pre></td></tr></table></figure>
 <p>在<code>lib/child_process.js</code>文件中，定义了<code>exec</code>、<code>execFile</code>、<code>fork</code>和<code>spawn</code>等方法，它们最后都会调用在<code>lib/internal/child_process.js</code>文件中的<code>spawn</code>方法。</p>
 <p><br></p>
 <p><strong>exec</strong></p>
@@ -211,7 +211,9 @@
     
     
     <div class="columns is-mobile is-multiline article-nav">
-        <span class="column is-12-mobile is-half-desktop is-hidden-mobile article-nav-prev">
+        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
+            
+            <a href="/2020/05/03/node-js-net-cluster-fork/">简单梳理Node.js创建子进程的方法（下）—— cluster</a>
             
         </span>
         <span class="column is-12-mobile is-half-desktop  article-nav-next">
@@ -234,7 +236,7 @@
     
 <script>
     var disqus_config = function () {
-        this.page.url = 'https://miser.github.io/2020/04/06/child_process-exec-fork-spawn/';
+        this.page.url = 'https://mlib.wang/2020/04/06/child_process-exec-fork-spawn/';
         this.page.identifier = '2020/04/06/child_process-exec-fork-spawn/';
         
         this.language = 'en';

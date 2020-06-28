@@ -131,7 +131,44 @@
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
-            <a href="/2020/04/06/child_process-exec-fork-spawn/" itemprop="url">简答梳理Node.js启动子进程的方法（上）</a>
+            <a href="/2020/05/03/node-js-net-cluster-fork/" itemprop="url">简单梳理Node.js创建子进程的方法（下）—— cluster</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-05-03T07:24:53.000Z" itemprop="datePublished">May 3 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>前文简单梳理了Node.js使用<strong>child_process</strong>模块创建子进程的4种方法，<code>exec</code>、<code>execFile</code>、<code>fork</code>和<code>spawn</code>。接下来我们看看<strong>cluster</strong>模块如何创建子进程，后续更多内容会介绍cluster.fork启动Net Server时候为何不会因为共同监听同一个端口而不报错。</p>
+<p><strong>cluster</strong></p>
+<ul>
+<li><a href="http://nodejs.cn/api/cluster.html#cluster_cluster_fork_env" target="_blank" rel="noopener">fork</a>: 衍生出一个新的工作进程，这只能通过主进程调用。</li>
+</ul>
+        <p class="article-more-link">
+            <a href="/2020/05/03/node-js-net-cluster-fork/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/04/06/child_process-exec-fork-spawn/" itemprop="url">简单梳理Node.js创建子进程的方法（上）</a>
         
     </h1>
     <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
@@ -160,8 +197,6 @@
 <ul>
 <li><a href="http://nodejs.cn/api/cluster.html#cluster_cluster_fork_env" target="_blank" rel="noopener">fork</a>: 衍生出一个新的工作进程，这只能通过主进程调用。</li>
 </ul>
-<p><br></p>
-<h3 id="翻翻源码看看他们怎么实现的"><a href="#翻翻源码看看他们怎么实现的" class="headerlink" title="翻翻源码看看他们怎么实现的"></a><strong>翻翻源码看看他们怎么实现的</strong></h3>
         <p class="article-more-link">
             <a href="/2020/04/06/child_process-exec-fork-spawn/#more">Read More</a>
         </p>
@@ -194,7 +229,7 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <p>之前写了一篇<a href="https://miser.github.io/2020/02/21/node-perf-heapdump-flame-graph/">收集 Node.js 应用的内存堆栈快照和 CPU 火焰图</a>文章，其中的架构非常粗糙，但是初步算是满足了现在的监控需求。不过随着业务的增长，单台<strong>TCP Server</strong>可定无法满足高可用的需求，一旦出现问题那就没办法持续使用了，所以需要一个重新设计和改造。</p>
+        <p>之前写了一篇<a href="https://miser.github.io/2020/02/21/node-perf-heapdump-flame-graph/" target="_blank" rel="noopener">收集 Node.js 应用的内存堆栈快照和 CPU 火焰图</a>文章，其中的架构非常粗糙，但是初步算是满足了现在的监控需求。不过随着业务的增长，单台<strong>TCP Server</strong>可定无法满足高可用的需求，一旦出现问题那就没办法持续使用了，所以需要一个重新设计和改造。</p>
         <p class="article-more-link">
             <a href="/2020/04/03/monitor-hub/#more">Read More</a>
         </p>
