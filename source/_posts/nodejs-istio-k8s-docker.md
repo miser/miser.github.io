@@ -61,7 +61,7 @@ K8s 可以相对轻松地管理成千上万的微服务，但是正如前面提�
 
 Istio 构建在 K8s 之上，是网格化概念的一个实现，我就以它为例。
 
-![image-20200628141645374](/images/nodejs-istio-k8s-docker/arch.jpg)
+![Istio 架构](/images/nodejs-istio-k8s-docker/arch.jpg)
 
 服务 A 和服务 B 并不直接通信，而是通过代理的方式，这个代理基本上支持 HTTP/1.1、HTTP/2、gRPC 或 TCP 等协议。
 
