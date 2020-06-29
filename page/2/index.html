@@ -45,16 +45,6 @@
 <script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
 
       
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'UA-129526171-1');
-</script>
-
-  
 
     <style type="text/css">
         body {
@@ -120,6 +110,47 @@
 
     <section class="section">
     <div class="container">
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/03/01/v8-libuv-timer-event-loop/" itemprop="url">libuv &amp; Node.js EventLoop （一）</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-02-29T21:39:36.647Z" itemprop="datePublished">Mar 1 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>在网络上查询<a href="https://libuv.org/" target="_blank" rel="noopener">libuv</a>和EventLoop相关信息的时候，经常看到不同的文章所表达的意思差距较多，主要原因有二吧：</p>
+<ul>
+<li>它们的<code>libuv</code>和<code>V8</code>大版本不同，导致具体的实现略有差异</li>
+<li>另外它们的代码错综复杂，又是大多数JavaScript工作者不擅长的C/C++，只是从上而下的看，或许一些细节无法完全理解或是认知的分歧</li>
+</ul>
+<p>与其受他人影响，不如自己来好好梳理下。</p>
+<p><strong>版本</strong></p>
+<figure class="highlight c++ hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// libuv</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> UV_VERSION_MAJOR 1</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> UV_VERSION_MINOR 33</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> UV_VERSION_PATCH 1</span></span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// V8</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> V8_MAJOR_VERSION 7</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> V8_MINOR_VERSION 8</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> V8_BUILD_NUMBER 279</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> V8_PATCH_LEVEL 17</span></span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// Node.js</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> NODE_MAJOR_VERSION 14</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> NODE_MINOR_VERSION 0</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> NODE_PATCH_VERSION 0</span></span><br></pre></td></tr></table></figure>
+<p>没有列出具体版本号的代码分析都是耍流氓，2010年的代码和2020年的代码可能差距甚远，“上古”分析固然在当时是对的，但是在今日也许是错误的。</p>
+        <p class="article-more-link">
+            <a href="/2020/03/01/v8-libuv-timer-event-loop/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
     
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
@@ -266,39 +297,6 @@
 
 
     
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="/2019/10/06/travel-zhoushan/" itemprop="url">2019国庆一人初游舟山</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            <time datetime="2019-10-05T22:11:21.849Z" itemprop="datePublished">Oct 6 2019</time>
-        </span>
-        
-        <span class="column is-narrow article-category">
-            <i class="far fa-folder"></i>
-            <a class="article-category-link" href="/categories/travel/">travel</a>
-        </span>
-        
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <p>国庆一家三口分开旅行，各有自己的目的地，我选了舟山，离开上海不远，之前从来没有去过。一人的旅行自然应该惬意为主，打着走到哪算哪的政策主张，也给自己埋下不少的坑。</p>
-        <p class="article-more-link">
-            <a href="/2019/10/06/travel-zhoushan/#more">Read More</a>
-        </p>
-    
-    </div>
-    
-    
-</article>
-
-
-
-    
     
         
 <nav class="pagination is-centered is-rounded" role="navigation" aria-label="pagination">
@@ -394,9 +392,6 @@
         });
     })(jQuery);
 </script>
-
-    
-    
 
     
 
