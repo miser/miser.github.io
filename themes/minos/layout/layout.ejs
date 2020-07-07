@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+<head>
+    <%- partial('common/head') %>
+    <style type="text/css">
+        body {
+            font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono", monospace;
+            color: #586e75;
+            line-height: 1.6;
+            background-color: #fdf6e3;
+        }
+    	.gallery-item .caption {
+    		text-align: center;
+    	}
+        ul.adv {
+            margin-bottom: 60px;
+        }
+    </style>
+</head>
+<body>
+    <%- partial('common/navbar', { page }) %>
+    <%- body %>
+    <%- partial('common/footer') %>
+    <%- partial('common/scripts') %>
+
+    <% if (has_config('search.type')) { %>
+    <%- partial('search/' + get_config('search.type')) %>
+    <% } %>
+</body>
+</html>
