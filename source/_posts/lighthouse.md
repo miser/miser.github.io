@@ -10,13 +10,13 @@ tags:
 
 ### 前端经常要关注的几个指标：
 
-**First Contentful Paint：**浏览器首次绘制文本、图片（包含背景图）、非白色的canvas或SVG的时间节点
+**First Contentful Paint：**浏览器首次绘制文本、图片（包含背景图）、非白色的canvas或SVG的时间节点。*反映了网络的可用性和页面资源是否庞大导致传输时间过长。*
 
-**First Meaningful Paint：**页面的“主要内容”开始出现在屏幕上的时间点，测量用户加载体验的主要指标
+**First Meaningful Paint：**页面的“主要内容”开始出现在屏幕上的时间点，测量用户加载体验的主要指标。*反映了是否太多非重要资源加载或执行的优先级高于主要的呈现资源。*
 
-First CPU Idle：页面最小可交互时间
+**First CPU Idle：**页面主线程首次可以触发input操作，通常叫做最小可交互时间。
 
-**Time to Interactive：页面**完全达到可交互状态**的时间点
+**Time to Interactive：**页面完全达到可交互状态的时间点。
 
 <br/>
 
@@ -33,3 +33,20 @@ First CPU Idle：页面最小可交互时间
 lghi 启动
 
 创建express服务
+
+Lighthouse CI
+
+```yaml
+name: CI
+on: [push]
+jobs:
+  lighthouseci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - run: npm install && npm install -g @lhci/cli@0.4.x
+      - run: npm run build
+      - run: lhci autorun --upload.target=temporary-public-storage
+```
+
