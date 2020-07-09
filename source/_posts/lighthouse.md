@@ -26,15 +26,27 @@ tags:
 
 ![Lighthouse 报告](/images/lighthouse/report.png)
 
+<br/>
+
 ## 原理分析
 
-架构图
+![Lighthouse 架构图](/images/lighthouse/architecture.png)
 
-lghi 启动
+**Driver：** 和Chrome交互的对象
 
-创建express服务
+**Gatherers：** 收集网页的一些基础信息，用于后续的Audit
 
-Lighthouse CI
+**Artifacts：** 一系列Gatherers的信息集合
+
+**Audit：** 测试单个功能/优化/指标。用Artifacts作为输出，计算出该项指标的得分，生成*Lighthouse标准的数据对象*
+
+**Report：** 根据Lighthouse标准的数据对象生成可视化页面
+
+**Lighthouse 通过 Driver 模块用 DevTools Protocol 与 Chrome 通信，按照需求对其进行操作，在Gatherers模块收集一些信息（artifacts）,在Audits模块中进行计算，得到最终打分结果，生成LHR根式的报告，渲染成HTML文件。**
+
+### Lighthouse CI
+
+官方示例
 
 ```yaml
 name: CI
@@ -49,4 +61,12 @@ jobs:
       - run: npm run build
       - run: lhci autorun --upload.target=temporary-public-storage
 ```
+
+- **npm run build：** 将静态资源打包，一般打包后的资源会存放在dist目录里
+
+- **lhci autorun：** 是很常用的命令，如其字面意思自动完成整个，在它里面包含了`healthcheck`、`collect`、`assert`、`upload`命令
+  - healthcheck 一些检查，比如是否安装了Chrome、客户端版本和服务端版本是否一致等等
+  - collect 重要命令，整个流程基本包含了架构图里的信息，从信息的采集到生成报告
+  - assert 性能分析是否通过，会有相关的提示
+  - upload 上传报告到指定的服务器，上面例子的上传目标是 `temporary-public-storage`，一个google提供的临时公共服务器
 
