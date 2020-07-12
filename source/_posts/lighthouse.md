@@ -76,12 +76,12 @@ async function runCommand(options) {
   // 执行 healthcheck
   const healthcheckStatus = runChildCommand("healthcheck", [
     ...defaultFlags,
-    "--fatal",
+    "--fatal"
   ]).status;
   // 执行 collect，重点命令
   const collectStatus = runChildCommand("collect", [
     ...defaultFlags,
-    ...collectArgs,
+    ...collectArgs
   ]).status;
 
   // 默认不执行 assert 命令， 需要 assert 参数 并且 没有 upload 参数
@@ -91,7 +91,7 @@ async function runCommand(options) {
   ) {
     const assertStatus = runChildCommand("assert", [
       ...defaultFlags,
-      ...assertArgs,
+      ...assertArgs
     ]).status;
   }
 
@@ -128,7 +128,9 @@ async function runCommand(options) {
   const { urls, close } = await startServerAndDetermineUrls(options);
   try {
     for (const url of urls) {
+      // 如果有 puppeteerScript 参数，那么会出触发该脚本
       await puppeteer.invokePuppeteerScriptForUrl(url);
+      //
       await runOnUrl(url, options, { puppeteer });
     }
   } finally {
@@ -137,14 +139,151 @@ async function runCommand(options) {
 
   process.stdout.write(`Done running Lighthouse!\n`);
 }
+
+async function runOnUrl(url, options, context) {
+  const runner = getRunner(options); //
+
+  // 默认执行3次
+  for (let i = 0; i < options.numberOfRuns; i++) {
+    // 每次新开一个Node.js进程 调用 lighthouse-cli
+    const lhr = await runner.runUntilSuccess(url, {
+      ...options,
+      settings
+    });
+    saveLHR(lhr); // 保存 lighthouse result 数据
+  }
+}
 ```
 
-[puppeteer](https://github.com/puppeteer/puppeteer)：一个通过 DevTools Protocol 操控 Headless Chrome 的 Node.js 类库
+- [puppeteer](https://github.com/puppeteer/puppeteer)：一个通过 DevTools Protocol 操控 Headless Chrome 的 Node.js 类库
+- numberOfRuns 默认是 3，会分别开启 3 个 Node.js 进程各走一次流程，最后在 .lighthouseci 目录下生成 3 对 lhr-xxx.json 和 lhr-xxx.html 文件（前者是分析结果，后者是渲染的网页），及一个 assertion-results.json 文件
+- runUntilSuccess 开始执行 lighthouse-cli 里的逻辑
 
-<!-- 'dist',
-  // likely a built version of the site
-  // default name for create-react-app and preact-cli
-  'build',
-  // riskier, sometimes is a built version of the site but also can be just a dir of static assets
-  // default name for gatsby
-  'public', -->
+```javascript
+// lighthouse-cli 部分代码
+async function runLighthouse(url, flags, config) {
+  let launchedChrome;
+
+  // 通过 chrome-launcher 启动一个 headless Chrome
+  launchedChrome = await getDebuggableChrome(flags);
+  flags.port = launchedChrome.port; // 需要知道该Chrome端口号，为了之后的 websocket 通信
+
+  // lighthouse-core/index.js
+  const runnerResult = await lighthouse(url, flags, config);
+
+  if (runnerResult) {
+    await saveResults(runnerResult, flags);
+  }
+
+  return runnerResult;
+}
+```
+
+在 lighthouse-cli 中主要就是启动一个 headless Chrome（无界面的 Chrome）,后续交由 lighthouse-core 核心模块完成。
+
+```javascript
+// lighthouse-core/index.js
+async function lighthouse(url, flags = {}, configJSON, connection) {
+  // 将自定义配置和默认配置做合并
+  // 根据配置信息创建大量继承Gatherer的对象，有3个方法beforePass、pass、afterPass
+  const config = generateConfig(configJSON, flags);
+
+  // ChromeProtocol 封装了和 Chrome 通信的 websocket
+  const connection =
+    connection || new ChromeProtocol(flags.port, flags.hostname);
+
+  // 收集 Gather 和计算 Audit 的核心方法
+  return Runner.run(connection, { url, config });
+}
+
+async function run(connection, runOpts) {
+  // 从浏览器中获取所有的 artifacts
+  artifacts = await Runner._gatherArtifactsFromBrowser(
+    requestedUrl,
+    runOpts,
+    connection
+  );
+  // 根据获取的artifacts，按照需要计算的 audits，计算出结果
+  const auditResults = await Runner._runAudits(
+    settings,
+    runOpts.config.audits,
+    artifacts,
+    lighthouseRunWarnings
+  );
+
+  const lhr = {
+    // ...
+  };
+
+  // 按照 lhr 格式生成报告
+  lhr.i18n.icuMessagePaths = i18n.replaceIcuMessageInstanceIds(
+    lhr,
+    settings.locale
+  );
+
+  const report = generateReport(lhr, settings.output);
+
+  return { lhr, artifacts, report };
+}
+
+async function _gatherArtifactsFromBrowser(
+  requestedUrl,
+  runnerOpts,
+  connection
+) {
+  const driver = runnerOpts.driverMock || new Driver(connection);
+  const gatherOpts = {
+    driver,
+    requestedUrl,
+    settings: runnerOpts.config.settings
+  };
+  // 收集所有 Gather，生成结果集合 artifacts
+  const artifacts = await GatherRunner.run(
+    runnerOpts.config.passes,
+    gatherOpts
+  );
+  return artifacts;
+}
+```
+
+上述代码的逻辑非常清晰，就是根据现有数据（artifacts），计算出结果数据（audits），生成报告。
+
+artifacts 有哪些信息，有事如何得到这些信息的呢？
+
+```javascript
+// gather-runner.js
+async function run(passConfigs, options) {
+  const artifacts = {};
+  const driver = options.driver;
+
+  // 和 Chrome 进行连接
+  await driver.connect();
+  // 加载个 about:blank 空白页面
+  await GatherRunner.loadBlank(driver);
+
+  // 创建 artifacts
+  // 一些基础信息，比如userAgent、移动还是桌面emulate
+  const baseArtifacts = await GatherRunner.initializeBaseArtifacts(options);
+  // 通过一定数量的字符串拼接计算出待测试驱动的性能
+  baseArtifacts.BenchmarkIndex = await options.driver.getBenchmarkIndex();
+
+  // 将环境配置好
+  await GatherRunner.setupDriver(driver, options);
+
+  // passConfigs 就是 需要收集的Gather集合
+  // 这是一个很长的周期，算是真正开始做数据分析的方法
+  for (const passConfig of passConfigs) {
+    const passContext = {
+      driver,
+      url: options.requestedUrl,
+      settings: options.settings,
+      passConfig,
+      baseArtifacts,
+      LighthouseRunWarnings: baseArtifacts.LighthouseRunWarnings
+    };
+    const passResults = await GatherRunner.runPass(passContext);
+    Object.assign(artifacts, passResults.artifacts);
+  }
+  return { ...baseArtifacts, ...artifacts }; // Cast to drop Partial<>.
+}
+```
