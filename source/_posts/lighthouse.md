@@ -76,12 +76,12 @@ async function runCommand(options) {
   // 执行 healthcheck
   const healthcheckStatus = runChildCommand("healthcheck", [
     ...defaultFlags,
-    "--fatal",
+    "--fatal"
   ]).status;
   // 执行 collect，重点命令
   const collectStatus = runChildCommand("collect", [
     ...defaultFlags,
-    ...collectArgs,
+    ...collectArgs
   ]).status;
 
   // 默认不执行 assert 命令， 需要 assert 参数 并且 没有 upload 参数
@@ -91,7 +91,7 @@ async function runCommand(options) {
   ) {
     const assertStatus = runChildCommand("assert", [
       ...defaultFlags,
-      ...assertArgs,
+      ...assertArgs
     ]).status;
   }
 
@@ -148,7 +148,7 @@ async function runOnUrl(url, options, context) {
     // 每次新开一个Node.js进程 调用 lighthouse-cli
     const lhr = await runner.runUntilSuccess(url, {
       ...options,
-      settings,
+      settings
     });
     saveLHR(lhr); // 保存 lighthouse result 数据
   }
@@ -235,7 +235,7 @@ async function _gatherArtifactsFromBrowser(
   const gatherOpts = {
     driver,
     requestedUrl,
-    settings: runnerOpts.config.settings,
+    settings: runnerOpts.config.settings
   };
   // 收集所有 Gather，生成结果集合 artifacts
   const artifacts = await GatherRunner.run(
@@ -279,7 +279,7 @@ async function run(passConfigs, options) {
       settings: options.settings,
       passConfig,
       baseArtifacts,
-      LighthouseRunWarnings: baseArtifacts.LighthouseRunWarnings,
+      LighthouseRunWarnings: baseArtifacts.LighthouseRunWarnings
     };
     // loadBlank => setupPassNetwork => cleanBrowserCaches
     // => beforePass // gather 对象对外暴露的接口
@@ -308,13 +308,14 @@ class Gatherer {
 }
 ```
 
-runPass 是一个重要的生命周期，如果要给 Lighthouse 写自定义的扩展，必须要了解它，我们需要通过它将信息收集起来，并挂载到 artifacts 上。
+runPass 是一个重要的生命周期，如果要给 Lighthouse 写自定义的扩展，必须要了解它，我们需要通过它将信息收集起来，并挂载到 artifacts 上。所有信息收集的类都在 lighthouse-core 下的 gather/gatherers 目录里。
 
-#### 如何收集浏览器的信息呢？
+![gatherers](/images/lighthouse/gatherers.png)
 
 以收集图片信息的 `ImageElements` 为例，它对外暴露了 afterPass 接口，是一个经典应用
 
 ```javascript
+// image-elements.js
 class ImageElements extends Gatherer {
   async afterPass(passContext, loadData) {
     const driver = passContext.driver;
@@ -358,13 +359,13 @@ class ImageElements extends Gatherer {
 function determineNaturalSize(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.addEventListener("error", (_) =>
+    img.addEventListener("error", _ =>
       reject(new Error("determineNaturalSize failed img load"))
     );
     img.addEventListener("load", () => {
       resolve({
         naturalWidth: img.naturalWidth,
-        naturalHeight: img.naturalHeight,
+        naturalHeight: img.naturalHeight
       });
     });
 
@@ -386,7 +387,12 @@ function determineNaturalSize(url) {
 
 #### 有了信息，该如何计算呢？
 
+所有计算的类都在 lighthouse-core 下的 audits 目录里
+
+![audits](/images/lighthouse/audits.png)
+
 ```javascript
+// 接上面 lighthouse-core/index.js 里的
 const auditResults = await Runner._runAudits(
   settings,
   runOpts.config.audits,
@@ -395,6 +401,7 @@ const auditResults = await Runner._runAudits(
 );
 
 async function _runAudits(settings, audits, artifacts, runWarnings) {
+  // 迭代配置里生成的audits对象集合
   for (const auditDefn of audits) {
     const auditResult = await Runner._runAudit(
       auditDefn,
@@ -408,4 +415,71 @@ async function _runAudits(settings, audits, artifacts, runWarnings) {
   log.timeEnd(status);
   return auditResults;
 }
+
+async function _runAudit(
+  auditDefn,
+  artifacts,
+  sharedAuditContext,
+  runWarnings
+) {
+  const audit = auditDefn.implementation;
+  let auditResult;
+
+  const auditOptions = Object.assign(
+    {},
+    audit.defaultOptions,
+    auditDefn.options
+  );
+  const auditContext = {
+    options: auditOptions,
+    ...sharedAuditContext
+  };
+  // 调用 audit 方法
+  const product = await audit.audit(narrowedArtifacts, auditContext);
+
+  auditResult = Audit.generateAuditResult(audit, product);
+
+  return auditResult;
+}
+
+class Audit {
+  // Audit 基类内容比较多，主要对外暴露的是 audit 方法，子类必须重写
+  static audit(artifacts, context) {
+    throw new Error("audit() method must be overriden");
+  }
+}
+```
+
+从上面代码，我们可以看出，所有子对象
+
+```javascript
+// /audits/image-size-responsive.js
+class ImageSizeResponsive extends Audit {
+  static audit(artifacts) {
+    const DPR = artifacts.ViewportDimensions.devicePixelRatio;
+    const results = Array.from(artifacts.ImageElements)
+      .filter(isCandidate) // 过滤掉没用的图片
+      .filter(image => !imageHasRightSize(image, DPR)) // 算出图片尺寸是否过大
+      .filter(
+        image => isVisible(image.clientRect, artifacts.ViewportDimensions) // 算出图片是否在可是区域
+      )
+      .map(image => getResult(image, DPR)); // 获取图片的相关信息，组成集合
+
+    const headings = [
+      // ...
+    ];
+
+    const finalResults = // ...
+
+    return {
+      // 如果集合中没有含有过大并且在可视区域的图片，那么为true
+      // 之后，所有 audits 中的 score 为 true 将被累加，并按照百分比算出相关得分
+      score: Number(results.length === 0),
+      details: Audit.makeTableDetails(headings, finalResults)
+    };
+  }
+}
+
+module.exports = ImageSizeResponsive;
+module.exports.UIStrings = UIStrings;
 ```
