@@ -76,12 +76,12 @@ async function runCommand(options) {
   // 执行 healthcheck
   const healthcheckStatus = runChildCommand("healthcheck", [
     ...defaultFlags,
-    "--fatal"
+    "--fatal",
   ]).status;
   // 执行 collect，重点命令
   const collectStatus = runChildCommand("collect", [
     ...defaultFlags,
-    ...collectArgs
+    ...collectArgs,
   ]).status;
 
   // 默认不执行 assert 命令， 需要 assert 参数 并且 没有 upload 参数
@@ -91,7 +91,7 @@ async function runCommand(options) {
   ) {
     const assertStatus = runChildCommand("assert", [
       ...defaultFlags,
-      ...assertArgs
+      ...assertArgs,
     ]).status;
   }
 
@@ -148,7 +148,7 @@ async function runOnUrl(url, options, context) {
     // 每次新开一个Node.js进程 调用 lighthouse-cli
     const lhr = await runner.runUntilSuccess(url, {
       ...options,
-      settings
+      settings,
     });
     saveLHR(lhr); // 保存 lighthouse result 数据
   }
@@ -235,7 +235,7 @@ async function _gatherArtifactsFromBrowser(
   const gatherOpts = {
     driver,
     requestedUrl,
-    settings: runnerOpts.config.settings
+    settings: runnerOpts.config.settings,
   };
   // 收集所有 Gather，生成结果集合 artifacts
   const artifacts = await GatherRunner.run(
@@ -248,7 +248,7 @@ async function _gatherArtifactsFromBrowser(
 
 上述代码的逻辑非常清晰，就是根据现有数据（artifacts），计算出结果数据（audits），生成报告。
 
-artifacts 有哪些信息，有事如何得到这些信息的呢？
+#### 如何得到 artifacts 这些信息的呢？
 
 ```javascript
 // gather-runner.js
@@ -271,7 +271,7 @@ async function run(passConfigs, options) {
   await GatherRunner.setupDriver(driver, options);
 
   // passConfigs 就是 需要收集的Gather集合
-  // 这是一个很长的周期，算是真正开始做数据分析的方法
+  // runPass是一个很长的周期，真正开始做数据分析的方法
   for (const passConfig of passConfigs) {
     const passContext = {
       driver,
@@ -279,11 +279,133 @@ async function run(passConfigs, options) {
       settings: options.settings,
       passConfig,
       baseArtifacts,
-      LighthouseRunWarnings: baseArtifacts.LighthouseRunWarnings
+      LighthouseRunWarnings: baseArtifacts.LighthouseRunWarnings,
     };
+    // loadBlank => setupPassNetwork => cleanBrowserCaches
+    // => beforePass // gather 对象对外暴露的接口
+    // => beginRecording
+    // => loadPage
+    // => pass // gather 对象对外暴露的接口
+    // => endRecording
+    // => afterPass // gather 对象对外暴露的接口
+    // => collectArtifacts
     const passResults = await GatherRunner.runPass(passContext);
+    // 将所有结果挂在 artifacts 对象上
     Object.assign(artifacts, passResults.artifacts);
   }
   return { ...baseArtifacts, ...artifacts }; // Cast to drop Partial<>.
+}
+// Gatherer 基类
+class Gatherer {
+  get name() {
+    return this.constructor.name;
+  }
+  beforePass(passContext) {}
+
+  pass(passContext) {}
+
+  afterPass(passContext, loadData) {}
+}
+```
+
+runPass 是一个重要的生命周期，如果要给 Lighthouse 写自定义的扩展，必须要了解它，我们需要通过它将信息收集起来，并挂载到 artifacts 上。
+
+#### 如何收集浏览器的信息呢？
+
+以收集图片信息的 `ImageElements` 为例，它对外暴露了 afterPass 接口，是一个经典应用
+
+```javascript
+class ImageElements extends Gatherer {
+  async afterPass(passContext, loadData) {
+    const driver = passContext.driver;
+    const indexedNetworkRecords = loadData.networkRecords.reduce(
+      (map, record) => {
+        if (
+          /^image/.test(record.mimeType) &&
+          record.finished &&
+          record.statusCode === 200
+        ) {
+          map[record.url] = record;
+        }
+        return map;
+      }
+    );
+
+    const expression = `(function() {
+      ${pageFunctions.getElementsInDocumentString}; // define function on page
+      ${getClientRect.toString()};
+      ${getHTMLImages.toString()};
+      ${getCSSImages.toString()};
+      ${collectImageElementInfo.toString()};
+
+      return collectImageElementInfo();
+    })()`;
+
+    const elements = await driver.evaluateAsync(expression);
+    const top50Images = Object.values(indexedNetworkRecords)
+      .sort((a, b) => b.resourceSize - a.resourceSize)
+      .slice(0, 50);
+
+    const imageUsage = [];
+    for (let element of elements) {
+      // ...
+      // 在Chrome注入并执行 determineNaturalSize 方法，获取图片的原始宽和高
+    }
+    return imageUsage;
+  }
+}
+
+function determineNaturalSize(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.addEventListener("error", (_) =>
+      reject(new Error("determineNaturalSize failed img load"))
+    );
+    img.addEventListener("load", () => {
+      resolve({
+        naturalWidth: img.naturalWidth,
+        naturalHeight: img.naturalHeight,
+      });
+    });
+
+    img.src = url;
+  });
+}
+```
+
+所有 afterPass 方法是在页面加载完后执行的，所以会比 beforePass 多一个`loadData`参数，记录了网络加载的数据，比如，图片。
+
+在 ImageElements 中
+
+- 先找出所有正常加载的图片
+- expression，定义一个闭包，将相关需要用到的方法通过字符串的形式拼接起来，再用 driver.evaluateAsync 将它们注入到 Chrome, 并执行
+- 按照尺寸大小排序，获取最大的前 50 个图片信息
+- elements 和 top50Images，进行相关的逻辑处理获取图片的原始尺寸，最后返回结果集 imageUsage
+
+**从上述代码我们可以知道，将 JavaScript 方法通过 `driver.evaluateAsync` 注入到 Chrome 里并执行，收集浏览器的信息。**
+
+#### 有了信息，该如何计算呢？
+
+```javascript
+const auditResults = await Runner._runAudits(
+  settings,
+  runOpts.config.audits,
+  artifacts, // 之前收集的信息
+  lighthouseRunWarnings
+);
+
+async function _runAudits(settings, audits, artifacts, runWarnings) {
+  for (const auditDefn of audits) {
+    const auditResult = await Runner._runAudit(
+      auditDefn,
+      artifacts,
+      sharedAuditContext,
+      runWarnings
+    );
+    auditResults.push(auditResult);
+  }
+
+  log.timeEnd(status);
+  return auditResults;
 }
 ```
