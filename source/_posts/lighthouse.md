@@ -1,7 +1,12 @@
 ---
-title: Lighthouse性能分析
+title: Lighthouse 流程和架构分析
 date: 2020-07-07 21:56:46
+keywords: Lighthouse,gather,audit,puppeteer,DevTools,评测工具
+description: Lighthouse 是一个非常有用的前端性能评测工具，本文主要讲的基础概念，后续将介绍 puppeteer 的使用，如何利用 gather 和 audit 自定义性能监控指标。另外对内置的 gather 和 audit 研究也能极大争强自己对前端的认知，对 Driver 的学习能增加对 DevTools 和 Chrome 的新认知，非常值得深挖
 tags:
+  - 性能监控
+	- JavaScript
+	- Web
 ---
 
 ## 背景
@@ -26,6 +31,7 @@ tags:
 
 ![Lighthouse 报告](/images/lighthouse/report.png)
 
+<!-- more -->
 <br/>
 
 ## 原理分析
@@ -38,7 +44,7 @@ tags:
 
 **Artifacts：** 一系列 Gatherers 的信息集合
 
-**Audit：** 测试单个功能/优化/指标。用 Artifacts 作为输出，计算出该项指标的得分，生成*Lighthouse 标准的数据对象*
+**Audit：** 测试单个功能/优化/指标。用 Artifacts 作为输入，计算出该项指标的得分，生成*Lighthouse 标准的数据对象*
 
 **Report：** 根据 Lighthouse 标准的数据对象生成可视化页面
 
@@ -76,12 +82,12 @@ async function runCommand(options) {
   // 执行 healthcheck
   const healthcheckStatus = runChildCommand("healthcheck", [
     ...defaultFlags,
-    "--fatal"
+    "--fatal",
   ]).status;
   // 执行 collect，重点命令
   const collectStatus = runChildCommand("collect", [
     ...defaultFlags,
-    ...collectArgs
+    ...collectArgs,
   ]).status;
 
   // 默认不执行 assert 命令， 需要 assert 参数 并且 没有 upload 参数
@@ -91,11 +97,11 @@ async function runCommand(options) {
   ) {
     const assertStatus = runChildCommand("assert", [
       ...defaultFlags,
-      ...assertArgs
+      ...assertArgs,
     ]).status;
   }
 
-  // 默认不执行 assert 命令， 例子中有 upload 参数 会执行它
+  // 默认不执行 upload 命令， 例子中有 upload 参数 会执行它
   if (ciConfiguration.upload) {
     const uploadStatus = runChildCommand("upload", defaultFlags).status;
     if (options.failOnUploadFailure && uploadStatus !== 0)
@@ -106,7 +112,7 @@ async function runCommand(options) {
 }
 ```
 
-从上述代码中可以很直观的看到 `autorun` 里面包含的命令
+从上述代码中可以很直观看到 `autorun` 里面包含的命令
 
 - healthcheck 一些检查，比如是否安装了 Chrome、客户端版本和服务端版本是否一致等等
 - collect 重要命令，它的整个流程基本涵盖了架构图，从信息的采集到生成报告
@@ -125,19 +131,14 @@ async function runCommand(options) {
   // staticDistDir是打包后的静态资源目录
   // 有 => 创建 express server， 将静态资源加载进服务中（一般都是有的，除非手动关闭）
   // 没 => 执行 startServerCommand，开发者自己创建一个服务
+  // 没有服务支持，浏览器无法打开页面进行测试
   const { urls, close } = await startServerAndDetermineUrls(options);
-  try {
-    for (const url of urls) {
-      // 如果有 puppeteerScript 参数，那么会出触发该脚本
-      await puppeteer.invokePuppeteerScriptForUrl(url);
-      //
-      await runOnUrl(url, options, { puppeteer });
-    }
-  } finally {
-    await close();
+  for (const url of urls) {
+    // 如果有 puppeteerScript 参数，那么会出触发该脚本
+    await puppeteer.invokePuppeteerScriptForUrl(url);
+    //
+    await runOnUrl(url, options, { puppeteer });
   }
-
-  process.stdout.write(`Done running Lighthouse!\n`);
 }
 
 async function runOnUrl(url, options, context) {
@@ -148,7 +149,7 @@ async function runOnUrl(url, options, context) {
     // 每次新开一个Node.js进程 调用 lighthouse-cli
     const lhr = await runner.runUntilSuccess(url, {
       ...options,
-      settings
+      settings,
     });
     saveLHR(lhr); // 保存 lighthouse result 数据
   }
@@ -203,7 +204,7 @@ async function run(connection, runOpts) {
     runOpts,
     connection
   );
-  // 根据获取的artifacts，按照需要计算的 audits，计算出结果
+  // 根据获取的artifacts，计算需要的 audits，得出结果
   const auditResults = await Runner._runAudits(
     settings,
     runOpts.config.audits,
@@ -235,9 +236,9 @@ async function _gatherArtifactsFromBrowser(
   const gatherOpts = {
     driver,
     requestedUrl,
-    settings: runnerOpts.config.settings
+    settings: runnerOpts.config.settings,
   };
-  // 收集所有 Gather，生成结果集合 artifacts
+  // 收集 Gather，生成结果集合 artifacts
   const artifacts = await GatherRunner.run(
     runnerOpts.config.passes,
     gatherOpts
@@ -279,7 +280,7 @@ async function run(passConfigs, options) {
       settings: options.settings,
       passConfig,
       baseArtifacts,
-      LighthouseRunWarnings: baseArtifacts.LighthouseRunWarnings
+      LighthouseRunWarnings: baseArtifacts.LighthouseRunWarnings,
     };
     // loadBlank => setupPassNetwork => cleanBrowserCaches
     // => beforePass // gather 对象对外暴露的接口
@@ -308,7 +309,7 @@ class Gatherer {
 }
 ```
 
-runPass 是一个重要的生命周期，如果要给 Lighthouse 写自定义的扩展，必须要了解它，我们需要通过它将信息收集起来，并挂载到 artifacts 上。所有信息收集的类都在 lighthouse-core 下的 gather/gatherers 目录里。
+runPass 是一个重要的生命周期，如果要给 Lighthouse 写自定义的扩展，必须要了解它。其实就是模拟人的行为，打开空网页（loadBlank），设置网络参数（setupPassNetwork），情况缓存（cleanBrowserCaches），beforePass（注入页面加载前注入脚本获取关键信息），beginRecording（页面加载前记录 devtoolsLog 和 trace），pass（页面加载中），endRecording（页面加载结束记录 devtoolsLog 和 trace），afterPass（页面加载结束注入脚本获取关键信息），collectArtifacts（收集相关信息）。其中，beforePass、pass 和 afterPass 在写自定义 gather 时可以注入脚本获取自己需要的信息的，非常有用。最后将收集的信息挂载到 artifacts 上。系统内置的信息收集类都在 lighthouse-core 下的 gather/gatherers 目录里。
 
 ![gatherers](/images/lighthouse/gatherers.png)
 
@@ -359,13 +360,13 @@ class ImageElements extends Gatherer {
 function determineNaturalSize(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.addEventListener("error", _ =>
+    img.addEventListener("error", (_) =>
       reject(new Error("determineNaturalSize failed img load"))
     );
     img.addEventListener("load", () => {
       resolve({
         naturalWidth: img.naturalWidth,
-        naturalHeight: img.naturalHeight
+        naturalHeight: img.naturalHeight,
       });
     });
 
@@ -383,11 +384,11 @@ function determineNaturalSize(url) {
 - 按照尺寸大小排序，获取最大的前 50 个图片信息
 - elements 和 top50Images，进行相关的逻辑处理获取图片的原始尺寸，最后返回结果集 imageUsage
 
-**从上述代码我们可以知道，将 JavaScript 方法通过 `driver.evaluateAsync` 注入到 Chrome 里并执行，收集浏览器的信息。**
+**从上述代码我们可以知道，将 JavaScript 方法通过 `driver.evaluateAsync` 注入到 Chrome 里并执行，收集页面的信息。**
 
 #### 有了信息，该如何计算呢？
 
-所有计算的类都在 lighthouse-core 下的 audits 目录里
+系统内置的计算类都在 lighthouse-core 下的 audits 目录里。整体的流程和 gather 很像，都是遍历配置里的集合，然后触发暴露的方法（此处是 audit）,然后合并输出，大概过程如下。
 
 ![audits](/images/lighthouse/audits.png)
 
@@ -411,8 +412,6 @@ async function _runAudits(settings, audits, artifacts, runWarnings) {
     );
     auditResults.push(auditResult);
   }
-
-  log.timeEnd(status);
   return auditResults;
 }
 
@@ -432,7 +431,7 @@ async function _runAudit(
   );
   const auditContext = {
     options: auditOptions,
-    ...sharedAuditContext
+    ...sharedAuditContext,
   };
   // 调用 audit 方法
   const product = await audit.audit(narrowedArtifacts, auditContext);
@@ -450,14 +449,14 @@ class Audit {
 }
 ```
 
-从上面代码，我们可以看出，所有子对象
+我们依旧以图片的为例。
 
 ```javascript
 // /audits/image-size-responsive.js
 class ImageSizeResponsive extends Audit {
   static audit(artifacts) {
     const DPR = artifacts.ViewportDimensions.devicePixelRatio;
-    const results = Array.from(artifacts.ImageElements)
+    const results = Array.from(artifacts.ImageElements) // 从 gather ImageElements里收集的信息
       .filter(isCandidate) // 过滤掉没用的图片
       .filter(image => !imageHasRightSize(image, DPR)) // 算出图片尺寸是否过大
       .filter(
@@ -473,13 +472,16 @@ class ImageSizeResponsive extends Audit {
 
     return {
       // 如果集合中没有含有过大并且在可视区域的图片，那么为true
-      // 之后，所有 audits 中的 score 为 true 将被累加，并按照百分比算出相关得分
+      // 之后，所有 audits 中的 score 为 true 将被累加其数量，并按照百分比算出相关得分
       score: Number(results.length === 0),
       details: Audit.makeTableDetails(headings, finalResults)
     };
   }
 }
-
-module.exports = ImageSizeResponsive;
-module.exports.UIStrings = UIStrings;
 ```
+
+gather 和 audit 是核心的流程和概念，上文我们已经简单的分析了整个代码，从 2 者的目录结构图也不难发现 audit 数量远远大于 gather，这也是为什么 2 者分开的重要原因，audit 通过 artifacts 去获取自己想要的数据再进行逻辑计算，增加了 gather 数据的复用性，和各自的扩展性，各个模块的测试也变得容易。
+
+## 总结
+
+Lighthouse 是一个非常有用的前端性能评测工具，本文主要讲的基础概念，后续将介绍 puppeteer 的使用，如何利用 gather 和 audit 自定义性能监控指标。另外对内置的 gather 和 audit 研究也能极大争强自己对前端的认知，对 Driver 的学习能增加对 DevTools 和 Chrome 的新认知，非常值得深挖。
