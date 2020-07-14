@@ -1,3 +1,6 @@
 _site
 .sass-cache
 .jekyll-metadata
+
+.deploy_git
+node_modules
