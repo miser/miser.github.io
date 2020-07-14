@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>2019 工作总结 - Miser 胡言</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
+<meta name="baidu-site-verification" content="CXKjj3fklD">
+    
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-129526171-1');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      ul.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item " href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section">
+    <div class="container">
+    <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            2019 工作总结
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2019-12-30T15:30:00.000Z" itemprop="datePublished">Dec 30 2019</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/work/">work</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <blockquote>
+<p>It was the best of times, it was the worst of times.</p>
+</blockquote>
+<p>如果真要用一句话形容2019年工作的话，上述的<strong>双城记</strong>节选我觉得是极好。大概2018年尾的时候，公司的前端团队开始用Node.js做些后端业务等相关的工作并积累经验，与现有的Java基础架构做融合，微服务<a href="https://github.com/Netflix/eureka" target="_blank" rel="noopener">Eureka</a>、分布式协调服务<a href="https://zookeeper.apache.org/" target="_blank" rel="noopener">ZooKeeper</a>、分布式配置管理平台<a href="https://disconf.readthedocs.io/zh_CN/latest/" target="_blank" rel="noopener">Discon</a>、应用监控<a href="https://github.com/dianping/cat" target="_blank" rel="noopener">Cat</a>、消息列队<a href="https://rocketmq.apache.org/" target="_blank" rel="noopener">RocketMQ</a>、分布式署存储服务<a href="https://github.com/chrislusf/seaweedfs" target="_blank" rel="noopener">SeaweedFS</a>、数据库<a href="https://www.mysql.com/cn/" target="_blank" rel="noopener">MySQL</a>等等，大量的知识扑面而来。幸好之前有.NET C# + Javascript做Web开发经历，加上一些Node.js开发经验，比如<a href="http://aimianwu.com" target="_blank" rel="noopener">爱眠物</a>等等，上手掌握并不难。基本上每天都有很多东西可以学，上半年忙着产出业务，也忙着封装一些基于<code>Egg.js</code>适合公司项目的基础代码。不过问题也是频发，上面提到的很多东西并非是Node.js生态圈大量使用的，引用一些冷门的第三个类库暴露出了EventLoop被卡住、Memory Leak的情况，下半年忙着优化和排查。</p>
+<a id="more"></a>
+<p><br></p>
+<h3 id="EventLoop问题"><a href="#EventLoop问题" class="headerlink" title="EventLoop问题"></a>EventLoop问题</h3><p>我们的Node.js程序发布到测试或者生产，经常服务端出现大量TCP <code>Close Wait</code>的情况，从TCP的信息反馈把重点都放在了网络层面，因为大量Close Wait导致服务无法响应新的请求，以为是上下游网络的超时时间问题，但是无论如何通过Node.js的Javascript层面做实验都未能出现，后来又查系统级别的配置问题等等，都是没查出一个所以然。</p>
+<p><strong>我之前写的各种Node.js服务都跑的好好的，为什么现在这家公司会出现卡死的问题呢？难道把锅甩给系统环境？</strong></p>
+<p>困惑和压力倍增，毕竟项目已经上生产了，金融服务出一点问题都是头大的事情。后来用<code>alinode</code>做监控，可惜我们的节点都在国外，而免费版本对国外节点并不友好，总是会断了监控数据。无奈只能麻烦运维同事帮忙去Docker上生成发生问题时候的<code>火焰图</code>，发现是<code>Cat</code>导致的，底层的C++代码阻碍了EventLoop的正常运行，把整个Node.js进程给卡死了。<br><img src="/images/summary-2019/1.png" alt="catMessageSenderFun方法几乎占据了一整行"></p>
+<p>或许你会问，<strong>为什么不早点搭建有效的监控系统去排查这些问题呢？或许就不会那么被动了！</strong></p>
+<p>主要有3点：</p>
+<ol>
+<li>Node.js在我们上海技术团队内部算是兴起，我们希望能承接更多的业务等去做，就如同<strong>创业</strong>一样，团队自己的技术栈在公司内部使用的多了，自然有更多资源招兵买马为以后大前端、BFF层搭建做准备。可以理解为创业公司不断的做业务拉投资，我相信在很多大点的公司，很多小团队都会有这种创业的感觉</li>
+<li>每个公司所使用的某个技术栈都有自己的定位，我们也在不同领域做尝试，有倾向业务的、有做基础设施搭建的等，也在寻找Node.js适合当前公司的定位</li>
+<li>经验还是缺乏点，当时运维已经有了相关对Docker的系统监控，加上<code>Cat</code>业务监控感觉能抵挡一段时间，但是万万没想到就是缺少CPU的火焰图和内存堆栈图信息导致排查问题困难重重</li>
+</ol>
+<p><br></p>
+<h3 id="Memory-Leak问题"><a href="#Memory-Leak问题" class="headerlink" title="Memory Leak问题"></a>Memory Leak问题</h3><p>前后经历了2次较大的内存泄露问题</p>
+<p><strong>陌生类库：</strong> 其实也是知道要谨慎选择类库的使用，但有时候又该怎么说呢…</p>
+<p><strong>Vue SSR：</strong> 这个问题是书写Vue相关代码时候没注意导致的，其作者在Github上也留言指出了相关的<a href="https://github.com/vuejs/vue/issues/5089" target="_blank" rel="noopener">解决方法</a></p>
+<p><img src="/images/summary-2019/2.jpg" alt="https://github.com/vuejs/vue/issues/5089"></p>
+<p><strong>目前组内对前端或者Node.js的监控体系在逐步搭建和迭代的过程中，一个监控Hub，通过TCP通信将所有的Node.js进程与其进行长连接，实时双向传输数据，按照命令生成火焰图或者内存堆栈信息。</strong></p>
+<p><br></p>
+<h3 id="优化了静态资源打包和分发流程"><a href="#优化了静态资源打包和分发流程" class="headerlink" title="优化了静态资源打包和分发流程"></a>优化了静态资源打包和分发流程</h3><p>打包这个东西自然还是基于<code>Webpack</code>的封装，谁让人家NB呢。整体流程之前比较复杂，做了一次重CI的优化，也适合目前的小型团队使用，从中抽取了一套插件式的程序加载流程，整体思想还是抄的<code>Egg.js</code>，谁让人家好用好扩展呢！</p>
+<p><strong>为什么不完全基于Egg.js的插件开发方式？</strong></p>
+<p>团队对底层架构级的东西不能完全基于Egg.js，会有更多多元化的框架引入（看具体场景，尽量少，但万一呢），通过适配层就能让底层代码依附到不同框架上。所以我既不能依附Webpack写太多插件，也不能依附其它的Node.js应用框架，毕竟Node.js五花八门、百家争鸣，我们想办法把他们粘合在一起就好，所以需要一套自己的加载器。</p>
+<p><br></p>
+<p><br></p>
+<h2 id="从2019迈向2020"><a href="#从2019迈向2020" class="headerlink" title="从2019迈向2020"></a>从2019迈向2020</h2><p>2019年对我而言确实又坏又好，坏的是工作上的问题一个个来，万幸的是都一个个解决和迭代中了，确实经历多了，学到的东西和成长也就多了。期望2020能把一直想做的BFF层可以慢慢做起来，另外监控等小项目能有机会开源。</p>
+
+    
+    </div>
+    
+    
+    <div class="columns is-mobile is-multiline article-nav">
+        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
+            
+            <a href="/2020/01/22/express-gateway/">Express Gateway</a>
+            
+        </span>
+        <span class="column is-12-mobile is-half-desktop  article-nav-next">
+            
+            <a href="/2019/10/06/travel-zhoushan/">2019国庆一人初游舟山</a>
+            
+        </span>
+    </div>
+    
+</article>
+
+
+
+<div class="comments">
+    <ul class="adv">
+  <li class="img"><img src="/images/give-a-reward.png" alt="reward"></li>
+  <li>
+    欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a>前端组，<a href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3" target="_blank">岗位信息</a>
+  </li>
+  <li>
+    同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank">爱眠物</a>
+  </li>
+</ul>
+
+    <h3 class="title is-4">Comments</h3>
+    
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://mlib.wang/2019/12/30/summary-2019/';
+        this.page.identifier = '2019/12/30/summary-2019/';
+        
+        this.language = 'en';
+        
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'mblof' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</div>
+
+    </div>
+</section> <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Miser&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
+
+            
+            
+        </div>
+    </div>
+</footer> <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+<script src="/js/script.js"></script> 
+  </body>
+</html>

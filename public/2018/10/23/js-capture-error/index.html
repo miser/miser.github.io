@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>前端错误捕获提交错误日志 - Miser 胡言</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
+<meta name="baidu-site-verification" content="CXKjj3fklD">
+    
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-129526171-1');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      ul.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item " href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section">
+    <div class="container">
+    <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            前端错误捕获提交错误日志
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2018-10-23T02:29:29.089Z" itemprop="datePublished">Oct 23 2018</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h4 id="为什么需要捕获？"><a href="#为什么需要捕获？" class="headerlink" title="为什么需要捕获？"></a>为什么需要捕获？</h4><p>前端代码运行在客户端的浏览器里，当客户端（浏览器）出现任何问题，在没有错误日志的情况下，我们都是不知道问题发生在哪，我们只能依靠猜测或者自己不断尝试才知道，或者永远不知道问题。</p>
+<h4 id="客户端怎么捕获？"><a href="#客户端怎么捕获？" class="headerlink" title="客户端怎么捕获？"></a>客户端怎么捕获？</h4><p>1.通过window.onerror，可惜只能获得基础的js错误，Promise、async/await 里的错误无法捕获，它收到同源决策的影响</p>
+<p>2.Promise 通过<strong>catch</strong>方法</p>
+<p>3.async/await 通过 <strong>try - catch</strong></p>
+<p>4.Vue可以通过全局Vue.config.errorHandler去获得非Promise、async/await里的错误，可以理解为Vue里的window.onerror</p>
+<a id="more"></a>
+<h4 id="不同的捕获错误用法（测试环境-chrome-amp-https-jsbin-com）"><a href="#不同的捕获错误用法（测试环境-chrome-amp-https-jsbin-com）" class="headerlink" title="不同的捕获错误用法（测试环境 chrome &amp; https://jsbin.com）"></a>不同的捕获错误用法（测试环境 chrome &amp; <a href="https://jsbin.com）" target="_blank" rel="noopener">https://jsbin.com）</a></h4><h5 id="window-onerror"><a href="#window-onerror" class="headerlink" title="window.onerror"></a><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/GlobalEventHandlers/onerror" target="_blank" rel="noopener">window.onerror</a></h5><figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-built_in">window</span>.onerror = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">message, source, lineno, colno, error</span>) </span>&#123;</span><br><span class="line">    <span class="hljs-comment">/*</span></span><br><span class="line"><span class="hljs-comment">    message：错误信息（字符串）。可用于HTML onerror=""处理程序中的event。</span></span><br><span class="line"><span class="hljs-comment">    source：发生错误的脚本URL（字符串）</span></span><br><span class="line"><span class="hljs-comment">    lineno：发生错误的行号（数字）</span></span><br><span class="line"><span class="hljs-comment">    colno：发生错误的列号（数字）</span></span><br><span class="line"><span class="hljs-comment">    error：Error对象（对象）</span></span><br><span class="line"><span class="hljs-comment">    */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-built_in">window</span>.onerror = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">arguments</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-keyword">let</span> data</span><br><span class="line"><span class="hljs-keyword">let</span> info = data.info</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">/* console 输出</span></span><br><span class="line"><span class="hljs-comment">[object Arguments] &#123;</span></span><br><span class="line"><span class="hljs-comment">  0: "Uncaught TypeError: Cannot read property 'info' of undefined",</span></span><br><span class="line"><span class="hljs-comment">  1: "yiveral.js",</span></span><br><span class="line"><span class="hljs-comment">  2: 6,</span></span><br><span class="line"><span class="hljs-comment">  3: 17,</span></span><br><span class="line"><span class="hljs-comment">  4: [object Error] &#123; ... &#125;</span></span><br><span class="line"><span class="hljs-comment">&#125;</span></span><br><span class="line"><span class="hljs-comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>虽然<strong>onerror</strong>无法捕获Promise里的错误，但是如果Promise里面是被setTimeout包裹的js还是能捕获的</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-built_in">window</span>.onerror = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">arguments</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">timer</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">     <span class="hljs-keyword">let</span> data</span><br><span class="line">     <span class="hljs-keyword">let</span> info = data.info</span><br><span class="line">  &#125;, <span class="hljs-number">100</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">p</span>(<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">resolve, reject</span>) </span>&#123;</span><br><span class="line">     timer()</span><br><span class="line">  &#125;).catch(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>&#123;</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(error)</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'inner error'</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">p().then(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'running then'</span>)</span><br><span class="line">&#125;)</span><br><span class="line">.catch(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">error</span>)</span>&#123;</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(error)</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'outer error'</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">/* console 输出</span></span><br><span class="line"><span class="hljs-comment">[object Arguments] &#123;</span></span><br><span class="line"><span class="hljs-comment">  0: "Uncaught TypeError: Cannot read property 'info' of undefined",</span></span><br><span class="line"><span class="hljs-comment">  1: "yiveral.js",</span></span><br><span class="line"><span class="hljs-comment">  2: 8,</span></span><br><span class="line"><span class="hljs-comment">  3: 22,</span></span><br><span class="line"><span class="hljs-comment">  4: [object Error] &#123; ... &#125;</span></span><br><span class="line"><span class="hljs-comment">&#125;</span></span><br><span class="line"><span class="hljs-comment">*/</span></span><br></pre></td></tr></table></figure>
+<h5 id="Promise-catch"><a href="#Promise-catch" class="headerlink" title="Promise catch"></a><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise/catch" target="_blank" rel="noopener">Promise catch</a></h5><h5 id="Q：如果没有catch方法，是否能捕获Promise里的错误？"><a href="#Q：如果没有catch方法，是否能捕获Promise里的错误？" class="headerlink" title="Q：如果没有catch方法，是否能捕获Promise里的错误？"></a>Q：如果没有catch方法，是否能捕获Promise里的错误？</h5><figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-built_in">window</span>.onerror = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">arguments</span>)</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'onerror'</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">errorFn</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">let</span> data</span><br><span class="line">  <span class="hljs-keyword">let</span> info = data.info</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">p</span>(<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">resolve, reject</span>) </span>&#123;</span><br><span class="line">    errorFn()</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"><span class="hljs-keyword">try</span> &#123;</span><br><span class="line">  p().then(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">res</span>) </span>&#123;</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'running then'</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125; <span class="hljs-keyword">catch</span> (e) &#123;</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(e)</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'try - catch'</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">/* console 没有任何输出</span></span><br><span class="line"><span class="hljs-comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>我们通过上面的代码发现，Promise里的错误无论在<strong>try - catch</strong>还是<strong>onerror</strong>里都无法被捕获</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">errorFn</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">let</span> data</span><br><span class="line">  <span class="hljs-keyword">let</span> info = data.info</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">p</span>(<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">resolve, reject</span>) </span>&#123;</span><br><span class="line">    errorFn()</span><br><span class="line">  &#125;).catch(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>&#123;</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(error)</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'inner error'</span>)</span><br><span class="line">    <span class="hljs-keyword">return</span> <span class="hljs-string">'return inner error'</span></span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"><span class="hljs-keyword">try</span> &#123;</span><br><span class="line">  p().then(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">res</span>) </span>&#123;</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(res)</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'running then'</span>)</span><br><span class="line">  &#125;).catch(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">error</span>)</span>&#123;</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(error)</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'outer error'</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125; <span class="hljs-keyword">catch</span> (e) &#123;</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(e)</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'try - catch'</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">/* console 输出</span></span><br><span class="line"><span class="hljs-comment">[object Error] &#123; ... &#125;</span></span><br><span class="line"><span class="hljs-comment">"inner error"</span></span><br><span class="line"><span class="hljs-comment">"return inner error"</span></span><br><span class="line"><span class="hljs-comment">"running then"</span></span><br><span class="line"><span class="hljs-comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>通过上面代码发现，已经被捕获的错误代码，在外层不会再被捕获而是继续执行then里的方法，可见在一条Promise链上的错误，会被之后最近的<strong>catch</strong>捕获。</p>
+<h5 id="async-await-通过-try-catch"><a href="#async-await-通过-try-catch" class="headerlink" title="async/await 通过 try - catch"></a><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/async_function" target="_blank" rel="noopener">async/await</a> 通过 <strong>try - catch</strong></h5><figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-built_in">window</span>.onerror = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">arguments</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">errorFn</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">let</span> data</span><br><span class="line">  <span class="hljs-keyword">let</span> info = data.info</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">p</span>(<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">resolve, reject</span>) </span>&#123;</span><br><span class="line">    errorFn()</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line">(<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">let</span> res = <span class="hljs-keyword">await</span> p()</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(res)</span><br><span class="line">&#125;)()</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">/* console 没有任何输出</span></span><br><span class="line"><span class="hljs-comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>我们通过上面的代码发现，Promise构造函数里的错误并没有被<strong>onerror</strong>捕获</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-built_in">window</span>.onerror = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">arguments</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">errorFn</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">let</span> data</span><br><span class="line">  <span class="hljs-keyword">let</span> info = data.info</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">p</span>(<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">resolve, reject</span>) </span>&#123;</span><br><span class="line">    resolve(<span class="hljs-string">'resolve'</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line">(<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">let</span> res = <span class="hljs-keyword">await</span> p()</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'get res'</span>)</span><br><span class="line">  errorFn()</span><br><span class="line">&#125;)()</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">/* console 输出</span></span><br><span class="line"><span class="hljs-comment">get res</span></span><br><span class="line"><span class="hljs-comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>虽然Promise正常执行，但是当后续的代码出错<strong>onerror</strong>依旧没有被捕获</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">errorFn</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">let</span> data</span><br><span class="line">  <span class="hljs-keyword">let</span> info = data.info</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">p</span>(<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">resolve, reject</span>) </span>&#123;</span><br><span class="line">    errorFn()</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line">(<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">try</span> &#123;</span><br><span class="line">    <span class="hljs-keyword">let</span> res = <span class="hljs-keyword">await</span> p()</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(res)</span><br><span class="line">  &#125; <span class="hljs-keyword">catch</span> (e) &#123;</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(e)</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'try - catch'</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)()</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">/* console 输出</span></span><br><span class="line"><span class="hljs-comment">[object Error] &#123; ... &#125;</span></span><br><span class="line"><span class="hljs-comment">"try - catch"</span></span><br><span class="line"><span class="hljs-comment">*/</span></span><br></pre></td></tr></table></figure>
+<p><strong>try - catch</strong>捕获了</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">errorFn</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">let</span> data</span><br><span class="line">  <span class="hljs-keyword">let</span> info = data.info</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">p</span>(<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">resolve, reject</span>) </span>&#123;</span><br><span class="line">    errorFn()</span><br><span class="line">  &#125;).catch(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>&#123;</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(error)</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'inner error'</span>)</span><br><span class="line">    <span class="hljs-keyword">return</span> <span class="hljs-string">'return inner error'</span></span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line">(<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">try</span> &#123;</span><br><span class="line">    <span class="hljs-keyword">let</span> res = <span class="hljs-keyword">await</span> p()</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(res)</span><br><span class="line">  &#125; <span class="hljs-keyword">catch</span> (e) &#123;</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(e)</span><br><span class="line">    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'try - catch'</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)()</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">/* console 输出</span></span><br><span class="line"><span class="hljs-comment">[object Error] &#123; ... &#125;</span></span><br><span class="line"><span class="hljs-comment">"inner error"</span></span><br><span class="line"><span class="hljs-comment">"return inner error"</span></span><br><span class="line"><span class="hljs-comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>从上面代码我们知道，如果Promise构造函数里的错误被它自己catch的话，那么 async/await 后续的 <strong>try - catch</strong>将不再对它捕获</p>
+<h5 id="Vue-config-errorHandler"><a href="#Vue-config-errorHandler" class="headerlink" title="Vue.config.errorHandler"></a><a href="https://cn.vuejs.org/v2/api/index.html#errorHandler" target="_blank" rel="noopener">Vue.config.errorHandler</a></h5><figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Vue.config.errorHandler = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, vm, info</span>) </span>&#123;</span><br><span class="line">  <span class="hljs-comment">// handle error</span></span><br><span class="line">  <span class="hljs-comment">// `info` 是 Vue 特定的错误信息，比如错误所在的生命周期钩子</span></span><br><span class="line">  <span class="hljs-comment">// 只在 2.2.0+ 可用</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>指定组件的渲染和观察期间未捕获错误的处理函数。这个处理函数被调用时，可获取错误信息和 Vue 实例。</p>
+</blockquote>
+<p>我们该如何去理解官方对errorHandler的解释呢？通过 vue-cli构建工具，创建一个非常基础的vue项目，做一些实验。</p>
+<p>测试代码库：<a href="https://github.com/miser/vue-capture-error" target="_blank" rel="noopener">https://github.com/miser/vue-capture-error</a></p>
+<p>在main.js</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Vue.config.errorHandler = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, vm, info</span>) </span>&#123;</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">arguments</span>)</span><br><span class="line">  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'vue errorHandler'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在App.vue</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="hljs-comment">// ...</span></span><br><span class="line">  created () &#123;</span><br><span class="line">    <span class="hljs-keyword">this</span>.normal()</span><br><span class="line">  &#125;,</span><br><span class="line">  methods: &#123;</span><br><span class="line">    normal () &#123;</span><br><span class="line">      <span class="hljs-keyword">let</span> data</span><br><span class="line">      <span class="hljs-keyword">let</span> info = data.info</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="hljs-comment">// ...  </span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">/* 刷新页面 console 输出</span></span><br><span class="line"><span class="hljs-comment">0: TypeError: Cannot read property 'info' of undefined at VueComponent.normal …</span></span><br><span class="line"><span class="hljs-comment">1: VueComponent &#123;_uid: 1, _isVue: true, $options: &#123;…&#125;, _renderProxy: Proxy, _self: VueComponent, …&#125;</span></span><br><span class="line"><span class="hljs-comment">2: "created hook</span></span><br><span class="line"><span class="hljs-comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>从上面代码可以看出，errorHandler确实可以满足我们的需求，在一个统一的地方捕获代码的错误，但是真的如此吗？上文也提到errorHandler和window.onerror类似，那么当我们使用Promse或者async/await时会不会得愿以偿。</p>
+<p>js中的异步很大一部分来自网络请求，那么在这我们用 <a href="https://github.com/axios/axios" target="_blank" rel="noopener">axios</a> （它做了一层ajax与Promise之间的封装）。</p>
+<p>main.js里添加</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">const</span> request = axios.create()</span><br><span class="line">request.interceptors.response.use(<span class="hljs-function"><span class="hljs-params">response</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="hljs-keyword">return</span> response</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">Vue.request = <span class="hljs-function">(<span class="hljs-params">args</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    request(args).then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> &#123;</span><br><span class="line">      resolve(res)</span><br><span class="line">    &#125;).catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> &#123;</span><br><span class="line">      reject(err)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在App.vue</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="hljs-comment">// ...</span></span><br><span class="line">  created () &#123;</span><br><span class="line">    <span class="hljs-keyword">this</span>.fetch1()</span><br><span class="line">  &#125;,</span><br><span class="line">  methods: &#123;</span><br><span class="line">    fetch1 () &#123;</span><br><span class="line">        Vue.request(<span class="hljs-string">'https://api1.github.com/'</span>)</span><br><span class="line">	      .then(<span class="hljs-function"><span class="hljs-params">response</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="hljs-built_in">console</span>.log(response)</span><br><span class="line">          &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="hljs-comment">// ...  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>api.github.com 会返回 github的api列表，当我们拼错域名，比如上面代码中的api1.github.com时，那肯定是无法获得我们想要的，可是errorHandler并没有获得该错误，不过幸好，我们可以在全局统一的Vue.request里的catch方法去统一捕获网络层面的错误。那如果是非网络层面的呢？比如数据请求回来了，但是绑定数据的时候，后端因为业务的修改等原因并没有返回我们需要的字段，造成Promise.then方法的业务处理错误。</p>
+<p>在App.vue</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="hljs-comment">// ...</span></span><br><span class="line">  created () &#123;</span><br><span class="line">    <span class="hljs-keyword">this</span>.fetch2()</span><br><span class="line">  &#125;,</span><br><span class="line">  methods: &#123;</span><br><span class="line">    fetch2 () &#123;</span><br><span class="line">      Vue.request(<span class="hljs-string">'https://api.github.com/'</span>)</span><br><span class="line">      .then(<span class="hljs-function"><span class="hljs-params">response</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="hljs-keyword">let</span> data = response.data</span><br><span class="line">        <span class="hljs-keyword">let</span> info = data.api.info</span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="hljs-comment">// ...  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上诉代码运行后，errorHandler同样未能捕获错误，从vue的issue里面去查询关于捕获Promise或者async/await时，会得到作者的答复:</p>
+<blockquote>
+<p><a href="https://github.com/vuejs/vue/issues/6551" target="_blank" rel="noopener">https://github.com/vuejs/vue/issues/6551</a></p>
+<p>Vue cannot capture errors that are thrown asynchronously, similar to how try… catch won’t catch async errors. It’s your responsibility to handle async errors properly, e.g. using Promise.catch  — @yyx990803</p>
+</blockquote>
+<p>那么该怎么办，不可能每个地方都加Promise.catch方法吧！</p>
+<blockquote>
+<p><a href="https://github.com/vuejs/vue/issues/7653" target="_blank" rel="noopener">https://github.com/vuejs/vue/issues/7653</a></p>
+<p>@Doeke 在这个地方给出一个解决方案，通过全局mixin，给那些Promise方法外面包一层Promise，在这个外层Promise链上catch里面的错误，不过这样需要做代码的约定，就是原来的方法需要返回一个Promise对象。</p>
+</blockquote>
+<p>main.js里添加@Doeke的思路</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">Vue.mixin(&#123;</span><br><span class="line">  beforeCreate: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">    <span class="hljs-keyword">const</span> methods = <span class="hljs-keyword">this</span>.$options.methods || &#123;&#125;</span><br><span class="line">    <span class="hljs-built_in">Object</span>.entries(methods).forEach(<span class="hljs-function">(<span class="hljs-params">[key, method]</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="hljs-keyword">if</span> (method._asyncWrapped) <span class="hljs-keyword">return</span></span><br><span class="line">      <span class="hljs-keyword">const</span> wrappedMethod = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">...args</span>) </span>&#123;</span><br><span class="line">        <span class="hljs-keyword">const</span> result = method.apply(<span class="hljs-keyword">this</span>, args)</span><br><span class="line">        <span class="hljs-keyword">const</span> resultIsPromise = result &amp;&amp; <span class="hljs-keyword">typeof</span> result.then === <span class="hljs-string">'function'</span></span><br><span class="line">        <span class="hljs-keyword">if</span> (!resultIsPromise) <span class="hljs-keyword">return</span> result</span><br><span class="line"></span><br><span class="line">        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-keyword">async</span> (resolve, reject) =&gt; &#123;</span><br><span class="line">          <span class="hljs-keyword">try</span> &#123;</span><br><span class="line">            resolve(<span class="hljs-keyword">await</span> result)</span><br><span class="line">          &#125; <span class="hljs-keyword">catch</span> (error) &#123;</span><br><span class="line">            <span class="hljs-keyword">if</span> (!error._handled) &#123;</span><br><span class="line">              <span class="hljs-keyword">const</span> errorHandler = Vue.config.errorHandler</span><br><span class="line">              errorHandler(error)</span><br><span class="line">              error._handled = <span class="hljs-literal">true</span></span><br><span class="line">            &#125;</span><br><span class="line">            reject(error)</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;)</span><br><span class="line">      &#125;</span><br><span class="line">      wrappedMethod._asyncWrapped = <span class="hljs-literal">true</span></span><br><span class="line">      methods[key] = wrappedMethod</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>在App.vue</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="hljs-comment">// ...</span></span><br><span class="line">  created () &#123;</span><br><span class="line">    <span class="hljs-keyword">this</span>.fetch2()</span><br><span class="line">    <span class="hljs-keyword">this</span>.fetch3()</span><br><span class="line">  &#125;,</span><br><span class="line">  methods: &#123;</span><br><span class="line">    fetch2 () &#123;</span><br><span class="line">      Vue.request(<span class="hljs-string">'https://api.github.com/'</span>)</span><br><span class="line">        .then(<span class="hljs-function"><span class="hljs-params">response</span> =&gt;</span> &#123;</span><br><span class="line">          <span class="hljs-keyword">let</span> data = response.data</span><br><span class="line">          <span class="hljs-keyword">let</span> info = data.api.fetch2</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;,</span><br><span class="line">    fetch3 () &#123;</span><br><span class="line">      <span class="hljs-keyword">return</span> Vue.request(<span class="hljs-string">'https://api.github.com/'</span>)</span><br><span class="line">        .then(<span class="hljs-function"><span class="hljs-params">response</span> =&gt;</span> &#123;</span><br><span class="line">          <span class="hljs-keyword">let</span> data = response.data</span><br><span class="line">          <span class="hljs-keyword">let</span> info = data.api.fetch3</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="hljs-comment">// ...  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过运行并观察console打印可以看出，fetch3的错误被errorHandler捕获，而fetch2的错误并没有。</p>
+<p>那么Promise里的错误统一捕获的问题差不多应该解决了，那么async/await的呢？</p>
+<p>在App.vue</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="hljs-comment">// ...</span></span><br><span class="line">  created () &#123;</span><br><span class="line">    <span class="hljs-keyword">this</span>.fetch4()</span><br><span class="line">    <span class="hljs-keyword">this</span>.fetch5()</span><br><span class="line">  &#125;,</span><br><span class="line">  methods: &#123;</span><br><span class="line">    <span class="hljs-keyword">async</span> fetch4 () &#123;</span><br><span class="line">      <span class="hljs-keyword">let</span> response = <span class="hljs-keyword">await</span> Vue.request(<span class="hljs-string">'https://api.github.com/'</span>)</span><br><span class="line">      <span class="hljs-keyword">let</span> data = response.data</span><br><span class="line">      <span class="hljs-keyword">let</span> info = data.api.fetch4</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="hljs-keyword">async</span> fetch5 () &#123;</span><br><span class="line">      <span class="hljs-keyword">let</span> response = <span class="hljs-keyword">await</span> Vue.request(<span class="hljs-string">'https://api.github.com/'</span>)</span><br><span class="line">      <span class="hljs-keyword">let</span> data = response.data</span><br><span class="line">      <span class="hljs-keyword">let</span> info = data.api.fetch5</span><br><span class="line">      <span class="hljs-keyword">return</span> response</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="hljs-comment">// ...  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>fetch4并没有返回Promise，fetch5返回的也不是Promise对象，但是当运行的时候我们会发现fetch4和fetch5的错误信息都被捕获了，这是为什么呢？因为async/await本身就是Promise的语法糖，在 <a href="https://babeljs.io" target="_blank" rel="noopener">babeljs</a> 官网的 “Try it out” 尝试用 async/await，你会发现最后编译后的代码就是在外包了一层Promise。</p>
+<h4 id="在哪里捕获更为优雅？（尽量以更少的代码覆盖大部分或者全部代码）"><a href="#在哪里捕获更为优雅？（尽量以更少的代码覆盖大部分或者全部代码）" class="headerlink" title="在哪里捕获更为优雅？（尽量以更少的代码覆盖大部分或者全部代码）"></a>在哪里捕获更为优雅？（尽量以更少的代码覆盖大部分或者全部代码）</h4><p><strong>网络层</strong>：可以在axios.create创建的实例中</p>
+<p><strong>逻辑层</strong>：非Promise本身就会被errorHandler捕获；Promise相关的可以通过全局mixin给返回Promise对象的方法做一个外层包装，统一catch并调用errorHandler处理（<strong><em>这个方法的是否有副作用还需要研究!</em></strong>）</p>
+<h4 id="捕获的错误存放在哪？"><a href="#捕获的错误存放在哪？" class="headerlink" title="捕获的错误存放在哪？"></a>捕获的错误存放在哪？</h4><p><strong># 自己简易服务 ？</strong></p>
+<p>感觉成本很大（人力和工时）</p>
+<p><strong># 官方推荐的 <a href="https://sentry.io/" target="_blank" rel="noopener">Sentry</a>  </strong></p>
+<p>注册后安装官方的JS SDK</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install raven-js --save</span><br></pre></td></tr></table></figure>
+<p>修改main.js</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// ...</span></span><br><span class="line"><span class="hljs-keyword">import</span> Raven <span class="hljs-keyword">from</span> <span class="hljs-string">'raven-js'</span></span><br><span class="line"><span class="hljs-keyword">import</span> RavenVue <span class="hljs-keyword">from</span> <span class="hljs-string">'raven-js/plugins/vue'</span></span><br><span class="line"></span><br><span class="line">Raven</span><br><span class="line">  .config(<span class="hljs-string">'https://1dfc5e63808b41058675b4b3aed4cfb6@sentry.io/1298044'</span>) <span class="hljs-comment">// sentry token</span></span><br><span class="line">  .addPlugin(RavenVue, Vue)</span><br><span class="line">  .install()</span><br><span class="line"></span><br><span class="line">Vue.config.errorHandler = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, vm, info</span>) </span>&#123;</span><br><span class="line">  Raven.captureException(err)</span><br><span class="line">&#125;</span><br><span class="line">Vue.request = <span class="hljs-function">(<span class="hljs-params">args</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    request(args).then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> &#123;</span><br><span class="line">      resolve(res)</span><br><span class="line">    &#125;).catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> &#123;</span><br><span class="line">      Raven.captureException(err)</span><br><span class="line">      reject(err)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"><span class="hljs-comment">// ...</span></span><br></pre></td></tr></table></figure>
+<p>修改App.vue （我们从最普通的js测试起）<br><figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// ...</span></span><br><span class="line">created () &#123;</span><br><span class="line">    <span class="hljs-keyword">this</span>.normal()</span><br><span class="line">    <span class="hljs-comment">// this.fetch1()</span></span><br><span class="line">    <span class="hljs-comment">// this.fetch2()</span></span><br><span class="line">    <span class="hljs-comment">// this.fetch3()</span></span><br><span class="line">    <span class="hljs-comment">// this.fetch4()</span></span><br><span class="line">    <span class="hljs-comment">// this.fetch5()</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="hljs-comment">// ...</span></span><br></pre></td></tr></table></figure></p>
+<p>打开sentry页面查看<br><img src="/images/js-capture-error/1.png" alt="错误报告列表"><br><img src="/images/js-capture-error/2.jpg" alt="错误报告详情（模糊了IP部分）"><br>我们通过上面2张图片可以看出，sentry自带一个简单的issue管理功能，此外详情页面的错误栈已经方便我们知道问题出在哪里了。</p>
+<p>测试fetch1的ajax请求错误<br><img src="/images/js-capture-error/3.jpg" alt="成功截获api1.github.com这个错误域名"></p>
+<p>除了fetch2无法被捕获外（之前提过，它没有返回Promise对象），其它的都能被捕获。不过Promise和async/await的错误栈比较少。尤其是Promise.then里的错误，如下2张图的对比：</p>
+<p><img src="/images/js-capture-error/4.jpg" alt="Promise.then里的错误"><br><img src="/images/js-capture-error/5.jpg" alt="async/await里的错误"></p>
+<p>除了默认的数据的收集外，还能收集一些其他数据，比如用户信息</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Raven.setUser(&#123;</span><br><span class="line">    name: <span class="hljs-string">'miser name'</span>,</span><br><span class="line">    id: <span class="hljs-string">'miser id'</span></span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
+<p><img src="/images/js-capture-error/6.jpg" alt="用户信息顺收集"></p>
+<p><strong>我们测试了代码未被压缩的情况，如果代码压缩了呢？</strong></p>
+<p><img src="/images/js-capture-error/7.jpg" alt="通过npm run build 压缩代码打开首页，一脸懵逼"></p>
+<p>显然我们不能直观的获得错误定位，不过sentry提供<a href="https://github.com/google/closure-compiler/wiki/Source-Maps" target="_blank" rel="noopener">SourceMaps</a>存储服务，它能方便的debug被压缩的代码。</p>
+<p>我们可以通过<a href="https://www.npmjs.com/package/webpack-sentry-plugin" target="_blank" rel="noopener">webpack-sentry-plugin</a>工具将整个上传过程写进webpack里，因为我们的实验环境是vue3，所以我们创建一个vue.config.js文件</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">const</span> SentryPlugin = <span class="hljs-built_in">require</span>(<span class="hljs-string">'webpack-sentry-plugin'</span>)</span><br><span class="line"></span><br><span class="line"><span class="hljs-built_in">module</span>.exports = &#123;</span><br><span class="line">  configureWebpack: &#123;</span><br><span class="line">    plugins: [</span><br><span class="line">      <span class="hljs-keyword">new</span> SentryPlugin(&#123;</span><br><span class="line">        organization: <span class="hljs-string">'fe-org'</span>, <span class="hljs-comment">// 组织名称 类似公司名吧（一个用户下可以有多个组织）</span></span><br><span class="line">        project: <span class="hljs-string">'popcorn-vue'</span>, <span class="hljs-comment">// 项目名称 （一个组织下可以有多个项目）</span></span><br><span class="line">        apiKey: <span class="hljs-string">'17c7d61a800f495c803196e2c02cadeb1b41454247db4f06a5c54193510da150'</span>,</span><br><span class="line">        release: <span class="hljs-string">'1.2.4-beta'</span> <span class="hljs-comment">// 发布后的代码和这个对应，可以找到这个sourcemaps</span></span><br><span class="line">      &#125;)</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>修改main.js<br><figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Raven</span><br><span class="line">  .config(<span class="hljs-string">'https://1dfc5e63808b41058675b4b3aed4cfb6@sentry.io/1298044'</span>, &#123;</span><br><span class="line">    release: <span class="hljs-string">'1.2.4-beta'</span> <span class="hljs-comment">// 新增</span></span><br><span class="line">  &#125;)</span><br><span class="line">  .addPlugin(RavenVue, Vue)</span><br><span class="line">  .install()</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm run build</span><br></pre></td></tr></table></figure>
+<p>查看sentry里popcorn-vue项目中的<strong>版本</strong></p>
+<p><img src="/images/js-capture-error/8.jpg" alt="1.2.4-beta是目前的，1.2.3-beta是以前版本"><br><img src="/images/js-capture-error/9.jpg" alt="点击 1.2.4-beta 进去，很容易找到刚刚上传的js和js.map文件"></p>
+<p>我们打开build完的index.html，虽然错误成功捕获但依旧和上图的一样，无法被SourceMaps解析，大概的原因是js和js.map的目录结构问题。</p>
+<p>这个issue <a href="https://github.com/getsentry/sentry-electron/issues/54" target="_blank" rel="noopener">https://github.com/getsentry/sentry-electron/issues/54</a> 是一个很经典的例子，它犯了2个错误</p>
+<p>– 仅仅传了js.map而没有传被压缩的js文件，它们应该一一对应的上传到服务器上<br>– js和js.map目录路径不匹配</p>
+<p>这2个原因都会导致无法正常解析被压缩的文件。</p>
+<p>那么不直接通过浏览器打开index.html（file:///<strong>**</strong>/vue-capture-error/dist/index.html），通过nginx去模拟正式环境。<br><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">brew install nginx</span><br><span class="line">nginx</span><br></pre></td></tr></table></figure></p>
+<p>将build出的代码dist拷贝到nginx默认目录下 /usr/local/var/www/，打开浏览器<a href="http://localhost:8080" target="_blank" rel="noopener">http://localhost:8080</a></p>
+<p>回到sentry中查看新的错误记录</p>
+<p><img src="/images/js-capture-error/10.jpg" alt="已经很详细的记录了出错的方法"></p>
+
+    
+    </div>
+    
+    
+    <div class="columns is-mobile is-multiline article-nav">
+        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
+            
+            <a href="/2018/11/17/vue-component-extends/">Vue Component 继承与复用</a>
+            
+        </span>
+        <span class="column is-12-mobile is-half-desktop  article-nav-next">
+            
+            <a href="/2018/09/24/traveling-to-the-philippines/">出差菲律宾</a>
+            
+        </span>
+    </div>
+    
+</article>
+
+
+
+<div class="comments">
+    <ul class="adv">
+  <li class="img"><img src="/images/give-a-reward.png" alt="reward"></li>
+  <li>
+    欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a>前端组，<a href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3" target="_blank">岗位信息</a>
+  </li>
+  <li>
+    同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank">爱眠物</a>
+  </li>
+</ul>
+
+    <h3 class="title is-4">Comments</h3>
+    
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://mlib.wang/2018/10/23/js-capture-error/';
+        this.page.identifier = '2018/10/23/js-capture-error/';
+        
+        this.language = 'en';
+        
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'mblof' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</div>
+
+    </div>
+</section> <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Miser&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
+
+            
+            
+        </div>
+    </div>
+</footer> <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+<script src="/js/script.js"></script> 
+  </body>
+</html>

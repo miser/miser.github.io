@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>Category: JavaScript - Miser 胡言</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
+<meta name="baidu-site-verification" content="CXKjj3fklD">
+    
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-129526171-1');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      ul.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item " href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section section-heading">
+    <div class="container">
+        <div class="content">
+            <h5><i class="far fa-folder"></i>JavaScript</h5>
+        </div>
+    </div>
+</section>
+<section class="section">
+    <div class="container">
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/05/03/node-js-net-cluster-fork/" itemprop="url">简单梳理Node.js创建子进程的方法（下）—— cluster</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-05-03T07:24:53.000Z" itemprop="datePublished">May 3 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>前文简单梳理了Node.js使用<strong>child_process</strong>模块创建子进程的4种方法，<code>exec</code>、<code>execFile</code>、<code>fork</code>和<code>spawn</code>。接下来我们看看<strong>cluster</strong>模块如何创建子进程，后续更多内容会介绍cluster.fork启动Net Server时候为何不会因为共同监听同一个端口而不报错。</p>
+<p><strong>cluster</strong></p>
+<ul>
+<li><a href="http://nodejs.cn/api/cluster.html#cluster_cluster_fork_env" target="_blank" rel="noopener">fork</a>: 衍生出一个新的工作进程，这只能通过主进程调用。</li>
+</ul>
+        <p class="article-more-link">
+            <a href="/2020/05/03/node-js-net-cluster-fork/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/04/06/child_process-exec-fork-spawn/" itemprop="url">简单梳理Node.js创建子进程的方法（上）</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-04-06T00:09:36.472Z" itemprop="datePublished">Apr 6 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p><strong>Node.js 创建子进程的方法常用的有如下几种：</strong></p>
+<p><strong>child_process</strong></p>
+<ul>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_exec_command_options_callback" target="_blank" rel="noopener">exec</a>: 衍生一个 shell 然后在该 shell 中执行 <code>command</code>，并缓冲任何产生的输出，最大缓存 1024*1024 个字节。</li>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_execfile_file_args_options_callback" target="_blank" rel="noopener">execFile</a>: 函数类似<code>exec</code>，但默认情况下不会衍生 shell。 相反，指定的可执行文件<code>file</code> 会作为新进程直接地衍生，使其比<code>exec</code> 稍微更高效。和<code>exec</code>一样，它也有最大 1024*1204 个字节的显示缓存。</li>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_fork_modulepath_args_options" target="_blank" rel="noopener">fork</a>: 是 <code>spawn</code>的一个特例，专门用于衍生新的 Node.js 进程。 与<code>spawn</code>一样返回<code>ChildProcess</code>对象。 返回的<code>ChildProcess</code>将会内置一个额外的通信通道，允许消息在父进程和子进程之间来回传递。</li>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_spawn_command_args_options" target="_blank" rel="noopener">spawn</a>: 上诉的几个方法其实都是通过 spawn 实现的。</li>
+</ul>
+<p><strong>cluster</strong></p>
+<ul>
+<li><a href="http://nodejs.cn/api/cluster.html#cluster_cluster_fork_env" target="_blank" rel="noopener">fork</a>: 衍生出一个新的工作进程，这只能通过主进程调用。</li>
+</ul>
+        <p class="article-more-link">
+            <a href="/2020/04/06/child_process-exec-fork-spawn/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/04/03/monitor-hub/" itemprop="url">Node.js 监控中心架构迭代</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-04-02T23:17:29.367Z" itemprop="datePublished">Apr 3 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>之前写了一篇<a href="https://miser.github.io/2020/02/21/node-perf-heapdump-flame-graph/" target="_blank" rel="noopener">收集 Node.js 应用的内存堆栈快照和 CPU 火焰图</a>文章，其中的架构非常粗糙，但是初步算是满足了现在的监控需求。不过随着业务的增长，单台<strong>TCP Server</strong>可定无法满足高可用的需求，一旦出现问题那就没办法持续使用了，所以需要一个重新设计和改造。</p>
+        <p class="article-more-link">
+            <a href="/2020/04/03/monitor-hub/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/03/01/v8-libuv-timer-event-loop/" itemprop="url">libuv &amp; Node.js EventLoop （一）</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-02-29T21:39:36.647Z" itemprop="datePublished">Mar 1 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>在网络上查询<a href="https://libuv.org/" target="_blank" rel="noopener">libuv</a>和EventLoop相关信息的时候，经常看到不同的文章所表达的意思差距较多，主要原因有二吧：</p>
+<ul>
+<li>它们的<code>libuv</code>和<code>V8</code>大版本不同，导致具体的实现略有差异</li>
+<li>另外它们的代码错综复杂，又是大多数JavaScript工作者不擅长的C/C++，只是从上而下的看，或许一些细节无法完全理解或是认知的分歧</li>
+</ul>
+<p>与其受他人影响，不如自己来好好梳理下。</p>
+<p><strong>版本</strong></p>
+<figure class="highlight c++ hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// libuv</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> UV_VERSION_MAJOR 1</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> UV_VERSION_MINOR 33</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> UV_VERSION_PATCH 1</span></span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// V8</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> V8_MAJOR_VERSION 7</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> V8_MINOR_VERSION 8</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> V8_BUILD_NUMBER 279</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> V8_PATCH_LEVEL 17</span></span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// Node.js</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> NODE_MAJOR_VERSION 14</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> NODE_MINOR_VERSION 0</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> NODE_PATCH_VERSION 0</span></span><br></pre></td></tr></table></figure>
+<p>没有列出具体版本号的代码分析都是耍流氓，2010年的代码和2020年的代码可能差距甚远，“上古”分析固然在当时是对的，但是在今日也许是错误的。</p>
+        <p class="article-more-link">
+            <a href="/2020/03/01/v8-libuv-timer-event-loop/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/02/21/node-perf-heapdump-flame-graph/" itemprop="url">收集Node.js应用的内存堆栈快照和CPU火焰图</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-02-20T23:31:54.489Z" itemprop="datePublished">Feb 21 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>如果你在一家对数据安全性很高的公司工作，团队规定不允许提交数据到第三方服务上，甚至连服务器内存、CPU使用情况等监控数据都不行，那对于像<a href="https://cn.aliyun.com/product/nodejs" target="_blank" rel="noopener">Alinode</a>这样监控和排查问题的大杀器基本都是无福享用了。大多数情况不得不面临自己开发一套类似监控体制去为生产环境保驾护航。</p>
+        <p class="article-more-link">
+            <a href="/2020/02/21/node-perf-heapdump-flame-graph/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/02/08/v8-parser-compiler-javascript/" itemprop="url">V8是如何怎么处理JavaScript的</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-02-08T01:18:53.485Z" itemprop="datePublished">Feb 8 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <blockquote>
+<p>此文介绍的内容已经算是<code>旧闻</code>了，17年的时候就有大量的文章介绍过了，只是2020年伊始的疫情把人困在家里实在无聊，重新翻来几个视频打发下时间，以下文字算是简单梳理，更多的瑰宝需要我们自己翻阅资料研究，<strong>文章中的很多数据应该都过时了吧，仅用来参考吧。</strong></p>
+</blockquote>
+<p><strong>Parer</strong>和<strong>Compiler</strong>是2个重要的过程和概念，理解它们可以帮助开发者根据业务需求写出对V8或其它JavaScript引擎更为“友善”的代码，毕竟花在这两个过程中的成本是巨大的。</p>
+<p><img src="/images/v8-parser-compiler/v8-pare-compile-cost.png" alt="国外几大网站花在Parser上的时间大约在15-20%"></p>
+        <p class="article-more-link">
+            <a href="/2020/02/08/v8-parser-compiler-javascript/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/01/22/express-gateway/" itemprop="url">Express Gateway</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-01-22T07:32:03.586Z" itemprop="datePublished">Jan 22 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>为了更好的做BFF层，最近看了一些网关资料，Node.js的网关类库相对薄弱很多，主要有2个</p>
+<ul>
+<li><a href="https://www.express-gateway.io/" target="_blank" rel="noopener">Express Gateway</a></li>
+<li><a href="https://moleculer.services/" target="_blank" rel="noopener">Moleculer</a></li>
+</ul>
+<p>和Lua <a href="https://konghq.com/" target="_blank" rel="noopener">Kong</a>相比缺少很多刚需，比如金丝雀发布、灰度发布等等；和Java Zuul等相比，又少了很多中文文档。但是不管如何这2个是Javascript技术栈的，对于一个Node.js程序工作者来说怎能不香呢？</p>
+<p>今天我们主要介绍<strong>Express Gateway</strong>，背靠强大的Express社区，很多现成的中间件可以运用其中，省去了不少开发成本和风险。一些不是很大的项目或者没有时间慢慢构建底层的团队来说，我觉得可以试试。</p>
+        <p class="article-more-link">
+            <a href="/2020/01/22/express-gateway/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2019/05/09/egg-boot/" itemprop="url">Eggjs Boot</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2019-05-09T07:01:08.568Z" itemprop="datePublished">May 9 2019</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h3 id="Preface"><a href="#Preface" class="headerlink" title="#Preface"></a><strong>#Preface</strong></h3><p>This article will introduce the boot of <a href="https://eggjs.org/" target="_blank" rel="noopener">Eggjs</a> that is a Node.js web framework.</p>
+<p>It is based on Koa and can satisfy  your requirement through a large of plugins and middleware, even a your own framework. It is very important to create a cluster, an agent process and some worker processes when it is running. The cluster makes it stronger. Next, we can understand it by reading the source code.</p>
+<p>Eggjs has a few major libs, egg-core、egg、egg-cluster、egg-bin、egg-scripts and so on.</p>
+<p><strong>egg-core</strong>: it extends Koa and is as a parent object of every agent and worker.</p>
+<p><strong>egg</strong>: it defines some actions for agent and worker,  you can almost use these actions to create an app of a single process.</p>
+<p><strong>egg-cluster</strong>: it creates a cluster and manages them.</p>
+<p><strong>egg-scripts and Egg-bin</strong>: their job is run the whole app in a different environment.</p>
+<p><br></p>
+<p><em><strong>Tips: We will discuss Eggjs with basing 2.x.x version.</strong></em></p>
+<p><br></p>
+        <p class="article-more-link">
+            <a href="/2019/05/09/egg-boot/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2019/01/18/egg-cluster/" itemprop="url">Egg Cluster 简单介绍</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2019-01-18T05:48:01.464Z" itemprop="datePublished">Jan 18 2019</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>如果不清楚什么是Egg.js，希望能移步到它的<a href="https://eggjs.org" target="_blank" rel="noopener">官网</a>简单看下。另外说它是<strong>约定大于配置</strong>的话，我只能说你真的不了解它，或者说不了解框架，哪个框架没有约定？毕竟没有规矩不成方圆，何况是逻辑性的程序呢？官方列出的特性如下：</p>
+<blockquote>
+<p>1.提供基于 Egg <a href="https://eggjs.org/zh-cn/advanced/framework.html" target="_blank" rel="noopener">定制上层框架</a> 的能力<br>2.高度可扩展的<a href="https://eggjs.org/zh-cn/basics/plugin.html" target="_blank" rel="noopener">插件机制</a><br>3.内置<a href="https://eggjs.org/zh-cn/advanced/cluster-client.html" target="_blank" rel="noopener">多进程管理</a><br>4.基于 <a href="http://koajs.com/" target="_blank" rel="noopener">Koa</a> 开发，性能优异<br>5.框架稳定，测试覆盖率高<br>6.<a href="https://eggjs.org/zh-cn/tutorials/progressive.html" target="_blank" rel="noopener">渐进式开发</a></p>
+</blockquote>
+<p>第1条，它有那么Koa也有啊。第2条，它有，难道Koa、Express等就没有嘛？第4条，更好的补充了Koa不是更好吗？第5条，难道别的框架就不稳定了？第6条，前端鼓吹渐进式、后端也鼓吹，那究竟什么是渐进式呢？</p>
+<p>在我看来最吸引我的是第3条，<strong>内置多进程管理</strong>，这个在其它主流nodejs框架中是稀缺的特性，此文就简单聊聊它。</p>
+        <p class="article-more-link">
+            <a href="/2019/01/18/egg-cluster/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2018/11/17/vue-component-extends/" itemprop="url">Vue Component 继承与复用</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2018-11-17T06:45:00.000Z" itemprop="datePublished">Nov 17 2018</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>在做Web前端开发的时候会有大量的页面复用的地方，从UI布局到JS的逻辑。早年做后端开发的时候，我们通常可以通过面向对象的编程法式，使用抽象类、接口等等，那么现在前端是否也可以如此呢？</p>
+<p>答案自然是肯定的，所以我们找工作面试的时候常被问及关于JS继承的问题，随之ES6出现了期盼已久的Class，一切都在往更为成熟的方向发展。接下我们以<a href="https://vuejs.org/" target="_blank" rel="noopener">Vue</a>为例，看看怎么去做继承这件事情。</p>
+        <p class="article-more-link">
+            <a href="/2018/11/17/vue-component-extends/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+    
+        
+<nav class="pagination is-centered is-rounded" role="navigation" aria-label="pagination">
+    <div class="pagination-previous is-invisible is-hidden-mobile">
+        <a href="/categories/JavaScript/page/0/">Prev</a>
+    </div>
+    <div class="pagination-next">
+        <a href="/categories/JavaScript/page/2/">Next</a>
+    </div>
+    <ul class="pagination-list is-hidden-mobile">
+        
+        <li><a class="pagination-link is-current" href="/categories/JavaScript/">1</a></li>
+        
+        <li><a class="pagination-link" href="/categories/JavaScript/page/2/">2</a></li>
+        
+    </ul>
+</nav>
+    
+    </div>
+</section> <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Miser&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
+
+            
+            
+        </div>
+    </div>
+</footer> <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+<script src="/js/script.js"></script> 
+  </body>
+</html>

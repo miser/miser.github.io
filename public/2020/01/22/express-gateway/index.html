@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>Express Gateway - Miser 胡言</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
+<meta name="baidu-site-verification" content="CXKjj3fklD">
+
+<meta name="description" content="为了更好的做BFF层，最近看了一些网关资料，Node.js的网关类库相对薄弱很多。Express Gateway，背靠强大的Express社区，很多现成的中间件可以运用其中，省去了不少开发成本和风险。">
+ 
+<meta name="keywords" content="Express,Gateway,Node.js 网关">
+   
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-129526171-1');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      ul.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item " href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section">
+    <div class="container">
+    <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            Express Gateway
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-01-22T07:32:03.586Z" itemprop="datePublished">Jan 22 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>为了更好的做BFF层，最近看了一些网关资料，Node.js的网关类库相对薄弱很多，主要有2个</p>
+<ul>
+<li><a href="https://www.express-gateway.io/" target="_blank" rel="noopener">Express Gateway</a></li>
+<li><a href="https://moleculer.services/" target="_blank" rel="noopener">Moleculer</a></li>
+</ul>
+<p>和Lua <a href="https://konghq.com/" target="_blank" rel="noopener">Kong</a>相比缺少很多刚需，比如金丝雀发布、灰度发布等等；和Java Zuul等相比，又少了很多中文文档。但是不管如何这2个是Javascript技术栈的，对于一个Node.js程序工作者来说怎能不香呢？</p>
+<p>今天我们主要介绍<strong>Express Gateway</strong>，背靠强大的Express社区，很多现成的中间件可以运用其中，省去了不少开发成本和风险。一些不是很大的项目或者没有时间慢慢构建底层的团队来说，我觉得可以试试。</p>
+<a id="more"></a>
+<p><br></p>
+<h2 id="基础概念"><a href="#基础概念" class="headerlink" title="基础概念"></a>基础概念</h2><h3 id="Endpoints"><a href="#Endpoints" class="headerlink" title="Endpoints"></a><strong>Endpoints</strong></h3><p>URL的集合，分为2类：</p>
+<ul>
+<li>API endpoints</li>
+<li>Service endpoints</li>
+</ul>
+<p>API endpoints是暴露给外网访问的，通过它将请求转发到具体的内网Service endpoints服务上。</p>
+<h3 id="Policies"><a href="#Policies" class="headerlink" title="Policies"></a><strong>Policies</strong></h3><p>策略（policy）以Express Middleware的方式相互组织，作用在API请求和网关的响应上，包含触发条件、具体行为和参数。</p>
+<h3 id="Pipelines"><a href="#Pipelines" class="headerlink" title="Pipelines"></a><strong>Pipelines</strong></h3><p>一个管道（pipeline）是API endpoints上一组策略（policies）的连接关系，管道里的策略被定义和执行。通过管道配置各种策略，一个API请求由API endpoint接受。在管道里的最后一个策略通常是代理，它将请求路由到一个service endpoint。</p>
+<p><br></p>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>官方的<a href="https://www.express-gateway.io/getting-started/" target="_blank" rel="noopener">Installation</a>，可以通过CLI命令快速启动一个项目</p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">npm install -g express-gateway</span><br><span class="line"></span><br><span class="line">eg gateway create</span><br><span class="line"></span><br><span class="line">cd <span class="hljs-string">`Dir Path`</span> &amp;&amp; npm start</span><br></pre></td></tr></table></figure>
+<p><strong>2个重要的配置文件</strong></p>
+<ul>
+<li>system.config.yml：主要是数据库、加密方式、session等等</li>
+<li>gateway.config.yml：主要就是路由相关的策略</li>
+</ul>
+<p>在浏览器里输入 <a href="http://localhost:8080/ip" target="_blank" rel="noopener">http://localhost:8080/ip</a> ，就会被路由到 <a href="https://httpbin.org/ip" target="_blank" rel="noopener">https://httpbin.org/ip</a> 这个网站，获得一个JSON数据</p>
+<figure class="highlight json hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="hljs-attr">"origin"</span>: <span class="hljs-string">"180.167.xxx.xxx"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当然这是一个超级简单的例，用的是自带的proxy策略，如果有多个微服务节点默认使用的是<code>round-robin</code>做负载均衡，除此之外是<code>static</code>方式，只能指定死IP或URL了，显然无法满足真实的场景，很多时候需要我们自己根据实际的情况做代理开发，比如从注册中心获取微服务IP和端口做路由转发。</p>
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><p>具体的代码可以在<a href="https://github.com/miser/express-gateway-example" target="_blank" rel="noopener">express-gateway-example</a>查看。</p>
+<ul>
+<li>使用JWT做用户登录验证</li>
+<li>2个微服务，一个是<code>account</code>，另一个是<code>banner</code><ul>
+<li>account: 用户登录和需要验证有效身份后显示用户ID</li>
+<li>banner: 无需登录就能访问2个banner图片</li>
+</ul>
+</li>
+</ul>
+<p>在新的文件夹下（express-gateway-example），通过eg(express-gateway)和express命令工具分别生成网关项目gateway和2个微服务项目account、banner，另外新建一个存放JWT秘钥的目录<code>secret-files</code>，在该目录下通过下面命令创建新的秘钥</p>
+<figure class="highlight c hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">openssl genrsa -out <span class="hljs-keyword">private</span>.pem <span class="hljs-number">512</span></span><br><span class="line">openssl rsa -in <span class="hljs-keyword">private</span>.pem -outform PEM -pubout -out <span class="hljs-keyword">public</span>.pem</span><br></pre></td></tr></table></figure>
+<p><strong>修改网关配置</strong></p>
+<figure class="highlight yaml hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-string">//</span> <span class="hljs-string">gateway.config.yml</span></span><br><span class="line"><span class="hljs-attr">http:</span></span><br><span class="line"><span class="hljs-attr">  port:</span> <span class="hljs-number">8080</span></span><br><span class="line"><span class="hljs-comment"># admin:</span></span><br><span class="line"><span class="hljs-comment">#   port: 9876</span></span><br><span class="line"><span class="hljs-comment">#   host: localhost</span></span><br><span class="line"><span class="hljs-attr">apiEndpoints:</span></span><br><span class="line"><span class="hljs-attr">  login:</span></span><br><span class="line"><span class="hljs-attr">    host:</span> <span class="hljs-string">localhost</span></span><br><span class="line"><span class="hljs-attr">    paths:</span> <span class="hljs-string">'/account/login'</span></span><br><span class="line"><span class="hljs-attr">  account:</span></span><br><span class="line"><span class="hljs-attr">    host:</span> <span class="hljs-string">localhost</span></span><br><span class="line"><span class="hljs-attr">    paths:</span> <span class="hljs-string">'/account/*'</span></span><br><span class="line"><span class="hljs-attr">  banner:</span></span><br><span class="line"><span class="hljs-attr">    host:</span> <span class="hljs-string">localhost</span></span><br><span class="line"><span class="hljs-attr">    paths:</span> <span class="hljs-string">'/banner/*'</span></span><br><span class="line"><span class="hljs-attr">serviceEndpoints:</span></span><br><span class="line"><span class="hljs-attr">  accountSrv:</span></span><br><span class="line"><span class="hljs-attr">    url:</span> <span class="hljs-string">'http://localhost:3001'</span></span><br><span class="line"><span class="hljs-attr">  bannerSrv:</span></span><br><span class="line"><span class="hljs-attr">    url:</span> <span class="hljs-string">'http://localhost:3002'</span></span><br><span class="line"><span class="hljs-attr">policies:</span></span><br><span class="line"><span class="hljs-bullet">  -</span> <span class="hljs-string">jwt</span></span><br><span class="line"><span class="hljs-bullet">  -</span> <span class="hljs-string">proxy</span></span><br><span class="line"><span class="hljs-attr">pipelines:</span></span><br><span class="line"><span class="hljs-attr">  login:</span></span><br><span class="line"><span class="hljs-attr">    apiEndpoints:</span></span><br><span class="line"><span class="hljs-bullet">      -</span> <span class="hljs-string">login</span></span><br><span class="line"><span class="hljs-attr">    policies:</span></span><br><span class="line"><span class="hljs-attr">      - proxy:</span></span><br><span class="line"><span class="hljs-attr">          - action:</span></span><br><span class="line"><span class="hljs-attr">              serviceEndpoint:</span> <span class="hljs-string">accountSrv</span> </span><br><span class="line"><span class="hljs-attr">  banner:</span></span><br><span class="line"><span class="hljs-attr">    apiEndpoints:</span></span><br><span class="line"><span class="hljs-bullet">      -</span> <span class="hljs-string">banner</span></span><br><span class="line"><span class="hljs-attr">    policies:</span></span><br><span class="line"><span class="hljs-attr">      - proxy:</span></span><br><span class="line"><span class="hljs-attr">          - action:</span></span><br><span class="line"><span class="hljs-attr">              serviceEndpoint:</span> <span class="hljs-string">bannerSrv</span></span><br><span class="line"><span class="hljs-attr">  account:</span></span><br><span class="line"><span class="hljs-attr">    apiEndpoints:</span></span><br><span class="line"><span class="hljs-bullet">      -</span> <span class="hljs-string">account</span></span><br><span class="line"><span class="hljs-attr">    policies:</span></span><br><span class="line"><span class="hljs-attr">      - jwt:</span></span><br><span class="line"><span class="hljs-attr">          - action:</span></span><br><span class="line"><span class="hljs-attr">              jwtExtractor:</span> <span class="hljs-string">'query'</span></span><br><span class="line"><span class="hljs-attr">              jwtExtractorField:</span> <span class="hljs-string">'token'</span></span><br><span class="line"><span class="hljs-attr">              checkCredentialExistence:</span> <span class="hljs-literal">false</span></span><br><span class="line"><span class="hljs-attr">              secretOrPublicKeyFile:</span> <span class="hljs-string">'../secret-files/public.pem'</span></span><br><span class="line"><span class="hljs-attr">      - proxy:</span></span><br><span class="line"><span class="hljs-attr">          - action:</span></span><br><span class="line"><span class="hljs-attr">              serviceEndpoint:</span> <span class="hljs-string">accountSrv</span></span><br></pre></td></tr></table></figure>
+<p><strong>3个apiEndpoints</strong></p>
+<ul>
+<li>login：访问path <em>/account/login</em></li>
+<li>account：访问path <em>/account/*</em></li>
+<li>banner：访问path <em>/banner/*</em></li>
+</ul>
+<p><strong>2个serviceEndpoints</strong></p>
+<ul>
+<li>accountSrv：对应<code>account</code>服务，本地端口3001</li>
+<li>bannerSrv：对应<code>banner</code>服务，本地端口3002</li>
+</ul>
+<p><strong>配置pipelines</strong></p>
+<ul>
+<li>login和banner这2个apiEndpoints被分别简单的路由到各自的微服务上</li>
+<li>account这个apiEndpoints除了路由外还有JWT策略，action告诉系统它将以URL query的token字段传递加密的认证信息</li>
+</ul>
+<p><strong>启动项目和访问它们</strong></p>
+<p>在各个目录下通过<code>npm start</code>分别启动它们，通过Postman GET请求<a href="http://localhost:8080/account/profile" target="_blank" rel="noopener">http://localhost:8080/account/profile</a> 发现返回401，可见没有通过token验证就会返回401，符合pipelines里account的配置；GET 请求<a href="http://localhost:8080/banner/" target="_blank" rel="noopener">http://localhost:8080/banner/</a> 会正常返回数据，它没有被JWT策略约束</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;code&quot;:200,&quot;message&quot;:&quot;success&quot;,&quot;data&quot;:[&quot;/images/1.png&quot;,&quot;/images/2.png&quot;]&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>获取token</strong></p>
+<p>POST <a href="http://localhost:8080/account/login" target="_blank" rel="noopener">http://localhost:8080/account/login</a> ,它在配置中也未加JWT策略，返回如下：</p>
+<figure class="highlight json hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="hljs-attr">"code"</span>: <span class="hljs-number">200</span>,</span><br><span class="line">    <span class="hljs-attr">"message"</span>: <span class="hljs-string">"success"</span>,</span><br><span class="line">    <span class="hljs-attr">"token"</span>: <span class="hljs-string">"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjAyMCwibmFtZSI6Im1pc2VyIiwiaWF0IjoxNTgwMTQxODIwLCJleHAiOjE1ODAxNDU0MjB9.mixQa9rJqQAT2makAqWfpOCxTC-r0XussuoSrYYTb0aXcs0gMItSI5Aj6ShneX2H1BW1grXwtkrSqY8_FfhIjA"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>将token以URL query形式传参，重新访问profile接口，就正常返回用户ID了</p>
+<figure class="highlight json hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="hljs-attr">"code"</span>: <span class="hljs-number">200</span>,</span><br><span class="line">    <span class="hljs-attr">"message"</span>: <span class="hljs-string">"success"</span>,</span><br><span class="line">    <span class="hljs-attr">"data"</span>: &#123;</span><br><span class="line">        <span class="hljs-attr">"id"</span>: <span class="hljs-string">"2020"</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述就是一个简单的Gateway简单的例子，除开内置的一些策略（中间件）外，我们还可以自己开发一些中间件来满足具体需求——<strong><code>插件</code></strong>。</p>
+<p><br></p>
+<h2 id="插件"><a href="#插件" class="headerlink" title="插件"></a>插件</h2><p>插件分两种：</p>
+<ul>
+<li><p><a href="https://www.express-gateway.io/docs/policies/customization/conditions/" target="_blank" rel="noopener">Conditions</a></p>
+</li>
+<li><p><a href="https://www.express-gateway.io/docs/policies/" target="_blank" rel="noopener">Policies</a></p>
+</li>
+</ul>
+<p>无论是上述哪一个，写好后都要注册到网关中，在gateway项目中新建<code>plugins</code>目录，及其子目录<code>policies</code>、<code>conditions</code>， 和<code>manifest.js</code>、<code>policies/index.js</code>、<code>conditions/index.js</code>文件</p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// manifest.js</span></span><br><span class="line"><span class="hljs-built_in">module</span>.exports = &#123;</span><br><span class="line">  version: <span class="hljs-string">'0.0.1'</span>,</span><br><span class="line">  init: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">pluginContext</span>) </span>&#123;</span><br><span class="line">    <span class="hljs-keyword">const</span> policy = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./policies/index.js'</span>);</span><br><span class="line">    pluginContext.registerPolicy(policy);</span><br><span class="line"></span><br><span class="line">    <span class="hljs-keyword">const</span> condition = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./conditions/index.js'</span>);</span><br><span class="line">    pluginContext.registerCondition(condition);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过registerPolicy和registerCondition将策略和条件注册到网关系统中，另外在<code>system.config.yml</code>配置文件中添加插件的配置路径</p>
+<figure class="highlight yaml hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-string">//</span> <span class="hljs-string">system.config.yml</span></span><br><span class="line"><span class="hljs-attr">plugins:</span></span><br><span class="line"><span class="hljs-attr">  example:</span></span><br><span class="line"><span class="hljs-attr">    package:</span> <span class="hljs-string">'./plugins/manifest.js'</span></span><br></pre></td></tr></table></figure>
+<p><strong>Conditions 条件</strong></p>
+<p>它通过定义一个方法来判断是否执行或跳过一个策略</p>
+<blockquote>
+<h5 id="function-req-conditionConfig-gt-true-false-Handler"><a href="#function-req-conditionConfig-gt-true-false-Handler" class="headerlink" title="function (req, conditionConfig) =&gt; true/false Handler"></a><code>function (req, conditionConfig) =&gt; true/false</code> Handler</h5><ul>
+<li>Executes on each request in current pipeline. If not matched will prevent policy from being fired</li>
+</ul>
+</blockquote>
+<p>在上面的例子中，我们在apiEndpoints和pipelines都定义了一个login，其实它是accountSrv的一个特殊的存在，除了login其它的url地址都是受JWT策略约束的，按照之前的写法显得格外的冗余，我们可以通过一个Condition来做改进，重新改写gateway.config.yml</p>
+<figure class="highlight yaml hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-string">//</span> <span class="hljs-string">gateway.config.yml</span></span><br><span class="line"><span class="hljs-attr">apiEndpoints:</span></span><br><span class="line">  <span class="hljs-comment"># login:</span></span><br><span class="line">  <span class="hljs-comment">#   host: localhost</span></span><br><span class="line">  <span class="hljs-comment">#   paths: '/account/login'</span></span><br><span class="line">  </span><br><span class="line"><span class="hljs-comment"># ...</span></span><br><span class="line"></span><br><span class="line"><span class="hljs-attr">pipelines:</span></span><br><span class="line">  <span class="hljs-comment"># login:</span></span><br><span class="line">  <span class="hljs-comment">#   apiEndpoints:</span></span><br><span class="line">  <span class="hljs-comment">#     - login</span></span><br><span class="line">  <span class="hljs-comment">#   policies:</span></span><br><span class="line">  <span class="hljs-comment">#     - proxy:</span></span><br><span class="line">  <span class="hljs-comment">#         - action:</span></span><br><span class="line">  <span class="hljs-comment">#             serviceEndpoint: accountSrv </span></span><br><span class="line"><span class="hljs-attr">  account:</span></span><br><span class="line"><span class="hljs-attr">    apiEndpoints:</span></span><br><span class="line"><span class="hljs-bullet">      -</span> <span class="hljs-string">account</span></span><br><span class="line"><span class="hljs-attr">    policies:</span></span><br><span class="line"><span class="hljs-attr">      - jwt:</span></span><br><span class="line"><span class="hljs-bullet">          -</span> </span><br><span class="line"><span class="hljs-attr">            condition:</span></span><br><span class="line"><span class="hljs-attr">              name:</span> <span class="hljs-string">'white-list'</span></span><br><span class="line"><span class="hljs-attr">              list:</span> <span class="hljs-string">['/account/login']</span></span><br><span class="line"><span class="hljs-attr">            action:</span></span><br><span class="line"><span class="hljs-attr">              jwtExtractor:</span> <span class="hljs-string">'query'</span></span><br><span class="line"><span class="hljs-attr">              jwtExtractorField:</span> <span class="hljs-string">'token'</span></span><br><span class="line"><span class="hljs-attr">              checkCredentialExistence:</span> <span class="hljs-literal">false</span></span><br><span class="line"><span class="hljs-attr">              secretOrPublicKeyFile:</span> <span class="hljs-string">'../secret-files/public.pem'</span></span><br><span class="line"><span class="hljs-attr">      - proxy:</span></span><br><span class="line"><span class="hljs-attr">          - action:</span></span><br><span class="line"><span class="hljs-attr">              serviceEndpoint:</span> <span class="hljs-string">accountSrv</span></span><br></pre></td></tr></table></figure>
+<p>我们看到在jwt下面多了一个condition，然后在<code>conditions/index.js</code>里实现一个简单的URL Path 过滤</p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-built_in">module</span>.exports = &#123;</span><br><span class="line">  name: <span class="hljs-string">'white-list'</span>,</span><br><span class="line">  schema: &#123;</span><br><span class="line">    $id: <span class="hljs-string">'white-list'</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  handler: <span class="hljs-function"><span class="hljs-params">conditionConfig</span> =&gt;</span> req =&gt; &#123;</span><br><span class="line">    <span class="hljs-keyword">return</span> conditionConfig.list.indexOf(req.url) &lt; <span class="hljs-number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这个Condition就完成了白名单功能了。</p>
+<p><strong>Policies 策略</strong></p>
+<p>它通过一个中间件方法对所有流入网关请求的预处理</p>
+<p>结合上面的banner接口，我们新开发了一个v2版本的banner列表接口<code>/banner/v2/list</code>，为了老版本的客户端依旧能通过<code>/banner</code>接口访问到新的v2版本，我们需要做一个URL替换</p>
+<figure class="highlight yaml hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-attr">pipelines:</span></span><br><span class="line"><span class="hljs-attr">  banner:</span></span><br><span class="line"><span class="hljs-attr">    apiEndpoints:</span></span><br><span class="line"><span class="hljs-bullet">      -</span> <span class="hljs-string">banner</span></span><br><span class="line"><span class="hljs-attr">    policies:</span></span><br><span class="line"><span class="hljs-attr">      - rewrite:</span></span><br><span class="line"><span class="hljs-attr">          - action:</span></span><br><span class="line"><span class="hljs-attr">              search:</span> <span class="hljs-string">'/banner'</span></span><br><span class="line"><span class="hljs-attr">              replace:</span> <span class="hljs-string">'/banner/v1/list'</span></span><br><span class="line"><span class="hljs-attr">      - proxy:</span></span><br><span class="line"><span class="hljs-attr">          - action:</span></span><br><span class="line"><span class="hljs-attr">              serviceEndpoint:</span> <span class="hljs-string">bannerSrv</span></span><br></pre></td></tr></table></figure>
+<p>在<code>policies/index.js</code>添加替换方法</p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-built_in">module</span>.exports = &#123;</span><br><span class="line">  name: <span class="hljs-string">'rewrite'</span>,</span><br><span class="line">  schema: &#123;</span><br><span class="line">    $id: <span class="hljs-string">'rewrite'</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  policy: <span class="hljs-function">(<span class="hljs-params">actionParams</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="hljs-keyword">return</span> <span class="hljs-function">(<span class="hljs-params">req, res, next</span>) =&gt;</span> &#123;</span><br><span class="line">      req.url = req.url.replace(actionParams.search, actionParams.replace);</span><br><span class="line">      next()</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>当我们再GET <a href="http://localhost:8080/banner/" target="_blank" rel="noopener">http://localhost:8080/banner/</a> 时候，将返回新的v2版本的数据</p>
+<figure class="highlight json hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="hljs-attr">"code"</span>: <span class="hljs-number">200</span>,</span><br><span class="line">    <span class="hljs-attr">"message"</span>: <span class="hljs-string">"success"</span>,</span><br><span class="line">    <span class="hljs-attr">"data"</span>: [</span><br><span class="line">        <span class="hljs-string">"/images/v2_1.png"</span></span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>至此，简单的URL地址替换就完成了。</p>
+<p><br></p>
+<p><br></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>上诉只是Express-Gateway的一角，还有很多有趣灵活的功能值得慢慢探索。BFF层最为整个大系统的前沿征地，而网关更是前沿的前沿，配合GraphQL我相信能不断释放出JavaScript快速开发和迭代的能力，为客户端提供更好的服务和需求响应。</p>
+
+    
+    </div>
+    
+    <div class="columns is-variable is-1 is-multiline is-mobile">
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/Node-js/">#Node.js</a></span>
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/JavaScript/">#JavaScript</a></span>
+    
+    </div>
+    
+    
+    <div class="columns is-mobile is-multiline article-nav">
+        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
+            
+            <a href="/2020/02/08/v8-parser-compiler-javascript/">V8是如何怎么处理JavaScript的</a>
+            
+        </span>
+        <span class="column is-12-mobile is-half-desktop  article-nav-next">
+            
+            <a href="/2019/12/30/summary-2019/">2019 工作总结</a>
+            
+        </span>
+    </div>
+    
+</article>
+
+
+
+<div class="comments">
+    <ul class="adv">
+  <li class="img"><img src="/images/give-a-reward.png" alt="reward"></li>
+  <li>
+    欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a>前端组，<a href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3" target="_blank">岗位信息</a>
+  </li>
+  <li>
+    同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank">爱眠物</a>
+  </li>
+</ul>
+
+    <h3 class="title is-4">Comments</h3>
+    
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://mlib.wang/2020/01/22/express-gateway/';
+        this.page.identifier = '2020/01/22/express-gateway/';
+        
+        this.language = 'en';
+        
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'mblof' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</div>
+
+    </div>
+</section> <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Miser&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
+
+            
+            
+        </div>
+    </div>
+</footer> <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+<script src="/js/script.js"></script> 
+  </body>
+</html>

@@ -1,0 +1,1492 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" width="1200" height="1094" onload="init(evt)" viewBox="0 0 1200 1094" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<!-- Flame graph stack visualization. See https://github.com/brendangregg/FlameGraph for latest version, and http://www.brendangregg.com/flamegraphs.html for examples. -->
+<!-- NOTES:  -->
+<defs>
+	<linearGradient id="background" y1="0" y2="1" x1="0" x2="0" >
+		<stop stop-color="#eeeeee" offset="5%" />
+		<stop stop-color="#eeeeb0" offset="95%" />
+	</linearGradient>
+</defs>
+<style type="text/css">
+	text { font-family:Verdana; font-size:12px; fill:rgb(0,0,0); }
+	#search, #ignorecase { opacity:0.1; cursor:pointer; }
+	#search:hover, #search.show, #ignorecase:hover, #ignorecase.show { opacity:1; }
+	#subtitle { text-anchor:middle; font-color:rgb(160,160,160); }
+	#title { text-anchor:middle; font-size:17px}
+	#unzoom { cursor:pointer; }
+	#frames > *:hover { stroke:black; stroke-width:0.5; cursor:pointer; }
+	.hide { display:none; }
+	.parent { opacity:0.5; }
+</style>
+<script type="text/ecmascript">
+<![CDATA[
+	"use strict";
+	var details, searchbtn, unzoombtn, matchedtxt, svg, searching, currentSearchTerm, ignorecase, ignorecaseBtn;
+	function init(evt) {
+		details = document.getElementById("details").firstChild;
+		searchbtn = document.getElementById("search");
+		ignorecaseBtn = document.getElementById("ignorecase");
+		unzoombtn = document.getElementById("unzoom");
+		matchedtxt = document.getElementById("matched");
+		svg = document.getElementsByTagName("svg")[0];
+		searching = 0;
+		currentSearchTerm = null;
+	}
+
+	window.addEventListener("click", function(e) {
+		var target = find_group(e.target);
+		if (target) {
+			if (target.nodeName == "a") {
+				if (e.ctrlKey === false) return;
+				e.preventDefault();
+			}
+			if (target.classList.contains("parent")) unzoom();
+			zoom(target);
+		}
+		else if (e.target.id == "unzoom") unzoom();
+		else if (e.target.id == "search") search_prompt();
+		else if (e.target.id == "ignorecase") toggle_ignorecase();
+	}, false)
+
+	// mouse-over for info
+	// show
+	window.addEventListener("mouseover", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = "Function: " + g_to_text(target);
+	}, false)
+
+	// clear
+	window.addEventListener("mouseout", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = ' ';
+	}, false)
+
+	// ctrl-F for search
+	window.addEventListener("keydown",function (e) {
+		if (e.keyCode === 114 || (e.ctrlKey && e.keyCode === 70)) {
+			e.preventDefault();
+			search_prompt();
+		}
+	}, false)
+
+	// ctrl-I to toggle case-sensitive search
+	window.addEventListener("keydown",function (e) {
+		if (e.ctrlKey && e.keyCode === 73) {
+			e.preventDefault();
+			toggle_ignorecase();
+		}
+	}, false)
+
+	// functions
+	function find_child(node, selector) {
+		var children = node.querySelectorAll(selector);
+		if (children.length) return children[0];
+		return;
+	}
+	function find_group(node) {
+		var parent = node.parentElement;
+		if (!parent) return;
+		if (parent.id == "frames") return node;
+		return find_group(parent);
+	}
+	function orig_save(e, attr, val) {
+		if (e.attributes["_orig_" + attr] != undefined) return;
+		if (e.attributes[attr] == undefined) return;
+		if (val == undefined) val = e.attributes[attr].value;
+		e.setAttribute("_orig_" + attr, val);
+	}
+	function orig_load(e, attr) {
+		if (e.attributes["_orig_"+attr] == undefined) return;
+		e.attributes[attr].value = e.attributes["_orig_" + attr].value;
+		e.removeAttribute("_orig_"+attr);
+	}
+	function g_to_text(e) {
+		var text = find_child(e, "title").firstChild.nodeValue;
+		return (text)
+	}
+	function g_to_func(e) {
+		var func = g_to_text(e);
+		// if there's any manipulation we want to do to the function
+		// name before it's searched, do it here before returning.
+		return (func);
+	}
+	function update_text(e) {
+		var r = find_child(e, "rect");
+		var t = find_child(e, "text");
+		var w = parseFloat(r.attributes.width.value) -3;
+		var txt = find_child(e, "title").textContent.replace(/\([^(]*\)$/,"");
+		t.attributes.x.value = parseFloat(r.attributes.x.value) + 3;
+
+		// Smaller than this size won't fit anything
+		if (w < 2 * 12 * 0.59) {
+			t.textContent = "";
+			return;
+		}
+
+		t.textContent = txt;
+		// Fit in full text width
+		if (/^ *$/.test(txt) || t.getSubStringLength(0, txt.length) < w)
+			return;
+
+		for (var x = txt.length - 2; x > 0; x--) {
+			if (t.getSubStringLength(0, x + 2) <= w) {
+				t.textContent = txt.substring(0, x) + "..";
+				return;
+			}
+		}
+		t.textContent = "";
+	}
+
+	// zoom
+	function zoom_reset(e) {
+		if (e.attributes != undefined) {
+			orig_load(e, "x");
+			orig_load(e, "width");
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_reset(c[i]);
+		}
+	}
+	function zoom_child(e, x, ratio) {
+		if (e.attributes != undefined) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = (parseFloat(e.attributes.x.value) - x - 10) * ratio + 10;
+				if (e.tagName == "text")
+					e.attributes.x.value = find_child(e.parentNode, "rect[x]").attributes.x.value + 3;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseFloat(e.attributes.width.value) * ratio;
+			}
+		}
+
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_child(c[i], x - 10, ratio);
+		}
+	}
+	function zoom_parent(e) {
+		if (e.attributes) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = 10;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseInt(svg.width.baseVal.value) - (10 * 2);
+			}
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_parent(c[i]);
+		}
+	}
+	function zoom(node) {
+		var attr = find_child(node, "rect").attributes;
+		var width = parseFloat(attr.width.value);
+		var xmin = parseFloat(attr.x.value);
+		var xmax = parseFloat(xmin + width);
+		var ymin = parseFloat(attr.y.value);
+		var ratio = (svg.width.baseVal.value - 2 * 10) / width;
+
+		// XXX: Workaround for JavaScript float issues (fix me)
+		var fudge = 0.0001;
+
+		unzoombtn.classList.remove("hide");
+
+		var el = document.getElementById("frames").children;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var a = find_child(e, "rect").attributes;
+			var ex = parseFloat(a.x.value);
+			var ew = parseFloat(a.width.value);
+			var upstack;
+			// Is it an ancestor
+			if (0 == 0) {
+				upstack = parseFloat(a.y.value) > ymin;
+			} else {
+				upstack = parseFloat(a.y.value) < ymin;
+			}
+			if (upstack) {
+				// Direct ancestor
+				if (ex <= xmin && (ex+ew+fudge) >= xmax) {
+					e.classList.add("parent");
+					zoom_parent(e);
+					update_text(e);
+				}
+				// not in current path
+				else
+					e.classList.add("hide");
+			}
+			// Children maybe
+			else {
+				// no common path
+				if (ex < xmin || ex + fudge >= xmax) {
+					e.classList.add("hide");
+				}
+				else {
+					zoom_child(e, xmin, ratio);
+					update_text(e);
+				}
+			}
+		}
+		search();
+	}
+	function unzoom() {
+		unzoombtn.classList.add("hide");
+		var el = document.getElementById("frames").children;
+		for(var i = 0; i < el.length; i++) {
+			el[i].classList.remove("parent");
+			el[i].classList.remove("hide");
+			zoom_reset(el[i]);
+			update_text(el[i]);
+		}
+		search();
+	}
+
+	// search
+	function toggle_ignorecase() {
+		ignorecase = !ignorecase;
+		if (ignorecase) {
+			ignorecaseBtn.classList.add("show");
+		} else {
+			ignorecaseBtn.classList.remove("show");
+		}
+		reset_search();
+		search();
+	}
+	function reset_search() {
+		var el = document.querySelectorAll("#frames rect");
+		for (var i = 0; i < el.length; i++) {
+			orig_load(el[i], "fill")
+		}
+	}
+	function search_prompt() {
+		if (!searching) {
+			var term = prompt("Enter a search term (regexp " +
+			    "allowed, eg: ^ext4_)"
+			    + (ignorecase ? ", ignoring case" : "")
+			    + "\nPress Ctrl-i to toggle case sensitivity", "");
+			if (term != null) {
+				currentSearchTerm = term;
+				search();
+			}
+		} else {
+			reset_search();
+			searching = 0;
+			currentSearchTerm = null;
+			searchbtn.classList.remove("show");
+			searchbtn.firstChild.nodeValue = "Search"
+			matchedtxt.classList.add("hide");
+			matchedtxt.firstChild.nodeValue = ""
+		}
+	}
+	function search(term) {
+		if (currentSearchTerm === null) return;
+		var term = currentSearchTerm;
+
+		var re = new RegExp(term, ignorecase ? 'i' : '');
+		var el = document.getElementById("frames").children;
+		var matches = new Object();
+		var maxwidth = 0;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var func = g_to_func(e);
+			var rect = find_child(e, "rect");
+			if (func == null || rect == null)
+				continue;
+
+			// Save max width. Only works as we have a root frame
+			var w = parseFloat(rect.attributes.width.value);
+			if (w > maxwidth)
+				maxwidth = w;
+
+			if (func.match(re)) {
+				// highlight
+				var x = parseFloat(rect.attributes.x.value);
+				orig_save(rect, "fill");
+				rect.attributes.fill.value = "rgb(230,0,230)";
+
+				// remember matches
+				if (matches[x] == undefined) {
+					matches[x] = w;
+				} else {
+					if (w > matches[x]) {
+						// overwrite with parent
+						matches[x] = w;
+					}
+				}
+				searching = 1;
+			}
+		}
+		if (!searching)
+			return;
+
+		searchbtn.classList.add("show");
+		searchbtn.firstChild.nodeValue = "Reset Search";
+
+		// calculate percent matched, excluding vertical overlap
+		var count = 0;
+		var lastx = -1;
+		var lastw = 0;
+		var keys = Array();
+		for (k in matches) {
+			if (matches.hasOwnProperty(k))
+				keys.push(k);
+		}
+		// sort the matched frames by their x location
+		// ascending, then width descending
+		keys.sort(function(a, b){
+			return a - b;
+		});
+		// Step through frames saving only the biggest bottom-up frames
+		// thanks to the sort order. This relies on the tree property
+		// where children are always smaller than their parents.
+		var fudge = 0.0001;	// JavaScript floating point
+		for (var k in keys) {
+			var x = parseFloat(keys[k]);
+			var w = matches[keys[k]];
+			if (x >= lastx + lastw - fudge) {
+				count += w;
+				lastx = x;
+				lastw = w;
+			}
+		}
+		// display matched percent
+		matchedtxt.classList.remove("hide");
+		var pct = 100 * count / maxwidth;
+		if (pct != 100) pct = pct.toFixed(1)
+		matchedtxt.firstChild.nodeValue = "Matched: " + pct + "%";
+	}
+]]>
+</script>
+<rect x="0.0" y="0" width="1200.0" height="1094.0" fill="url(#background)"  />
+<text id="title" x="600.00" y="24" >Flame Graph</text>
+<text id="details" x="10.00" y="1077" > </text>
+<text id="unzoom" x="10.00" y="24" class="hide">Reset Zoom</text>
+<text id="search" x="1090.00" y="24" >Search</text>
+<text id="ignorecase" x="1174.00" y="24" >ic</text>
+<text id="matched" x="1090.00" y="1077" > </text>
+<g id="frames">
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="421" width="371.5" height="15.0" fill="rgb(96,242,96)" rx="2" ry="2" />
+<text  x="529.83" y="431.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (735 samples, 12.52%)</title><rect x="150.5" y="261" width="147.8" height="15.0" fill="rgb(80,227,80)" rx="2" ry="2" />
+<text  x="153.51" y="271.5" >LazyCompile:*fibon..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="341" width="150.0" height="15.0" fill="rgb(97,243,97)" rx="2" ry="2" />
+<text  x="151.30" y="351.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="469" width="291.7" height="15.0" fill="rgb(93,240,93)" rx="2" ry="2" />
+<text  x="901.32" y="479.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>node::LoadEnvironment (5,870 samples, 100.00%)</title><rect x="10.0" y="949" width="1180.0" height="15.0" fill="rgb(223,223,67)" rx="2" ry="2" />
+<text  x="13.00" y="959.5" >node::LoadEnvironment</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,135 samples, 19.34%)</title><rect x="298.7" y="341" width="228.1" height="15.0" fill="rgb(103,248,103)" rx="2" ry="2" />
+<text  x="301.67" y="351.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="613" width="371.5" height="15.0" fill="rgb(103,249,103)" rx="2" ry="2" />
+<text  x="529.83" y="623.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="325" width="37.6" height="15.0" fill="rgb(84,232,84)" rx="2" ry="2" />
+<text  x="13.00" y="335.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,413 samples, 24.07%)</title><rect x="906.0" y="245" width="284.0" height="15.0" fill="rgb(72,221,72)" rx="2" ry="2" />
+<text  x="908.96" y="255.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>[unknown] (5,870 samples, 100.00%)</title><rect x="10.0" y="1013" width="1180.0" height="15.0" fill="rgb(201,52,52)" rx="2" ry="2" />
+<text  x="13.00" y="1023.5" >[unknown]</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="581" width="37.6" height="15.0" fill="rgb(55,205,55)" rx="2" ry="2" />
+<text  x="13.00" y="591.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (745 samples, 12.69%)</title><rect x="148.5" y="293" width="149.8" height="15.0" fill="rgb(88,235,88)" rx="2" ry="2" />
+<text  x="151.50" y="303.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (51 samples, 0.87%)</title><rect x="37.3" y="133" width="10.3" height="15.0" fill="rgb(89,236,89)" rx="2" ry="2" />
+<text  x="40.34" y="143.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="389" width="37.6" height="15.0" fill="rgb(74,222,74)" rx="2" ry="2" />
+<text  x="13.00" y="399.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (184 samples, 3.13%)</title><rect x="10.6" y="229" width="37.0" height="15.0" fill="rgb(73,221,73)" rx="2" ry="2" />
+<text  x="13.60" y="239.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (317 samples, 5.40%)</title><rect x="84.6" y="165" width="63.7" height="15.0" fill="rgb(78,226,78)" rx="2" ry="2" />
+<text  x="87.58" y="175.5" >LazyCom..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="565" width="150.0" height="15.0" fill="rgb(52,202,52)" rx="2" ry="2" />
+<text  x="151.30" y="575.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>prepare_exit_to_usermode (1 samples, 0.02%)</title><rect x="897.9" y="117" width="0.2" height="15.0" fill="rgb(242,111,111)" rx="2" ry="2" />
+<text  x="900.91" y="127.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (10 samples, 0.17%)</title><rect x="146.1" y="85" width="2.0" height="15.0" fill="rgb(93,239,93)" rx="2" ry="2" />
+<text  x="149.09" y="95.5" ></text>
+</g>
+<g >
+<title>node::StartExecution (5,870 samples, 100.00%)</title><rect x="10.0" y="933" width="1180.0" height="15.0" fill="rgb(205,205,61)" rx="2" ry="2" />
+<text  x="13.00" y="943.5" >node::StartExecution</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="293" width="37.6" height="15.0" fill="rgb(83,230,83)" rx="2" ry="2" />
+<text  x="13.00" y="303.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (33 samples, 0.56%)</title><rect x="141.5" y="101" width="6.6" height="15.0" fill="rgb(88,235,88)" rx="2" ry="2" />
+<text  x="144.47" y="111.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,842 samples, 31.38%)</title><rect x="528.0" y="293" width="370.3" height="15.0" fill="rgb(95,241,95)" rx="2" ry="2" />
+<text  x="531.03" y="303.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="469" width="371.5" height="15.0" fill="rgb(93,240,93)" rx="2" ry="2" />
+<text  x="529.83" y="479.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>retint_user (1 samples, 0.02%)</title><rect x="897.7" y="117" width="0.2" height="15.0" fill="rgb(253,128,128)" rx="2" ry="2" />
+<text  x="900.71" y="127.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="597" width="291.7" height="15.0" fill="rgb(98,244,98)" rx="2" ry="2" />
+<text  x="901.32" y="607.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (19 samples, 0.32%)</title><rect x="294.0" y="85" width="3.9" height="15.0" fill="rgb(57,207,57)" rx="2" ry="2" />
+<text  x="297.04" y="95.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,810 samples, 30.83%)</title><rect x="534.5" y="261" width="363.8" height="15.0" fill="rgb(58,207,58)" rx="2" ry="2" />
+<text  x="537.47" y="271.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>Builtins_JSEntryTrampoline (5,870 samples, 100.00%)</title><rect x="10.0" y="853" width="1180.0" height="15.0" fill="rgb(218,77,77)" rx="2" ry="2" />
+<text  x="13.00" y="863.5" >Builtins_JSEntryTrampoline</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="277" width="37.6" height="15.0" fill="rgb(59,208,59)" rx="2" ry="2" />
+<text  x="13.00" y="287.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="613" width="291.7" height="15.0" fill="rgb(108,253,108)" rx="2" ry="2" />
+<text  x="901.32" y="623.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,430 samples, 24.36%)</title><rect x="902.5" y="261" width="287.5" height="15.0" fill="rgb(71,219,71)" rx="2" ry="2" />
+<text  x="905.54" y="271.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="341" width="100.7" height="15.0" fill="rgb(108,253,108)" rx="2" ry="2" />
+<text  x="50.59" y="351.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="421" width="291.7" height="15.0" fill="rgb(57,206,57)" rx="2" ry="2" />
+<text  x="901.32" y="431.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="389" width="100.7" height="15.0" fill="rgb(73,221,73)" rx="2" ry="2" />
+<text  x="50.59" y="399.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (771 samples, 13.13%)</title><rect x="371.8" y="181" width="155.0" height="15.0" fill="rgb(81,228,81)" rx="2" ry="2" />
+<text  x="374.84" y="191.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,169 samples, 19.91%)</title><rect x="955.0" y="197" width="235.0" height="15.0" fill="rgb(62,211,62)" rx="2" ry="2" />
+<text  x="958.01" y="207.5" >LazyCompile:*fibonacci /root/in..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="501" width="150.0" height="15.0" fill="rgb(97,243,97)" rx="2" ry="2" />
+<text  x="151.30" y="511.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="357" width="100.7" height="15.0" fill="rgb(71,220,71)" rx="2" ry="2" />
+<text  x="50.59" y="367.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="293" width="100.7" height="15.0" fill="rgb(70,218,70)" rx="2" ry="2" />
+<text  x="50.59" y="303.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>Builtins_InterpreterEntryTrampoline (187 samples, 3.19%)</title><rect x="10.0" y="613" width="37.6" height="15.0" fill="rgb(234,100,100)" rx="2" ry="2" />
+<text  x="13.00" y="623.5" >Bui..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (79 samples, 1.35%)</title><rect x="31.7" y="149" width="15.9" height="15.0" fill="rgb(81,228,81)" rx="2" ry="2" />
+<text  x="34.71" y="159.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,730 samples, 29.47%)</title><rect x="550.3" y="229" width="347.8" height="15.0" fill="rgb(55,204,55)" rx="2" ry="2" />
+<text  x="553.35" y="239.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="453" width="371.5" height="15.0" fill="rgb(77,224,77)" rx="2" ry="2" />
+<text  x="529.83" y="463.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="485" width="100.7" height="15.0" fill="rgb(92,238,92)" rx="2" ry="2" />
+<text  x="50.59" y="495.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>irq_exit (1 samples, 0.02%)</title><rect x="298.1" y="133" width="0.2" height="15.0" fill="rgb(236,103,103)" rx="2" ry="2" />
+<text  x="301.06" y="143.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="597" width="150.0" height="15.0" fill="rgb(64,212,64)" rx="2" ry="2" />
+<text  x="151.30" y="607.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="405" width="100.7" height="15.0" fill="rgb(61,210,61)" rx="2" ry="2" />
+<text  x="50.59" y="415.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="309" width="100.7" height="15.0" fill="rgb(84,231,84)" rx="2" ry="2" />
+<text  x="50.59" y="319.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="565" width="100.7" height="15.0" fill="rgb(92,239,92)" rx="2" ry="2" />
+<text  x="50.59" y="575.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="549" width="291.7" height="15.0" fill="rgb(52,202,52)" rx="2" ry="2" />
+<text  x="901.32" y="559.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,467 samples, 24.99%)</title><rect x="603.2" y="197" width="294.9" height="15.0" fill="rgb(92,238,92)" rx="2" ry="2" />
+<text  x="606.22" y="207.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,438 samples, 24.50%)</title><rect x="900.9" y="277" width="289.1" height="15.0" fill="rgb(69,217,69)" rx="2" ry="2" />
+<text  x="903.93" y="287.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="565" width="291.7" height="15.0" fill="rgb(97,243,97)" rx="2" ry="2" />
+<text  x="901.32" y="575.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (110 samples, 1.87%)</title><rect x="504.7" y="117" width="22.1" height="15.0" fill="rgb(67,216,67)" rx="2" ry="2" />
+<text  x="507.72" y="127.5" >L..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="629" width="371.5" height="15.0" fill="rgb(90,237,90)" rx="2" ry="2" />
+<text  x="529.83" y="639.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,312 samples, 22.35%)</title><rect x="926.3" y="213" width="263.7" height="15.0" fill="rgb(57,207,57)" rx="2" ry="2" />
+<text  x="929.26" y="223.5" >LazyCompile:*fibonacci /root/index...</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (300 samples, 5.11%)</title><rect x="1129.7" y="133" width="60.3" height="15.0" fill="rgb(85,232,85)" rx="2" ry="2" />
+<text  x="1132.69" y="143.5" >LazyCo..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="405" width="150.0" height="15.0" fill="rgb(75,223,75)" rx="2" ry="2" />
+<text  x="151.30" y="415.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="501" width="371.5" height="15.0" fill="rgb(73,221,73)" rx="2" ry="2" />
+<text  x="529.83" y="511.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="533" width="228.5" height="15.0" fill="rgb(109,254,109)" rx="2" ry="2" />
+<text  x="301.27" y="543.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="517" width="228.5" height="15.0" fill="rgb(68,217,68)" rx="2" ry="2" />
+<text  x="301.27" y="527.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>Builtins_InterpreterEntryTrampoline (5,870 samples, 100.00%)</title><rect x="10.0" y="805" width="1180.0" height="15.0" fill="rgb(241,110,110)" rx="2" ry="2" />
+<text  x="13.00" y="815.5" >Builtins_InterpreterEntryTrampoline</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (177 samples, 3.02%)</title><rect x="12.0" y="213" width="35.6" height="15.0" fill="rgb(86,233,86)" rx="2" ry="2" />
+<text  x="15.01" y="223.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="613" width="150.0" height="15.0" fill="rgb(59,208,59)" rx="2" ry="2" />
+<text  x="151.30" y="623.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="533" width="37.6" height="15.0" fill="rgb(52,202,52)" rx="2" ry="2" />
+<text  x="13.00" y="543.5" >Laz..</text>
+</g>
+<g >
+<title>retint_user (1 samples, 0.02%)</title><rect x="297.9" y="133" width="0.2" height="15.0" fill="rgb(236,103,103)" rx="2" ry="2" />
+<text  x="300.86" y="143.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="437" width="291.7" height="15.0" fill="rgb(84,231,84)" rx="2" ry="2" />
+<text  x="901.32" y="447.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,001 samples, 17.05%)</title><rect x="325.6" y="213" width="201.2" height="15.0" fill="rgb(93,239,93)" rx="2" ry="2" />
+<text  x="328.60" y="223.5" >LazyCompile:*fibonacci /ro..</text>
+</g>
+<g >
+<title>prepare_exit_to_usermode (1 samples, 0.02%)</title><rect x="297.9" y="117" width="0.2" height="15.0" fill="rgb(227,89,89)" rx="2" ry="2" />
+<text  x="300.86" y="127.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (241 samples, 4.11%)</title><rect x="478.4" y="133" width="48.4" height="15.0" fill="rgb(85,232,85)" rx="2" ry="2" />
+<text  x="481.38" y="143.5" >Lazy..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="549" width="100.7" height="15.0" fill="rgb(63,212,63)" rx="2" ry="2" />
+<text  x="50.59" y="559.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,449 samples, 24.68%)</title><rect x="898.7" y="325" width="291.3" height="15.0" fill="rgb(63,212,63)" rx="2" ry="2" />
+<text  x="901.72" y="335.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1 samples, 0.02%)</title><rect x="297.7" y="53" width="0.2" height="15.0" fill="rgb(78,226,78)" rx="2" ry="2" />
+<text  x="300.66" y="63.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (111 samples, 1.89%)</title><rect x="25.3" y="165" width="22.3" height="15.0" fill="rgb(85,232,85)" rx="2" ry="2" />
+<text  x="28.28" y="175.5" >L..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="373" width="371.5" height="15.0" fill="rgb(58,207,58)" rx="2" ry="2" />
+<text  x="529.83" y="383.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (17 samples, 0.29%)</title><rect x="523.4" y="85" width="3.4" height="15.0" fill="rgb(106,251,106)" rx="2" ry="2" />
+<text  x="526.41" y="95.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="501" width="228.5" height="15.0" fill="rgb(50,200,50)" rx="2" ry="2" />
+<text  x="301.27" y="511.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (433 samples, 7.38%)</title><rect x="61.3" y="197" width="87.0" height="15.0" fill="rgb(95,241,95)" rx="2" ry="2" />
+<text  x="64.26" y="207.5" >LazyCompil..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="645" width="291.7" height="15.0" fill="rgb(83,230,83)" rx="2" ry="2" />
+<text  x="901.32" y="655.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="373" width="291.7" height="15.0" fill="rgb(108,253,108)" rx="2" ry="2" />
+<text  x="901.32" y="383.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="597" width="37.6" height="15.0" fill="rgb(61,210,61)" rx="2" ry="2" />
+<text  x="13.00" y="607.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="629" width="150.0" height="15.0" fill="rgb(99,245,99)" rx="2" ry="2" />
+<text  x="151.30" y="639.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>arch_local_irq_enable (1 samples, 0.02%)</title><rect x="897.9" y="101" width="0.2" height="15.0" fill="rgb(203,55,55)" rx="2" ry="2" />
+<text  x="900.91" y="111.5" ></text>
+</g>
+<g >
+<title>Builtins_JSEntry (5,870 samples, 100.00%)</title><rect x="10.0" y="869" width="1180.0" height="15.0" fill="rgb(217,75,75)" rx="2" ry="2" />
+<text  x="13.00" y="879.5" >Builtins_JSEntry</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="325" width="371.5" height="15.0" fill="rgb(81,229,81)" rx="2" ry="2" />
+<text  x="529.83" y="335.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (463 samples, 7.89%)</title><rect x="55.2" y="213" width="93.1" height="15.0" fill="rgb(100,245,100)" rx="2" ry="2" />
+<text  x="58.23" y="223.5" >LazyCompile..</text>
+</g>
+<g >
+<title>__libc_start_main (5,870 samples, 100.00%)</title><rect x="10.0" y="997" width="1180.0" height="15.0" fill="rgb(203,54,54)" rx="2" ry="2" />
+<text  x="13.00" y="1007.5" >__libc_start_main</text>
+</g>
+<g >
+<title>Builtins_InterpreterEntryTrampoline (5,870 samples, 100.00%)</title><rect x="10.0" y="821" width="1180.0" height="15.0" fill="rgb(246,117,117)" rx="2" ry="2" />
+<text  x="13.00" y="831.5" >Builtins_InterpreterEntryTrampoline</text>
+</g>
+<g >
+<title>Builtins_InterpreterEntryTrampoline (5,870 samples, 100.00%)</title><rect x="10.0" y="773" width="1180.0" height="15.0" fill="rgb(206,58,58)" rx="2" ry="2" />
+<text  x="13.00" y="783.5" >Builtins_InterpreterEntryTrampoline</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (744 samples, 12.67%)</title><rect x="148.7" y="277" width="149.6" height="15.0" fill="rgb(97,243,97)" rx="2" ry="2" />
+<text  x="151.71" y="287.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>lapic_next_event (1 samples, 0.02%)</title><rect x="898.1" y="165" width="0.2" height="15.0" fill="rgb(241,110,110)" rx="2" ry="2" />
+<text  x="901.12" y="175.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="325" width="100.7" height="15.0" fill="rgb(108,253,108)" rx="2" ry="2" />
+<text  x="50.59" y="335.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="549" width="37.6" height="15.0" fill="rgb(66,215,66)" rx="2" ry="2" />
+<text  x="13.00" y="559.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="597" width="371.5" height="15.0" fill="rgb(87,234,87)" rx="2" ry="2" />
+<text  x="529.83" y="607.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>lapic_next_event (1 samples, 0.02%)</title><rect x="298.1" y="101" width="0.2" height="15.0" fill="rgb(236,102,102)" rx="2" ry="2" />
+<text  x="301.06" y="111.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,136 samples, 19.35%)</title><rect x="298.5" y="357" width="228.3" height="15.0" fill="rgb(103,249,103)" rx="2" ry="2" />
+<text  x="301.47" y="367.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="453" width="228.5" height="15.0" fill="rgb(66,214,66)" rx="2" ry="2" />
+<text  x="301.27" y="463.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (99 samples, 1.69%)</title><rect x="278.0" y="117" width="19.9" height="15.0" fill="rgb(69,217,69)" rx="2" ry="2" />
+<text  x="280.96" y="127.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="357" width="150.0" height="15.0" fill="rgb(102,247,102)" rx="2" ry="2" />
+<text  x="151.30" y="367.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="373" width="37.6" height="15.0" fill="rgb(72,220,72)" rx="2" ry="2" />
+<text  x="13.00" y="383.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="549" width="371.5" height="15.0" fill="rgb(99,245,99)" rx="2" ry="2" />
+<text  x="529.83" y="559.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="485" width="371.5" height="15.0" fill="rgb(52,201,52)" rx="2" ry="2" />
+<text  x="529.83" y="495.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (4 samples, 0.07%)</title><rect x="297.1" y="69" width="0.8" height="15.0" fill="rgb(102,247,102)" rx="2" ry="2" />
+<text  x="300.06" y="79.5" ></text>
+</g>
+<g >
+<title>v8::internal::(anonymous namespace)::Invoke (5,870 samples, 100.00%)</title><rect x="10.0" y="885" width="1180.0" height="15.0" fill="rgb(205,205,61)" rx="2" ry="2" />
+<text  x="13.00" y="895.5" >v8::internal::(anonymous namespace)::Invoke</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="485" width="291.7" height="15.0" fill="rgb(65,214,65)" rx="2" ry="2" />
+<text  x="901.32" y="495.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="549" width="150.0" height="15.0" fill="rgb(76,224,76)" rx="2" ry="2" />
+<text  x="151.30" y="559.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="565" width="37.6" height="15.0" fill="rgb(105,250,105)" rx="2" ry="2" />
+<text  x="13.00" y="575.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="389" width="291.7" height="15.0" fill="rgb(104,249,104)" rx="2" ry="2" />
+<text  x="901.32" y="399.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (488 samples, 8.31%)</title><rect x="50.2" y="229" width="98.1" height="15.0" fill="rgb(50,200,50)" rx="2" ry="2" />
+<text  x="53.20" y="239.5" >LazyCompile..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="469" width="100.7" height="15.0" fill="rgb(80,228,80)" rx="2" ry="2" />
+<text  x="50.59" y="479.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,135 samples, 19.34%)</title><rect x="298.7" y="293" width="228.1" height="15.0" fill="rgb(109,254,109)" rx="2" ry="2" />
+<text  x="301.67" y="303.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>Builtins_InterpreterEntryTrampoline (5,870 samples, 100.00%)</title><rect x="10.0" y="725" width="1180.0" height="15.0" fill="rgb(203,55,55)" rx="2" ry="2" />
+<text  x="13.00" y="735.5" >Builtins_InterpreterEntryTrampoline</text>
+</g>
+<g >
+<title>clockevents_program_event (1 samples, 0.02%)</title><rect x="298.1" y="117" width="0.2" height="15.0" fill="rgb(242,111,111)" rx="2" ry="2" />
+<text  x="301.06" y="127.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (639 samples, 10.89%)</title><rect x="169.8" y="197" width="128.5" height="15.0" fill="rgb(53,202,53)" rx="2" ry="2" />
+<text  x="172.81" y="207.5" >LazyCompile:*fib..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="533" width="150.0" height="15.0" fill="rgb(58,208,58)" rx="2" ry="2" />
+<text  x="151.30" y="543.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="549" width="228.5" height="15.0" fill="rgb(97,243,97)" rx="2" ry="2" />
+<text  x="301.27" y="559.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (997 samples, 16.98%)</title><rect x="989.6" y="181" width="200.4" height="15.0" fill="rgb(57,206,57)" rx="2" ry="2" />
+<text  x="992.58" y="191.5" >LazyCompile:*fibonacci /ro..</text>
+</g>
+<g >
+<title>arch_local_irq_enable (1 samples, 0.02%)</title><rect x="298.1" y="69" width="0.2" height="15.0" fill="rgb(247,119,119)" rx="2" ry="2" />
+<text  x="301.06" y="79.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (712 samples, 12.13%)</title><rect x="155.1" y="229" width="143.2" height="15.0" fill="rgb(50,200,50)" rx="2" ry="2" />
+<text  x="158.14" y="239.5" >LazyCompile:*fibon..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (164 samples, 2.79%)</title><rect x="14.6" y="197" width="33.0" height="15.0" fill="rgb(97,243,97)" rx="2" ry="2" />
+<text  x="17.62" y="207.5" >La..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (2 samples, 0.03%)</title><rect x="526.4" y="37" width="0.4" height="15.0" fill="rgb(72,220,72)" rx="2" ry="2" />
+<text  x="529.43" y="47.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (500 samples, 8.52%)</title><rect x="47.8" y="277" width="100.5" height="15.0" fill="rgb(54,203,54)" rx="2" ry="2" />
+<text  x="50.79" y="287.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1 samples, 0.02%)</title><rect x="147.9" y="53" width="0.2" height="15.0" fill="rgb(106,251,106)" rx="2" ry="2" />
+<text  x="150.90" y="63.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (2 samples, 0.03%)</title><rect x="1189.6" y="53" width="0.4" height="15.0" fill="rgb(74,222,74)" rx="2" ry="2" />
+<text  x="1192.60" y="63.5" ></text>
+</g>
+<g >
+<title>all (5,870 samples, 100%)</title><rect x="10.0" y="1045" width="1180.0" height="15.0" fill="rgb(249,122,122)" rx="2" ry="2" />
+<text  x="13.00" y="1055.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (61 samples, 1.04%)</title><rect x="885.5" y="101" width="12.2" height="15.0" fill="rgb(76,223,76)" rx="2" ry="2" />
+<text  x="888.45" y="111.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="645" width="371.5" height="15.0" fill="rgb(79,227,79)" rx="2" ry="2" />
+<text  x="529.83" y="655.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="517" width="37.6" height="15.0" fill="rgb(65,214,65)" rx="2" ry="2" />
+<text  x="13.00" y="527.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (185 samples, 3.15%)</title><rect x="10.4" y="245" width="37.2" height="15.0" fill="rgb(98,244,98)" rx="2" ry="2" />
+<text  x="13.40" y="255.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="677" width="291.7" height="15.0" fill="rgb(80,228,80)" rx="2" ry="2" />
+<text  x="901.32" y="687.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (405 samples, 6.90%)</title><rect x="445.4" y="149" width="81.4" height="15.0" fill="rgb(76,224,76)" rx="2" ry="2" />
+<text  x="448.41" y="159.5" >LazyCompi..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,136 samples, 19.35%)</title><rect x="298.5" y="373" width="228.3" height="15.0" fill="rgb(109,254,109)" rx="2" ry="2" />
+<text  x="301.47" y="383.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="437" width="228.5" height="15.0" fill="rgb(77,224,77)" rx="2" ry="2" />
+<text  x="301.27" y="447.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="517" width="150.0" height="15.0" fill="rgb(51,201,51)" rx="2" ry="2" />
+<text  x="151.30" y="527.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>node (5,870 samples, 100.00%)</title><rect x="10.0" y="1029" width="1180.0" height="15.0" fill="rgb(208,62,62)" rx="2" ry="2" />
+<text  x="13.00" y="1039.5" >node</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (26 samples, 0.44%)</title><rect x="1184.8" y="85" width="5.2" height="15.0" fill="rgb(62,211,62)" rx="2" ry="2" />
+<text  x="1187.77" y="95.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="517" width="371.5" height="15.0" fill="rgb(65,214,65)" rx="2" ry="2" />
+<text  x="529.83" y="527.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>__irqentry_text_start (1 samples, 0.02%)</title><rect x="298.1" y="165" width="0.2" height="15.0" fill="rgb(245,115,115)" rx="2" ry="2" />
+<text  x="301.06" y="175.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (690 samples, 11.75%)</title><rect x="159.6" y="213" width="138.7" height="15.0" fill="rgb(67,216,67)" rx="2" ry="2" />
+<text  x="162.56" y="223.5" >LazyCompile:*fibo..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="341" width="371.5" height="15.0" fill="rgb(77,224,77)" rx="2" ry="2" />
+<text  x="529.83" y="351.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="373" width="150.0" height="15.0" fill="rgb(100,246,100)" rx="2" ry="2" />
+<text  x="151.30" y="383.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>Builtins_InterpreterEntryTrampoline (5,870 samples, 100.00%)</title><rect x="10.0" y="693" width="1180.0" height="15.0" fill="rgb(250,122,122)" rx="2" ry="2" />
+<text  x="13.00" y="703.5" >Builtins_InterpreterEntryTrampoline</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,448 samples, 24.67%)</title><rect x="898.9" y="309" width="291.1" height="15.0" fill="rgb(62,211,62)" rx="2" ry="2" />
+<text  x="901.92" y="319.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,123 samples, 19.13%)</title><rect x="301.1" y="261" width="225.7" height="15.0" fill="rgb(68,216,68)" rx="2" ry="2" />
+<text  x="304.08" y="271.5" >LazyCompile:*fibonacci /root/..</text>
+</g>
+<g >
+<title>irq_exit (1 samples, 0.02%)</title><rect x="898.1" y="197" width="0.2" height="15.0" fill="rgb(224,85,85)" rx="2" ry="2" />
+<text  x="901.12" y="207.5" ></text>
+</g>
+<g >
+<title>__softirqentry_text_start (1 samples, 0.02%)</title><rect x="898.1" y="149" width="0.2" height="15.0" fill="rgb(235,101,101)" rx="2" ry="2" />
+<text  x="901.12" y="159.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (19 samples, 0.32%)</title><rect x="893.9" y="69" width="3.8" height="15.0" fill="rgb(78,226,78)" rx="2" ry="2" />
+<text  x="896.89" y="79.5" ></text>
+</g>
+<g >
+<title>__softirqentry_text_start (1 samples, 0.02%)</title><rect x="298.1" y="85" width="0.2" height="15.0" fill="rgb(235,101,101)" rx="2" ry="2" />
+<text  x="301.06" y="95.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="485" width="228.5" height="15.0" fill="rgb(103,249,103)" rx="2" ry="2" />
+<text  x="301.27" y="495.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="421" width="100.7" height="15.0" fill="rgb(95,241,95)" rx="2" ry="2" />
+<text  x="50.59" y="431.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="533" width="291.7" height="15.0" fill="rgb(91,237,91)" rx="2" ry="2" />
+<text  x="901.32" y="543.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,071 samples, 18.25%)</title><rect x="311.5" y="229" width="215.3" height="15.0" fill="rgb(58,208,58)" rx="2" ry="2" />
+<text  x="314.53" y="239.5" >LazyCompile:*fibonacci /root..</text>
+</g>
+<g >
+<title>clockevents_program_event (1 samples, 0.02%)</title><rect x="898.1" y="181" width="0.2" height="15.0" fill="rgb(239,107,107)" rx="2" ry="2" />
+<text  x="901.12" y="191.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="437" width="37.6" height="15.0" fill="rgb(104,249,104)" rx="2" ry="2" />
+<text  x="13.00" y="447.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1 samples, 0.02%)</title><rect x="897.5" y="37" width="0.2" height="15.0" fill="rgb(67,216,67)" rx="2" ry="2" />
+<text  x="900.51" y="47.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="373" width="100.7" height="15.0" fill="rgb(78,226,78)" rx="2" ry="2" />
+<text  x="50.59" y="383.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>arch_local_irq_enable (1 samples, 0.02%)</title><rect x="148.1" y="85" width="0.2" height="15.0" fill="rgb(223,84,84)" rx="2" ry="2" />
+<text  x="151.10" y="95.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="517" width="100.7" height="15.0" fill="rgb(59,208,59)" rx="2" ry="2" />
+<text  x="50.59" y="527.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="581" width="371.5" height="15.0" fill="rgb(52,202,52)" rx="2" ry="2" />
+<text  x="529.83" y="591.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (567 samples, 9.66%)</title><rect x="184.3" y="181" width="114.0" height="15.0" fill="rgb(94,240,94)" rx="2" ry="2" />
+<text  x="187.29" y="191.5" >LazyCompile:*f..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (731 samples, 12.45%)</title><rect x="151.3" y="245" width="147.0" height="15.0" fill="rgb(92,238,92)" rx="2" ry="2" />
+<text  x="154.32" y="255.5" >LazyCompile:*fibon..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (20 samples, 0.34%)</title><rect x="43.6" y="117" width="4.0" height="15.0" fill="rgb(50,200,50)" rx="2" ry="2" />
+<text  x="46.57" y="127.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,219 samples, 20.77%)</title><rect x="653.1" y="181" width="245.0" height="15.0" fill="rgb(67,216,67)" rx="2" ry="2" />
+<text  x="656.07" y="191.5" >LazyCompile:*fibonacci /root/ind..</text>
+</g>
+<g >
+<title>retint_user (1 samples, 0.02%)</title><rect x="148.1" y="117" width="0.2" height="15.0" fill="rgb(212,68,68)" rx="2" ry="2" />
+<text  x="151.10" y="127.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (765 samples, 13.03%)</title><rect x="1036.2" y="165" width="153.8" height="15.0" fill="rgb(59,208,59)" rx="2" ry="2" />
+<text  x="1039.22" y="175.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="533" width="371.5" height="15.0" fill="rgb(99,245,99)" rx="2" ry="2" />
+<text  x="529.83" y="543.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (2 samples, 0.03%)</title><rect x="47.2" y="85" width="0.4" height="15.0" fill="rgb(103,248,103)" rx="2" ry="2" />
+<text  x="50.19" y="95.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,132 samples, 19.28%)</title><rect x="299.3" y="277" width="227.5" height="15.0" fill="rgb(56,206,56)" rx="2" ry="2" />
+<text  x="302.27" y="287.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="581" width="291.7" height="15.0" fill="rgb(52,201,52)" rx="2" ry="2" />
+<text  x="901.32" y="591.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>node::NodeMainInstance::Run (5,870 samples, 100.00%)</title><rect x="10.0" y="965" width="1180.0" height="15.0" fill="rgb(201,201,59)" rx="2" ry="2" />
+<text  x="13.00" y="975.5" >node::NodeMainInstance::Run</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,832 samples, 31.21%)</title><rect x="530.0" y="277" width="368.3" height="15.0" fill="rgb(77,225,77)" rx="2" ry="2" />
+<text  x="533.04" y="287.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="613" width="228.5" height="15.0" fill="rgb(54,204,54)" rx="2" ry="2" />
+<text  x="301.27" y="623.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="501" width="37.6" height="15.0" fill="rgb(81,229,81)" rx="2" ry="2" />
+<text  x="13.00" y="511.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (186 samples, 3.17%)</title><rect x="260.5" y="133" width="37.4" height="15.0" fill="rgb(77,224,77)" rx="2" ry="2" />
+<text  x="263.47" y="143.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="453" width="37.6" height="15.0" fill="rgb(98,244,98)" rx="2" ry="2" />
+<text  x="13.00" y="463.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (524 samples, 8.93%)</title><rect x="1084.7" y="149" width="105.3" height="15.0" fill="rgb(96,242,96)" rx="2" ry="2" />
+<text  x="1087.66" y="159.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="389" width="228.5" height="15.0" fill="rgb(99,245,99)" rx="2" ry="2" />
+<text  x="301.27" y="399.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>Builtins_InterpreterEntryTrampoline (4,419 samples, 75.28%)</title><rect x="10.0" y="677" width="888.3" height="15.0" fill="rgb(221,81,81)" rx="2" ry="2" />
+<text  x="13.00" y="687.5" >Builtins_InterpreterEntryTrampoline</text>
+</g>
+<g >
+<title>node::Start (5,870 samples, 100.00%)</title><rect x="10.0" y="981" width="1180.0" height="15.0" fill="rgb(213,213,63)" rx="2" ry="2" />
+<text  x="13.00" y="991.5" >node::Start</text>
+</g>
+<g >
+<title>arch_local_irq_enable (1 samples, 0.02%)</title><rect x="898.1" y="133" width="0.2" height="15.0" fill="rgb(207,60,60)" rx="2" ry="2" />
+<text  x="901.12" y="143.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="629" width="228.5" height="15.0" fill="rgb(96,242,96)" rx="2" ry="2" />
+<text  x="301.27" y="639.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (458 samples, 7.80%)</title><rect x="206.0" y="165" width="92.1" height="15.0" fill="rgb(72,220,72)" rx="2" ry="2" />
+<text  x="209.00" y="175.5" >LazyCompile..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="597" width="100.7" height="15.0" fill="rgb(76,224,76)" rx="2" ry="2" />
+<text  x="50.59" y="607.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (10 samples, 0.17%)</title><rect x="1188.0" y="69" width="2.0" height="15.0" fill="rgb(93,239,93)" rx="2" ry="2" />
+<text  x="1190.99" y="79.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (387 samples, 6.59%)</title><rect x="70.5" y="181" width="77.8" height="15.0" fill="rgb(101,247,101)" rx="2" ry="2" />
+<text  x="73.51" y="191.5" >LazyComp..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (3 samples, 0.05%)</title><rect x="526.2" y="69" width="0.6" height="15.0" fill="rgb(50,200,50)" rx="2" ry="2" />
+<text  x="529.22" y="79.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="453" width="291.7" height="15.0" fill="rgb(96,242,96)" rx="2" ry="2" />
+<text  x="901.32" y="463.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (496 samples, 8.45%)</title><rect x="48.6" y="245" width="99.7" height="15.0" fill="rgb(73,221,73)" rx="2" ry="2" />
+<text  x="51.60" y="255.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>Builtins_InterpreterEntryTrampoline (5,870 samples, 100.00%)</title><rect x="10.0" y="757" width="1180.0" height="15.0" fill="rgb(237,105,105)" rx="2" ry="2" />
+<text  x="13.00" y="767.5" >Builtins_InterpreterEntryTrampoline</text>
+</g>
+<g >
+<title>smp_apic_timer_interrupt (1 samples, 0.02%)</title><rect x="298.1" y="149" width="0.2" height="15.0" fill="rgb(203,54,54)" rx="2" ry="2" />
+<text  x="301.06" y="159.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (30 samples, 0.51%)</title><rect x="891.7" y="85" width="6.0" height="15.0" fill="rgb(84,231,84)" rx="2" ry="2" />
+<text  x="894.68" y="95.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="661" width="291.7" height="15.0" fill="rgb(52,202,52)" rx="2" ry="2" />
+<text  x="901.32" y="671.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="581" width="228.5" height="15.0" fill="rgb(104,250,104)" rx="2" ry="2" />
+<text  x="301.27" y="591.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (339 samples, 5.78%)</title><rect x="829.8" y="133" width="68.1" height="15.0" fill="rgb(84,231,84)" rx="2" ry="2" />
+<text  x="832.77" y="143.5" >LazyCom..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="389" width="371.5" height="15.0" fill="rgb(58,207,58)" rx="2" ry="2" />
+<text  x="529.83" y="399.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (141 samples, 2.40%)</title><rect x="19.2" y="181" width="28.4" height="15.0" fill="rgb(102,247,102)" rx="2" ry="2" />
+<text  x="22.25" y="191.5" >La..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="533" width="100.7" height="15.0" fill="rgb(50,200,50)" rx="2" ry="2" />
+<text  x="50.59" y="543.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (499 samples, 8.50%)</title><rect x="48.0" y="261" width="100.3" height="15.0" fill="rgb(91,238,91)" rx="2" ry="2" />
+<text  x="50.99" y="271.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>arch_local_irq_enable (1 samples, 0.02%)</title><rect x="297.9" y="101" width="0.2" height="15.0" fill="rgb(251,124,124)" rx="2" ry="2" />
+<text  x="300.86" y="111.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,106 samples, 18.84%)</title><rect x="304.5" y="245" width="222.3" height="15.0" fill="rgb(81,229,81)" rx="2" ry="2" />
+<text  x="307.50" y="255.5" >LazyCompile:*fibonacci /root/..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="421" width="37.6" height="15.0" fill="rgb(100,246,100)" rx="2" ry="2" />
+<text  x="13.00" y="431.5" >Laz..</text>
+</g>
+<g >
+<title>smp_apic_timer_interrupt (1 samples, 0.02%)</title><rect x="898.1" y="213" width="0.2" height="15.0" fill="rgb(249,121,121)" rx="2" ry="2" />
+<text  x="901.12" y="223.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="597" width="228.5" height="15.0" fill="rgb(52,202,52)" rx="2" ry="2" />
+<text  x="301.27" y="607.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="469" width="37.6" height="15.0" fill="rgb(77,225,77)" rx="2" ry="2" />
+<text  x="13.00" y="479.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="261" width="37.6" height="15.0" fill="rgb(80,228,80)" rx="2" ry="2" />
+<text  x="13.00" y="271.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="341" width="37.6" height="15.0" fill="rgb(103,248,103)" rx="2" ry="2" />
+<text  x="13.00" y="351.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="437" width="150.0" height="15.0" fill="rgb(97,243,97)" rx="2" ry="2" />
+<text  x="151.30" y="447.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="405" width="371.5" height="15.0" fill="rgb(95,241,95)" rx="2" ry="2" />
+<text  x="529.83" y="415.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="581" width="150.0" height="15.0" fill="rgb(53,203,53)" rx="2" ry="2" />
+<text  x="151.30" y="591.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (3 samples, 0.05%)</title><rect x="897.1" y="53" width="0.6" height="15.0" fill="rgb(86,233,86)" rx="2" ry="2" />
+<text  x="900.11" y="63.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,377 samples, 23.46%)</title><rect x="913.2" y="229" width="276.8" height="15.0" fill="rgb(70,218,70)" rx="2" ry="2" />
+<text  x="916.19" y="239.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="325" width="150.0" height="15.0" fill="rgb(85,232,85)" rx="2" ry="2" />
+<text  x="151.30" y="335.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>v8::Function::Call (5,870 samples, 100.00%)</title><rect x="10.0" y="917" width="1180.0" height="15.0" fill="rgb(209,209,62)" rx="2" ry="2" />
+<text  x="13.00" y="927.5" >v8::Function::Call</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="453" width="100.7" height="15.0" fill="rgb(81,229,81)" rx="2" ry="2" />
+<text  x="50.59" y="463.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="581" width="100.7" height="15.0" fill="rgb(66,215,66)" rx="2" ry="2" />
+<text  x="50.59" y="591.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>prepare_exit_to_usermode (1 samples, 0.02%)</title><rect x="897.7" y="101" width="0.2" height="15.0" fill="rgb(238,106,106)" rx="2" ry="2" />
+<text  x="900.71" y="111.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="565" width="371.5" height="15.0" fill="rgb(59,208,59)" rx="2" ry="2" />
+<text  x="529.83" y="575.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>Builtins_InterpreterEntryTrampoline (5,870 samples, 100.00%)</title><rect x="10.0" y="741" width="1180.0" height="15.0" fill="rgb(204,55,55)" rx="2" ry="2" />
+<text  x="13.00" y="751.5" >Builtins_InterpreterEntryTrampoline</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (616 samples, 10.49%)</title><rect x="774.3" y="149" width="123.8" height="15.0" fill="rgb(96,242,96)" rx="2" ry="2" />
+<text  x="777.29" y="159.5" >LazyCompile:*fi..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="629" width="291.7" height="15.0" fill="rgb(73,221,73)" rx="2" ry="2" />
+<text  x="901.32" y="639.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="485" width="150.0" height="15.0" fill="rgb(83,230,83)" rx="2" ry="2" />
+<text  x="151.30" y="495.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>arch_local_irq_enable (1 samples, 0.02%)</title><rect x="897.7" y="85" width="0.2" height="15.0" fill="rgb(238,106,106)" rx="2" ry="2" />
+<text  x="900.71" y="95.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (910 samples, 15.50%)</title><rect x="343.9" y="197" width="182.9" height="15.0" fill="rgb(90,237,90)" rx="2" ry="2" />
+<text  x="346.90" y="207.5" >LazyCompile:*fibonacci ..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="645" width="228.5" height="15.0" fill="rgb(74,222,74)" rx="2" ry="2" />
+<text  x="301.27" y="655.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="357" width="371.5" height="15.0" fill="rgb(84,231,84)" rx="2" ry="2" />
+<text  x="529.83" y="367.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (150 samples, 2.56%)</title><rect x="118.1" y="133" width="30.2" height="15.0" fill="rgb(103,249,103)" rx="2" ry="2" />
+<text  x="121.15" y="143.5" >La..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="309" width="150.0" height="15.0" fill="rgb(78,225,78)" rx="2" ry="2" />
+<text  x="151.30" y="319.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="661" width="371.5" height="15.0" fill="rgb(109,254,109)" rx="2" ry="2" />
+<text  x="529.83" y="671.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="405" width="291.7" height="15.0" fill="rgb(63,212,63)" rx="2" ry="2" />
+<text  x="901.32" y="415.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="485" width="37.6" height="15.0" fill="rgb(85,232,85)" rx="2" ry="2" />
+<text  x="13.00" y="495.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (11 samples, 0.19%)</title><rect x="45.4" y="101" width="2.2" height="15.0" fill="rgb(70,218,70)" rx="2" ry="2" />
+<text  x="48.38" y="111.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,845 samples, 31.43%)</title><rect x="527.4" y="309" width="370.9" height="15.0" fill="rgb(76,224,76)" rx="2" ry="2" />
+<text  x="530.43" y="319.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="453" width="150.0" height="15.0" fill="rgb(98,244,98)" rx="2" ry="2" />
+<text  x="151.30" y="463.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="405" width="228.5" height="15.0" fill="rgb(100,246,100)" rx="2" ry="2" />
+<text  x="301.27" y="415.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>Builtins_InterpreterEntryTrampoline (5,870 samples, 100.00%)</title><rect x="10.0" y="789" width="1180.0" height="15.0" fill="rgb(227,89,89)" rx="2" ry="2" />
+<text  x="13.00" y="799.5" >Builtins_InterpreterEntryTrampoline</text>
+</g>
+<g >
+<title>Builtins_InterpreterEntryTrampoline (2,571 samples, 43.80%)</title><rect x="10.0" y="661" width="516.8" height="15.0" fill="rgb(246,117,117)" rx="2" ry="2" />
+<text  x="13.00" y="671.5" >Builtins_InterpreterEntryTrampoline</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="437" width="100.7" height="15.0" fill="rgb(66,214,66)" rx="2" ry="2" />
+<text  x="50.59" y="447.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="357" width="37.6" height="15.0" fill="rgb(96,242,96)" rx="2" ry="2" />
+<text  x="13.00" y="367.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (74 samples, 1.26%)</title><rect x="133.2" y="117" width="14.9" height="15.0" fill="rgb(81,228,81)" rx="2" ry="2" />
+<text  x="136.23" y="127.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="501" width="291.7" height="15.0" fill="rgb(91,238,91)" rx="2" ry="2" />
+<text  x="901.32" y="511.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>Builtins_InterpreterEntryTrampoline (5,870 samples, 100.00%)</title><rect x="10.0" y="837" width="1180.0" height="15.0" fill="rgb(246,118,118)" rx="2" ry="2" />
+<text  x="13.00" y="847.5" >Builtins_InterpreterEntryTrampoline</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="421" width="150.0" height="15.0" fill="rgb(58,207,58)" rx="2" ry="2" />
+<text  x="151.30" y="431.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>prepare_exit_to_usermode (1 samples, 0.02%)</title><rect x="148.1" y="101" width="0.2" height="15.0" fill="rgb(232,96,96)" rx="2" ry="2" />
+<text  x="151.10" y="111.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,135 samples, 19.34%)</title><rect x="298.7" y="325" width="228.1" height="15.0" fill="rgb(52,202,52)" rx="2" ry="2" />
+<text  x="301.67" y="335.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (46 samples, 0.78%)</title><rect x="288.6" y="101" width="9.3" height="15.0" fill="rgb(103,249,103)" rx="2" ry="2" />
+<text  x="291.62" y="111.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,848 samples, 31.48%)</title><rect x="526.8" y="437" width="371.5" height="15.0" fill="rgb(87,234,87)" rx="2" ry="2" />
+<text  x="529.83" y="447.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="341" width="291.7" height="15.0" fill="rgb(56,206,56)" rx="2" ry="2" />
+<text  x="901.32" y="351.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>Builtins_InterpreterEntryTrampoline (688 samples, 11.72%)</title><rect x="10.0" y="629" width="138.3" height="15.0" fill="rgb(230,94,94)" rx="2" ry="2" />
+<text  x="13.00" y="639.5" >Builtins_Interpre..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="389" width="150.0" height="15.0" fill="rgb(61,210,61)" rx="2" ry="2" />
+<text  x="151.30" y="399.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="613" width="100.7" height="15.0" fill="rgb(107,252,107)" rx="2" ry="2" />
+<text  x="50.59" y="623.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (3 samples, 0.05%)</title><rect x="526.2" y="53" width="0.6" height="15.0" fill="rgb(75,223,75)" rx="2" ry="2" />
+<text  x="529.22" y="63.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="309" width="37.6" height="15.0" fill="rgb(73,221,73)" rx="2" ry="2" />
+<text  x="13.00" y="319.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (922 samples, 15.71%)</title><rect x="712.8" y="165" width="185.3" height="15.0" fill="rgb(51,200,51)" rx="2" ry="2" />
+<text  x="715.77" y="175.5" >LazyCompile:*fibonacci /..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (501 samples, 8.53%)</title><rect x="47.6" y="501" width="100.7" height="15.0" fill="rgb(106,252,106)" rx="2" ry="2" />
+<text  x="50.59" y="511.5" >LazyCompile:..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (39 samples, 0.66%)</title><rect x="519.0" y="101" width="7.8" height="15.0" fill="rgb(78,225,78)" rx="2" ry="2" />
+<text  x="521.99" y="111.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,794 samples, 30.56%)</title><rect x="537.7" y="245" width="360.6" height="15.0" fill="rgb(106,252,106)" rx="2" ry="2" />
+<text  x="540.68" y="255.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="517" width="291.7" height="15.0" fill="rgb(58,207,58)" rx="2" ry="2" />
+<text  x="901.32" y="527.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (601 samples, 10.24%)</title><rect x="406.0" y="165" width="120.8" height="15.0" fill="rgb(84,231,84)" rx="2" ry="2" />
+<text  x="409.01" y="175.5" >LazyCompile:*fi..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (155 samples, 2.64%)</title><rect x="1158.8" y="117" width="31.2" height="15.0" fill="rgb(81,229,81)" rx="2" ry="2" />
+<text  x="1161.84" y="127.5" >La..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="469" width="228.5" height="15.0" fill="rgb(89,236,89)" rx="2" ry="2" />
+<text  x="301.27" y="479.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (60 samples, 1.02%)</title><rect x="1177.9" y="101" width="12.1" height="15.0" fill="rgb(54,204,54)" rx="2" ry="2" />
+<text  x="1180.94" y="111.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="421" width="228.5" height="15.0" fill="rgb(94,240,94)" rx="2" ry="2" />
+<text  x="301.27" y="431.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (163 samples, 2.78%)</title><rect x="864.9" y="117" width="32.8" height="15.0" fill="rgb(58,207,58)" rx="2" ry="2" />
+<text  x="867.95" y="127.5" >La..</text>
+</g>
+<g >
+<title>__irqentry_text_start (1 samples, 0.02%)</title><rect x="898.1" y="229" width="0.2" height="15.0" fill="rgb(242,111,111)" rx="2" ry="2" />
+<text  x="901.12" y="239.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (313 samples, 5.33%)</title><rect x="235.1" y="149" width="63.0" height="15.0" fill="rgb(74,222,74)" rx="2" ry="2" />
+<text  x="238.14" y="159.5" >LazyCo..</text>
+</g>
+<g >
+<title>Builtins_InterpreterEntryTrampoline (5,870 samples, 100.00%)</title><rect x="10.0" y="709" width="1180.0" height="15.0" fill="rgb(201,51,51)" rx="2" ry="2" />
+<text  x="13.00" y="719.5" >Builtins_InterpreterEntryTrampoline</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (4 samples, 0.07%)</title><rect x="147.3" y="69" width="0.8" height="15.0" fill="rgb(93,240,93)" rx="2" ry="2" />
+<text  x="150.30" y="79.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (230 samples, 3.92%)</title><rect x="102.1" y="149" width="46.2" height="15.0" fill="rgb(92,238,92)" rx="2" ry="2" />
+<text  x="105.07" y="159.5" >Lazy..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,137 samples, 19.37%)</title><rect x="298.3" y="565" width="228.5" height="15.0" fill="rgb(67,215,67)" rx="2" ry="2" />
+<text  x="301.27" y="575.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+<g >
+<title>v8::internal::Execution::Call (5,870 samples, 100.00%)</title><rect x="10.0" y="901" width="1180.0" height="15.0" fill="rgb(223,223,67)" rx="2" ry="2" />
+<text  x="13.00" y="911.5" >v8::internal::Execution::Call</text>
+</g>
+<g >
+<title>retint_user (1 samples, 0.02%)</title><rect x="897.9" y="133" width="0.2" height="15.0" fill="rgb(224,85,85)" rx="2" ry="2" />
+<text  x="900.91" y="143.5" ></text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,629 samples, 27.75%)</title><rect x="570.7" y="213" width="327.4" height="15.0" fill="rgb(93,239,93)" rx="2" ry="2" />
+<text  x="573.65" y="223.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>Builtins_InterpreterEntryTrampoline (1,434 samples, 24.43%)</title><rect x="10.0" y="645" width="288.3" height="15.0" fill="rgb(204,56,56)" rx="2" ry="2" />
+<text  x="13.00" y="655.5" >Builtins_InterpreterEntryTrampoline</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (746 samples, 12.71%)</title><rect x="148.3" y="469" width="150.0" height="15.0" fill="rgb(68,216,68)" rx="2" ry="2" />
+<text  x="151.30" y="479.5" >LazyCompile:*fibona..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (187 samples, 3.19%)</title><rect x="10.0" y="405" width="37.6" height="15.0" fill="rgb(94,241,94)" rx="2" ry="2" />
+<text  x="13.00" y="415.5" >Laz..</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,451 samples, 24.72%)</title><rect x="898.3" y="357" width="291.7" height="15.0" fill="rgb(96,243,96)" rx="2" ry="2" />
+<text  x="901.32" y="367.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,445 samples, 24.62%)</title><rect x="899.5" y="293" width="290.5" height="15.0" fill="rgb(60,209,60)" rx="2" ry="2" />
+<text  x="902.52" y="303.5" >LazyCompile:*fibonacci /root/index.js:6</text>
+</g>
+<g >
+<title>LazyCompile:*fibonacci /root/index.js:6 (1,135 samples, 19.34%)</title><rect x="298.7" y="309" width="228.1" height="15.0" fill="rgb(60,209,60)" rx="2" ry="2" />
+<text  x="301.67" y="319.5" >LazyCompile:*fibonacci /root/i..</text>
+</g>
+</g>
+</svg>

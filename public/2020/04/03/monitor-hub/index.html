@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>Node.js 监控中心架构迭代 - Miser 胡言</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
+<meta name="baidu-site-verification" content="CXKjj3fklD">
+
+<meta name="description" content="为了更好的做BFF层，最近看了一些网关资料，Node.js的网关类库相对薄弱很多。Express Gateway，背靠强大的Express社区，很多现成的中间件可以运用其中，省去了不少开发成本和风险。">
+ 
+<meta name="keywords" content="Express,Gateway,Node.js 网关">
+   
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-129526171-1');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      ul.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item " href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section">
+    <div class="container">
+    <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            Node.js 监控中心架构迭代
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-04-02T23:17:29.367Z" itemprop="datePublished">Apr 3 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>之前写了一篇<a href="https://miser.github.io/2020/02/21/node-perf-heapdump-flame-graph/" target="_blank" rel="noopener">收集 Node.js 应用的内存堆栈快照和 CPU 火焰图</a>文章，其中的架构非常粗糙，但是初步算是满足了现在的监控需求。不过随着业务的增长，单台<strong>TCP Server</strong>可定无法满足高可用的需求，一旦出现问题那就没办法持续使用了，所以需要一个重新设计和改造。</p>
+<a id="more"></a>
+<p><img src="/images/monitor-hub/image-20200403185942130.png" alt="粗糙的1.0版本"></p>
+<p><strong>大致流程介绍：</strong></p>
+<p>一个 Docker 中，可能运行多个 Node.js 进程，比如 Egg.js 框架，另外<code>Helper Process</code>是用来做火焰图采集的，前面的文章提到过，目前它的功能相对单一应该被优化。</p>
+<p>所有的 Node.js 进程都会被看做事一个<code>Client</code>通过 TCP 长连接连入<code>Server</code>，他们做双向通信，Client 将心跳和监控数据（CPU、内存、EventLoop、GC 等）源源不断送入 Server 中，Server 将对用的数据存入到 ES 中。</p>
+<p>用户通过<code>Admin Web</code>可以查看每个应用的基础数据图表，发送生成内存堆栈信息和 CPU 火焰图的信息给指定的 Client，Client 生成文件后上传到<code>FS</code>（文件系统），之后 Admin Web 去 FS 上抓取该文件。</p>
+<p><strong>Q:为什么是这样一个粗糙的设计？</strong></p>
+<ul>
+<li>以快速上线去生产验证可用性为目标之一，尽量减少对其它系统的依赖，依赖<code>ES</code>是为了存数据、<code>FS</code>是为了存文件，过多的依赖对于部署上线还是测试链路都是增加成本，在人力有限的情况下拖的越久越容易杀死项目。</li>
+</ul>
+<p><strong>Q:为什么用长链接而不是短链接？</strong></p>
+<ul>
+<li>长链接的好处在简单模型下有个最大的好处就是我不需要去维护客户端是否存活，因为一旦客户端挂了，那么它就会自动断开，既能发送监控警报，又不需要做相关的治理工作，治理工作又是一个细活。</li>
+<li>另外客户端没有将数据集中定时批量发送，而是每次取到相关数据就发送给 Server。为了减少开销就用了长链接，自定义的协议传输效率也高。</li>
+<li>在开发过程中，长链接的开发模型比短连接复杂很多，不容易维护。</li>
+</ul>
+<p><strong>Q:目前遇到的问题和思考</strong></p>
+<ul>
+<li>单机 Server 一旦挂了就没办法继续监控，导致的风险极大，需要做集群，但是长链接并不适合做扩展，所以必须长改短。</li>
+<li>如果 Server 是集群，那势必需要 Client 去找到它，那么将引入<code>服务注册和发现</code>功能，比如 Eureka、Consul 等，将 Client、Server 和 Admin Web 连入。</li>
+<li>有了 Eureka、Consul 之类中间件，其实 Admin Web 可以直接通过它找到 Client，不过为了功能单一性，还是让 Server 转发用户命令。</li>
+<li>之前的 Helper Process 是在做火焰图时候临时加入，所有的<code>Worker Process</code>都是平等的 Client，在启动它的时候存在竞争问题，哪里一个 Client 去启动它呢？可以做一个类似 Egg.js 的启动命令，有 Master 进程、数个 Worker 进程已经一个 Helper Process。当然在 Egg.js 框架里，完全可以用 Agent 进程代替它，写个相关插件即可。</li>
+<li>如果所有的 Client 和 Helper Process 都在 Master 下，那么我们可以通过 Helper Process 代理将所有的 Client 基础数据批量上传到 Server，通过父进程 Master 做转发，这样也减轻了不断传数据的性能瓶颈；另外所有的 Client 注册到注册中心也不合适，也可以通过 Helper Process 代理，这样每个 Docker 就一个服务注册了。</li>
+<li>生成文件的过程是漫长的，不可能让短链接一直等，所以需要一个消息列队去通知 Admin Web，XXXX Client 的 XXXX 文件已经好了，让它去 FS 上拉取，需要引入 RMQ 等。</li>
+<li>为 Admin Web 可以方便获取 Client 列表，可以将注册中心里的服务信息格式处理后存在 Redis 中，这样就引入了 Redis，如果不平凡刷新这个列表可以每次读取注册中心里的数据做格式处理。</li>
+</ul>
+<p><img src="/images/monitor-hub/image-20200403210837664.png" alt="迭代2.0版本"></p>
+<p><strong>综上思考</strong>，Server 依旧做信息的存储和命令的转发工作，Admin Web 依旧是操作命令的入口，而整个 Client 端偏向 Egg.js 的风格。渐渐的整个监控中心就变得像一个微服务集群那样存在和运行，不同阶段有不同阶段的任务目标，讲不定之后会有新的挑战需要迭代。</p>
+
+    
+    </div>
+    
+    <div class="columns is-variable is-1 is-multiline is-mobile">
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/Node-js/">#Node.js</a></span>
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/JavaScript/">#JavaScript</a></span>
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/性能监控/">#性能监控</a></span>
+    
+    </div>
+    
+    
+    <div class="columns is-mobile is-multiline article-nav">
+        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
+            
+            <a href="/2020/04/06/child_process-exec-fork-spawn/">简单梳理Node.js创建子进程的方法（上）</a>
+            
+        </span>
+        <span class="column is-12-mobile is-half-desktop  article-nav-next">
+            
+            <a href="/2020/03/01/v8-libuv-timer-event-loop/">libuv &amp; Node.js EventLoop （一）</a>
+            
+        </span>
+    </div>
+    
+</article>
+
+
+
+<div class="comments">
+    <ul class="adv">
+  <li class="img"><img src="/images/give-a-reward.png" alt="reward"></li>
+  <li>
+    欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a>前端组，<a href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3" target="_blank">岗位信息</a>
+  </li>
+  <li>
+    同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank">爱眠物</a>
+  </li>
+</ul>
+
+    <h3 class="title is-4">Comments</h3>
+    
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://mlib.wang/2020/04/03/monitor-hub/';
+        this.page.identifier = '2020/04/03/monitor-hub/';
+        
+        this.language = 'en';
+        
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'mblof' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</div>
+
+    </div>
+</section> <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Miser&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
+
+            
+            
+        </div>
+    </div>
+</footer> <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+<script src="/js/script.js"></script> 
+  </body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>Egg Cluster 简单介绍 - Miser 胡言</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
+<meta name="baidu-site-verification" content="CXKjj3fklD">
+
+<meta name="description" content="Egg.js的进程管理和通信自然不会像文章里说的那么简单，但大体如此。弄清楚它们的工作原理对开发程序、插件、中间件有很大的帮助，个人认为这个才是这个框架的精髓之处。">
+ 
+<meta name="keywords" content="进程管理,Eggjs启动,Egg Cluster">
+   
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-129526171-1');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      ul.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item " href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section">
+    <div class="container">
+    <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            Egg Cluster 简单介绍
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2019-01-18T05:48:01.464Z" itemprop="datePublished">Jan 18 2019</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>如果不清楚什么是Egg.js，希望能移步到它的<a href="https://eggjs.org" target="_blank" rel="noopener">官网</a>简单看下。另外说它是<strong>约定大于配置</strong>的话，我只能说你真的不了解它，或者说不了解框架，哪个框架没有约定？毕竟没有规矩不成方圆，何况是逻辑性的程序呢？官方列出的特性如下：</p>
+<blockquote>
+<p>1.提供基于 Egg <a href="https://eggjs.org/zh-cn/advanced/framework.html" target="_blank" rel="noopener">定制上层框架</a> 的能力<br>2.高度可扩展的<a href="https://eggjs.org/zh-cn/basics/plugin.html" target="_blank" rel="noopener">插件机制</a><br>3.内置<a href="https://eggjs.org/zh-cn/advanced/cluster-client.html" target="_blank" rel="noopener">多进程管理</a><br>4.基于 <a href="http://koajs.com/" target="_blank" rel="noopener">Koa</a> 开发，性能优异<br>5.框架稳定，测试覆盖率高<br>6.<a href="https://eggjs.org/zh-cn/tutorials/progressive.html" target="_blank" rel="noopener">渐进式开发</a></p>
+</blockquote>
+<p>第1条，它有那么Koa也有啊。第2条，它有，难道Koa、Express等就没有嘛？第4条，更好的补充了Koa不是更好吗？第5条，难道别的框架就不稳定了？第6条，前端鼓吹渐进式、后端也鼓吹，那究竟什么是渐进式呢？</p>
+<p>在我看来最吸引我的是第3条，<strong>内置多进程管理</strong>，这个在其它主流nodejs框架中是稀缺的特性，此文就简单聊聊它。</p>
+<a id="more"></a>
+<h3 id="从源码慢慢了解"><a href="#从源码慢慢了解" class="headerlink" title="#从源码慢慢了解"></a><strong>#从源码慢慢了解</strong></h3><ul>
+<li><strong>egg-core</strong>: 定义了一个<strong>EggCore</strong>类，它继承KoaApplication，也就是特性中提到的第4条 <em>基于Koa开发，性能优异</em></li>
+<li><strong>egg</strong>: 定义了一个继承于EggCore的<strong>EggApplication</strong>类，并且Application和Agent分别继承于EggApplication</li>
+<li><strong>egg-cluster</strong>: 这个类库主要就是做<strong>多进程管理</strong>的工作</li>
+</ul>
+<p><em>egg-cluster让Egg.js变得与众不同</em>，看看它做了什么。</p>
+<h3 id="egg-cluster"><a href="#egg-cluster" class="headerlink" title="egg-cluster"></a>egg-cluster</h3><figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// egg-cluster index.js 唯一对外暴露的接口 startCluster</span></span><br><span class="line">exports.startCluster = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">options, callback</span>) </span>&#123;</span><br><span class="line">    <span class="hljs-keyword">new</span> Master(options).ready(callback)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>egg-cluster就是靠Master在管理egg里面的angent和workers（application）,另外它也是它们之间通信的中转站，看下官网给出的图解：<br><img src="/images/egg-cluster/1.jpg" alt="Master-Agent-Works 模型"></p>
+<h3 id="Agent-Works怎么启动的？"><a href="#Agent-Works怎么启动的？" class="headerlink" title="Agent-Works怎么启动的？"></a>Agent-Works怎么启动的？</h3><figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Master</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">EventEmitter</span> </span>&#123;</span><br><span class="line">    <span class="hljs-keyword">constructor</span>(options) &#123;</span><br><span class="line">        <span class="hljs-keyword">this</span>.workerManager = <span class="hljs-keyword">new</span> Manager();</span><br><span class="line">    	<span class="hljs-keyword">this</span>.messenger = <span class="hljs-keyword">new</span> Messenger(<span class="hljs-keyword">this</span>);</span><br><span class="line">        <span class="hljs-comment">// ...</span></span><br><span class="line">		<span class="hljs-keyword">this</span>.once(<span class="hljs-string">'agent-start'</span>, <span class="hljs-keyword">this</span>.forkAppWorkers.bind(<span class="hljs-keyword">this</span>));</span><br><span class="line">        <span class="hljs-comment">// ...</span></span><br><span class="line">        detectPort(<span class="hljs-function">(<span class="hljs-params">err, port</span>) =&gt;</span> &#123;</span><br><span class="line">            <span class="hljs-comment">// 试着找个可以用的port</span></span><br><span class="line">            <span class="hljs-keyword">this</span>.options.clusterPort = port;</span><br><span class="line">            <span class="hljs-comment">// 启动 agent</span></span><br><span class="line">            <span class="hljs-keyword">this</span>.forkAgentWorker();</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="hljs-comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">    forkAgentWorker() &#123;</span><br><span class="line">        <span class="hljs-comment">// ... childprocess.fork egg-cluster/lib/agent_worker.js</span></span><br><span class="line">        <span class="hljs-keyword">const</span> agentWorker = childprocess.fork(<span class="hljs-keyword">this</span>.getAgentWorkerFile(), args, opt);</span><br><span class="line">        <span class="hljs-comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">    forkAppWorkers() &#123;</span><br><span class="line">        <span class="hljs-comment">// 将需要数量的 worker 一个个创建出来</span></span><br><span class="line">        <span class="hljs-comment">// cluster.fork egg-cluster/lib/agent_worker.js 它们将监听同一个服务端口</span></span><br><span class="line">        <span class="hljs-comment">// 创建 http或https服务</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>agent_worker.js主要逻辑就是创建egg类库里的Agent类，完成后发”agent-start”给父进程，触发Master的订阅创建Workers</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// egg-cluster/lib/agent_worker.js</span></span><br><span class="line"><span class="hljs-comment">// ...</span></span><br><span class="line">process.send(&#123; <span class="hljs-attr">action</span>: <span class="hljs-string">'agent-start'</span>, <span class="hljs-attr">to</span>: <span class="hljs-string">'master'</span> &#125;); </span><br><span class="line"><span class="hljs-comment">// ...</span></span><br></pre></td></tr></table></figure>
+<h3 id="Agent-Works怎么通信呢-IPC"><a href="#Agent-Works怎么通信呢-IPC" class="headerlink" title="Agent-Works怎么通信呢? (IPC)"></a>Agent-Works怎么通信呢? (<a href="https://eggjs.org/zh-cn/core/cluster-and-ipc.html" target="_blank" rel="noopener">IPC</a>)</h3><ul>
+<li>在Master中维护着一个Messenger（egg-cluster/lib/utils/messenger.js）实例</li>
+<li>EggApplication中维护了另一个Messenger（egg/lib/core/messenger.js）实例</li>
+</ul>
+<p>由于Agent和Worker(Application)都继承EggApplication，它们调用Messenger的时候会send到创建它们的Master里，然后Master再根据传过来的参数send给不同的Agent或Worker，Master里的转发逻辑如下。</p>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// egg-cluster master.js</span></span><br><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Master</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">EventEmitter</span> </span>&#123;</span><br><span class="line">    forkAppWorkers() &#123;</span><br><span class="line">        <span class="hljs-comment">// ...</span></span><br><span class="line">        cluster.on(<span class="hljs-string">'fork'</span>, worker =&gt; &#123;</span><br><span class="line">            <span class="hljs-comment">// ...</span></span><br><span class="line">            worker.on(<span class="hljs-string">'message'</span>, msg =&gt; &#123;</span><br><span class="line">            	<span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> msg === <span class="hljs-string">'string'</span>) msg = &#123; <span class="hljs-attr">action</span>: msg, <span class="hljs-attr">data</span>: msg &#125;;</span><br><span class="line">	            msg.from = <span class="hljs-string">'app'</span>;</span><br><span class="line">    	        <span class="hljs-keyword">this</span>.messenger.send(msg);</span><br><span class="line">            &#125;);</span><br><span class="line">            <span class="hljs-comment">// ...</span></span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">    forkAgentWorker() &#123;</span><br><span class="line">        <span class="hljs-comment">// ...</span></span><br><span class="line">        agentWorker.on(<span class="hljs-string">'message'</span>, msg =&gt; &#123;</span><br><span class="line">          <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> msg === <span class="hljs-string">'string'</span>) msg = &#123; <span class="hljs-attr">action</span>: msg, <span class="hljs-attr">data</span>: msg &#125;;</span><br><span class="line">          msg.from = <span class="hljs-string">'agent'</span>;</span><br><span class="line">          <span class="hljs-keyword">this</span>.messenger.send(msg);</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="hljs-comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// egg messenger.js</span></span><br><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Messenger</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">EventEmitter</span> </span>&#123;</span><br><span class="line">    send(action, data, to) &#123;</span><br><span class="line">        sendmessage(process, &#123;</span><br><span class="line">          action,</span><br><span class="line">          data,</span><br><span class="line">          to,</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一条信息必定有<strong>from</strong>…<strong>to</strong>…信息</p>
+<p><img src="/images/egg-cluster/2.jpg" alt="Master-Agent-Works 通信模型"></p>
+<h3 id="官网里提到的“多进程研发模式增强”"><a href="#官网里提到的“多进程研发模式增强”" class="headerlink" title="官网里提到的“多进程研发模式增强”"></a>官网里提到的“<a href="https://eggjs.org/zh-cn/advanced/cluster-client.html" target="_blank" rel="noopener">多进程研发模式增强</a>”</h3><p><img src="/images/egg-cluster/3.jpg" alt="一个程序运行n个worker连m个远程服务"></p>
+<ul>
+<li>n * m 个连接导致大量连接资源“浪费”</li>
+<li>减少Master转发带来的额外性能消耗</li>
+<li>另外，egg的作者们担心不当的IPC通信把Master搞挂，从而整个服务异常</li>
+</ul>
+<p>所以还有一种socket通信方式（使用了另一个库<a href="https://github.com/node-modules/cluster-client" target="_blank" rel="noopener">cluster-client</a>）：</p>
+<ul>
+<li>将Agent作为Leader，从服务端获取数据，并做缓存</li>
+<li>将Worker作为Follower，订阅Agent获取的数据</li>
+</ul>
+<p>典型的场景有，Leader（Agent）获取disconf里的配置、获取euerka里的服务等，Follower（Worker）使用这些配置和服务。</p>
+<p><img src="/images/egg-cluster/4.jpg" alt="socket通信"></p>
+<h3 id="cluster-client-源码一瞥"><a href="#cluster-client-源码一瞥" class="headerlink" title="cluster-client 源码一瞥"></a>cluster-client 源码一瞥</h3><figure class="highlight js hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ClusterClient</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span> </span>&#123;</span><br><span class="line">    <span class="hljs-comment">// ...</span></span><br><span class="line">    <span class="hljs-keyword">async</span> [init]() &#123;</span><br><span class="line">        <span class="hljs-keyword">const</span> name = <span class="hljs-keyword">this</span>.options.name;</span><br><span class="line">        <span class="hljs-keyword">const</span> port = <span class="hljs-keyword">this</span>.options.port;</span><br><span class="line">        <span class="hljs-keyword">let</span> server;</span><br><span class="line">        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.options.isLeader === <span class="hljs-literal">true</span>) &#123;</span><br><span class="line">          server = <span class="hljs-keyword">await</span> ClusterServer.create(name, port);</span><br><span class="line">          <span class="hljs-keyword">if</span> (!server) &#123;</span><br><span class="line">            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`create "<span class="hljs-subst">$&#123;name&#125;</span>" leader failed, the port:<span class="hljs-subst">$&#123;port&#125;</span> is occupied by other`</span>);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.options.isLeader === <span class="hljs-literal">false</span>) &#123;</span><br><span class="line">          <span class="hljs-comment">// wait for leader active</span></span><br><span class="line">          <span class="hljs-keyword">await</span> ClusterServer.waitFor(port, <span class="hljs-keyword">this</span>.options.maxWaitTime);</span><br><span class="line">        &#125; <span class="hljs-keyword">else</span> &#123;</span><br><span class="line">          debug(<span class="hljs-string">'[ClusterClient:%s] init cluster client, try to seize the leader on port:%d'</span>, name, port);</span><br><span class="line">          server = <span class="hljs-keyword">await</span> ClusterServer.create(name, port);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="hljs-keyword">if</span> (server) &#123;</span><br><span class="line">          <span class="hljs-keyword">this</span>[innerClient] = <span class="hljs-keyword">new</span> Leader(<span class="hljs-built_in">Object</span>.assign(&#123; server &#125;, <span class="hljs-keyword">this</span>.options));</span><br><span class="line">          debug(<span class="hljs-string">'[ClusterClient:%s] has seized port %d, and serves as leader client.'</span>, name, port);</span><br><span class="line">        &#125; <span class="hljs-keyword">else</span> &#123;</span><br><span class="line">          <span class="hljs-keyword">this</span>[innerClient] = <span class="hljs-keyword">new</span> Follower(<span class="hljs-keyword">this</span>.options);</span><br><span class="line">          debug(<span class="hljs-string">'[ClusterClient:%s] gives up seizing port %d, and serves as follower client.'</span>, name, port);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="hljs-comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>port数值就是上文开始处通过detectPort获取的clusterPort数值</li>
+<li>然后net.create 创建TCP服务，之后所有的Leader和Follower都会走它提供的服务进行socket通信</li>
+<li>Leader获取数据触发publish，传给订阅的Follower中</li>
+</ul>
+<p>cluster-client源码是很复杂的，中间还涉及到专递数据的格式，进行数据包的解析等等，这边就不扩展介绍了，有兴趣可以自己撸源码。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="#总结"></a><strong>#总结</strong></h3><p>Egg.js的进程管理和通信自然不会像文章里说的那么简单，但大体如此。弄清楚它们的工作原理对开发程序、插件、中间件有很大的帮助，个人认为这个才是这个框架的精髓之处。</p>
+
+    
+    </div>
+    
+    <div class="columns is-variable is-1 is-multiline is-mobile">
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/Node-js/">#Node.js</a></span>
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/JavaScript/">#JavaScript</a></span>
+    
+    </div>
+    
+    
+    <div class="columns is-mobile is-multiline article-nav">
+        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
+            
+            <a href="/2019/05/09/egg-boot/">Eggjs Boot</a>
+            
+        </span>
+        <span class="column is-12-mobile is-half-desktop  article-nav-next">
+            
+            <a href="/2018/11/17/vue-component-extends/">Vue Component 继承与复用</a>
+            
+        </span>
+    </div>
+    
+</article>
+
+
+
+<div class="comments">
+    <ul class="adv">
+  <li class="img"><img src="/images/give-a-reward.png" alt="reward"></li>
+  <li>
+    欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a>前端组，<a href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3" target="_blank">岗位信息</a>
+  </li>
+  <li>
+    同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank">爱眠物</a>
+  </li>
+</ul>
+
+    <h3 class="title is-4">Comments</h3>
+    
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://mlib.wang/2019/01/18/egg-cluster/';
+        this.page.identifier = '2019/01/18/egg-cluster/';
+        
+        this.language = 'en';
+        
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'mblof' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</div>
+
+    </div>
+</section> <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Miser&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
+
+            
+            
+        </div>
+    </div>
+</footer> <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+<script src="/js/script.js"></script> 
+  </body>
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>Eggjs Boot - Miser 胡言</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
+<meta name="baidu-site-verification" content="CXKjj3fklD">
+
+<meta name="description" content="This article will introduce the boot of Eggjs that is a Node.js web framework.It is based on Koa and can satisfy  your requirement through a large of plugins and middleware, even a your own framework. It is very important to create a cluster, an agent process and some worker processes when it is running. The cluster makes it stronger. Next, we can understand it by reading the source code.">
+ 
+<meta name="keywords" content="Eggjs Boot,Eggjs启动,Eggjs源码分析">
+   
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-129526171-1');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      ul.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item " href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section">
+    <div class="container">
+    <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            Eggjs Boot
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2019-05-09T07:01:08.568Z" itemprop="datePublished">May 9 2019</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h3 id="Preface"><a href="#Preface" class="headerlink" title="#Preface"></a><strong>#Preface</strong></h3><p>This article will introduce the boot of <a href="https://eggjs.org/" target="_blank" rel="noopener">Eggjs</a> that is a Node.js web framework.</p>
+<p>It is based on Koa and can satisfy  your requirement through a large of plugins and middleware, even a your own framework. It is very important to create a cluster, an agent process and some worker processes when it is running. The cluster makes it stronger. Next, we can understand it by reading the source code.</p>
+<p>Eggjs has a few major libs, egg-core、egg、egg-cluster、egg-bin、egg-scripts and so on.</p>
+<p><strong>egg-core</strong>: it extends Koa and is as a parent object of every agent and worker.</p>
+<p><strong>egg</strong>: it defines some actions for agent and worker,  you can almost use these actions to create an app of a single process.</p>
+<p><strong>egg-cluster</strong>: it creates a cluster and manages them.</p>
+<p><strong>egg-scripts and Egg-bin</strong>: their job is run the whole app in a different environment.</p>
+<p><br></p>
+<p><em><strong>Tips: We will discuss Eggjs with basing 2.x.x version.</strong></em></p>
+<p><br></p>
+<a id="more"></a>
+<h2 id="Scan-Libs-Code"><a href="#Scan-Libs-Code" class="headerlink" title="#Scan Libs Code"></a><strong>#Scan Libs Code</strong></h2><p><em>* The directory and the code segment are not whole content after this post, these major are only for a better explanation.</em></p>
+<h3 id="egg-core"><a href="#egg-core" class="headerlink" title="egg-core"></a><strong>egg-core</strong></h3><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">— lib</span><br><span class="line">  — / loader (dir)</span><br><span class="line">  — mixin (dir)</span><br><span class="line">  — utils (dir)</span><br><span class="line">  egg.js</span><br><span class="line">  lifecycle.js</span><br></pre></td></tr></table></figure>
+<p>The above is the directory structure of egg-core.The <em><strong>egg.js</strong></em> and folder of the <em><strong>loader</strong></em> are important to point for this lib.</p>
+<p>See egg.js</p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">const</span> KoaApplication = <span class="hljs-built_in">require</span>(<span class="hljs-string">'koa'</span>)</span><br><span class="line"><span class="hljs-keyword">const</span> Lifecycle = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./lifecycle'</span>)</span><br><span class="line"></span><br><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">EggCore</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">KoaApplication</span> </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">constructor</span>(options = &#123;&#125;) &#123;</span><br><span class="line">    <span class="hljs-comment">// ...</span></span><br><span class="line">    <span class="hljs-keyword">this</span>.lifecycle = <span class="hljs-keyword">new</span> Lifecycle(&#123;</span><br><span class="line">      baseDir: options.baseDir,</span><br><span class="line">      app: <span class="hljs-keyword">this</span>,</span><br><span class="line">      logger: <span class="hljs-keyword">this</span>.console</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    <span class="hljs-keyword">const</span> Loader = <span class="hljs-keyword">this</span>[EGG_LOADER]</span><br><span class="line">    assert(Loader, <span class="hljs-string">"Symbol.for('egg#loader') is required"</span>)</span><br><span class="line">    <span class="hljs-keyword">this</span>.loader = <span class="hljs-keyword">new</span> Loader(&#123;</span><br><span class="line">      baseDir: options.baseDir,</span><br><span class="line">      app: <span class="hljs-keyword">this</span>,</span><br><span class="line">      plugins: options.plugins,</span><br><span class="line">      logger: <span class="hljs-keyword">this</span>.console,</span><br><span class="line">      serverScope: options.serverScope,</span><br><span class="line">      env: options.env</span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="hljs-comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">  beforeStart(scope) &#123;</span><br><span class="line">    <span class="hljs-keyword">this</span>.lifecycle.registerBeforeStart(scope)</span><br><span class="line">  &#125;</span><br><span class="line">  ready(flagOrFunction) &#123;</span><br><span class="line">    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.lifecycle.ready(flagOrFunction)</span><br><span class="line">  &#125;</span><br><span class="line">  get [EGG_LOADER]() &#123;</span><br><span class="line">    <span class="hljs-keyword">return</span> <span class="hljs-built_in">require</span>(<span class="hljs-string">'./loader/egg_loader'</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>First, we can know why it is called that bases on Koa because EggCore extends KoaApplication.</p>
+<p>Second, it defines a few new fields in the construction function, such as <em>lifecycle</em> and <em>loader</em>. The <em>loader</em> field helps app for creating important feature include config、plugin、controller、extend、router、middleware、service and so on, it will load some js file in the special directory when the app is starting.</p>
+<p>Another side, both <em>beforeStart</em> and <em>ready</em> often are called when we need to write some plugins.</p>
+<h3 id="egg"><a href="#egg" class="headerlink" title="egg"></a><strong>egg</strong></h3><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">— / app</span><br><span class="line">— / config</span><br><span class="line">— / lib</span><br><span class="line">  - / core</span><br><span class="line">    - / messenger</span><br><span class="line">  - / jsdoc</span><br><span class="line">  - / loader</span><br><span class="line">  - agent.js</span><br><span class="line">  - application.js</span><br><span class="line">  - egg.js</span><br><span class="line">  - start.js</span><br><span class="line">- index.js</span><br></pre></td></tr></table></figure>
+<p>There is an egg.js file that is the same name in the egg-core, but it bases on <em>EggCore Class</em> and extends the lifecycle field, creates new messenger field and cluster field and dumps app config info.</p>
+<p>See egg.js</p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">const</span> EggCore = <span class="hljs-built_in">require</span>(<span class="hljs-string">'egg-core'</span>).EggCore</span><br><span class="line"><span class="hljs-keyword">const</span> cluster = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cluster-client'</span>)</span><br><span class="line"><span class="hljs-keyword">const</span> Messenger = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./core/messenger'</span>)</span><br><span class="line"></span><br><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">EggApplication</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">EggCore</span> </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">constructor</span>(options = &#123;&#125;) &#123;</span><br><span class="line">    <span class="hljs-keyword">this</span>.loader.loadConfig()</span><br><span class="line">    <span class="hljs-keyword">this</span>.messenger = Messenger.create(<span class="hljs-keyword">this</span>)</span><br><span class="line"></span><br><span class="line">    <span class="hljs-comment">// trigger serverDidReady hook when all app workers</span></span><br><span class="line">    <span class="hljs-comment">// and agent worker is ready</span></span><br><span class="line">    <span class="hljs-keyword">this</span>.messenger.once(<span class="hljs-string">'egg-ready'</span>, () =&gt; &#123;</span><br><span class="line">      <span class="hljs-keyword">this</span>.lifecycle.triggerServerDidReady()</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    <span class="hljs-keyword">this</span>.ready(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span></span><br><span class="line">      process.nextTick(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="hljs-keyword">const</span> dumpStartTime = <span class="hljs-built_in">Date</span>.now()</span><br><span class="line">        <span class="hljs-keyword">this</span>.dumpConfig()</span><br><span class="line">        <span class="hljs-keyword">this</span>.dumpTiming()</span><br><span class="line">        <span class="hljs-keyword">this</span>.coreLogger.info(</span><br><span class="line">          <span class="hljs-string">'[egg:core] dump config after ready, %s'</span>,</span><br><span class="line">          ms(<span class="hljs-built_in">Date</span>.now() - dumpStartTime)</span><br><span class="line">        )</span><br><span class="line">      &#125;)</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    <span class="hljs-keyword">this</span>.cluster = <span class="hljs-function">(<span class="hljs-params">clientClass, options</span>) =&gt;</span> &#123;</span><br><span class="line">      options = <span class="hljs-built_in">Object</span>.assign(&#123;&#125;, <span class="hljs-keyword">this</span>.config.clusterClient, options, &#123;</span><br><span class="line">        singleMode: <span class="hljs-keyword">this</span>.options.mode === <span class="hljs-string">'single'</span>,</span><br><span class="line">        <span class="hljs-comment">// cluster need a port that can't conflict on the environment</span></span><br><span class="line">        port: <span class="hljs-keyword">this</span>.options.clusterPort,</span><br><span class="line">        <span class="hljs-comment">// agent worker is leader, app workers are follower</span></span><br><span class="line">        isLeader: <span class="hljs-keyword">this</span>.type === <span class="hljs-string">'agent'</span>,</span><br><span class="line">        logger: <span class="hljs-keyword">this</span>.coreLogger</span><br><span class="line">      &#125;)</span><br><span class="line">      <span class="hljs-keyword">const</span> client = cluster(clientClass, options)</span><br><span class="line">      <span class="hljs-keyword">this</span>._patchClusterClient(client)</span><br><span class="line">      <span class="hljs-keyword">return</span> client</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>See agent.js and application.js</p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// agent.js</span></span><br><span class="line"><span class="hljs-keyword">const</span> EggApplication = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./egg'</span>)</span><br><span class="line"><span class="hljs-keyword">const</span> AgentWorkerLoader = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./loader'</span>).AgentWorkerLoader</span><br><span class="line"><span class="hljs-keyword">const</span> EGG_LOADER = <span class="hljs-built_in">Symbol</span>.for(<span class="hljs-string">'egg#loader'</span>)</span><br><span class="line"></span><br><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Agent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">EggApplication</span> </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">constructor</span>(options = &#123;&#125;) &#123;</span><br><span class="line">    options.type = <span class="hljs-string">'agent'</span></span><br><span class="line">    <span class="hljs-keyword">super</span>(options)</span><br><span class="line">    <span class="hljs-keyword">this</span>.loader.load()</span><br><span class="line">  &#125;</span><br><span class="line">  get [EGG_LOADER]() &#123;</span><br><span class="line">    <span class="hljs-keyword">return</span> AgentWorkerLoader</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// application.js</span></span><br><span class="line"><span class="hljs-keyword">const</span> EggApplication = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./egg'</span>)</span><br><span class="line"><span class="hljs-keyword">const</span> AgentWorkerLoader = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./loader'</span>).AppWorkerLoader</span><br><span class="line"><span class="hljs-keyword">const</span> EGG_LOADER = <span class="hljs-built_in">Symbol</span>.for(<span class="hljs-string">'egg#loader'</span>)</span><br><span class="line"></span><br><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Application</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">EggApplication</span> </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">constructor</span>(options = &#123;&#125;) &#123;</span><br><span class="line">    options.type = <span class="hljs-string">'application'</span></span><br><span class="line">    <span class="hljs-keyword">super</span>(options)</span><br><span class="line">    <span class="hljs-keyword">this</span>.loader.load()</span><br><span class="line">  &#125;</span><br><span class="line">  get [EGG_LOADER]() &#123;</span><br><span class="line">    <span class="hljs-keyword">return</span> AppWorkerLoader</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>We can see that they override the _EGG_LOADER_ property, which uses to create a new <em>loader</em> field in the construction of EggCore that is their parent class. Finally, they call the <em>load</em> function.</p>
+<p>We have the base application code. rNext, look a few of libs for starting web app.</p>
+<h3 id="egg-scripts-and-egg-bin"><a href="#egg-scripts-and-egg-bin" class="headerlink" title="egg-scripts and egg-bin"></a><strong>egg-scripts and egg-bin</strong></h3><p>Both these libs start the web app in a different environment. Egg-scripts is easier and more clear, uses the production environment. Egg-bin has much code for helping debug, dev, test and so on, we usually use it in the dev, debug or test environment. We almost don’t know them at most of time.</p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// package.json</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="hljs-string">"scripts"</span>: &#123;</span><br><span class="line">    <span class="hljs-string">"start"</span>: <span class="hljs-string">"env egg-scripts start"</span>,</span><br><span class="line">    <span class="hljs-string">"dev"</span>: <span class="hljs-string">"env egg-bin dev"</span>,</span><br><span class="line">    <span class="hljs-string">"stop"</span>: <span class="hljs-string">"egg-scripts stop"</span>,</span><br><span class="line">    <span class="hljs-string">"debug"</span>: <span class="hljs-string">"egg-bin debug"</span>,</span><br><span class="line">    <span class="hljs-string">"test"</span>: <span class="hljs-string">"npm run lint -- --fix &amp;&amp; npm run test-local"</span>,</span><br><span class="line">    <span class="hljs-string">"test-local"</span>: <span class="hljs-string">"env egg-bin test"</span>,</span><br><span class="line">    <span class="hljs-string">"cov"</span>: <span class="hljs-string">"egg-bin cov"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The <em>scripts</em> command of this eggjs app conforms to the above description.</p>
+<h3 id="egg-cluster"><a href="#egg-cluster" class="headerlink" title="egg-cluster"></a><strong>egg-cluster</strong></h3><p>The cluster is an important feature for Eggjs. This lib is a bridge for connecting one single agent process and many workers processes. It like a manager.</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- / lib</span><br><span class="line">  - / utils</span><br><span class="line">  - agent_worker.js</span><br><span class="line">  - app_worker.js</span><br><span class="line">  - master.js</span><br><span class="line">- index.js</span><br></pre></td></tr></table></figure>
+<p>I had written an <a href="/2019/01/18/egg-cluster">article</a> about egg-cluster in Chinese. I always think this is the core of Eggjs, so I will explain the whole Eggjs framework around it.</p>
+<h2 id="From-start-to-getting-the-first-request"><a href="#From-start-to-getting-the-first-request" class="headerlink" title="#From start to getting the first request"></a><strong>#From start to getting the first request</strong></h2><p><strong>What happens when we input <code>npm run dev</code> or <code>npm start</code> in the terminal?</strong></p>
+<ul>
+<li><strong>egg-scripts(prod):</strong> it can require <em>framework</em> by <code>child_process.spawn</code> and calls <em>startCluster</em> function.</li>
+<li><strong>egg-bin(dev):</strong> it can require <em>framework</em> by <code>child_process.fork</code> and calls <em>startCluster</em> function.</li>
+<li><code>[parent process]</code>: The command of running is in one process called the parent process. The system will create a new process called the master process when the parent process requires a framework.As usual, the <code>framework</code> is the file path of Eggjs.If you want to use a custom framework, you can add a param in the command, such as <code>--framework { your path }</code></li>
+</ul>
+<p><strong>Pseudo Code</strong></p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// egg-scripts</span></span><br><span class="line"><span class="hljs-comment">// parent process</span></span><br><span class="line"><span class="hljs-keyword">const</span> spawn = <span class="hljs-built_in">require</span>(<span class="hljs-string">'child_process'</span>).spawn <span class="hljs-comment">// create new process</span></span><br><span class="line">spawn(<span class="hljs-string">'node'</span>, <span class="hljs-string">'require(&#123;&#123; framework path &#125;&#125;).startCluster(...)'</span>, options))</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// egg-bin</span></span><br><span class="line"><span class="hljs-comment">// parent process</span></span><br><span class="line"><span class="hljs-keyword">const</span> cp = <span class="hljs-built_in">require</span>(<span class="hljs-string">'child_process'</span>)</span><br><span class="line">cp.fork(<span class="hljs-string">'require(&#123;&#123; framework path &#125;&#125;).startCluster(...)'</span>, args, options) <span class="hljs-comment">// create new process</span></span><br></pre></td></tr></table></figure>
+<p>Egg-scripts uses <code>spawn</code> function to require framework while egg-scripts calls <code>fork</code> function.The latter is a special case of the former. Egg-bin has more code than egg-scripts, these features help us for developing or debug the app.</p>
+<p>We have two processes. In general, this newly created process is called the master process.</p>
+<p><strong>Why is the master process called birdge?</strong></p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// egg index.js</span></span><br><span class="line">exports.startCluster = <span class="hljs-built_in">require</span>(<span class="hljs-string">'egg-cluster'</span>).startCluster</span><br></pre></td></tr></table></figure>
+<p>Actually, we exec <code>egg-cluster</code>‘s startCluster function when we require the framework. We open <code>index.js</code> file in the egg-cluster lib. </p>
+<p><strong>First, it is real enter point for whole web app.</strong></p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// index.js</span></span><br><span class="line"><span class="hljs-keyword">const</span> Master = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./lib/master'</span>)</span><br><span class="line">exports.startCluster = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">options, callback</span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">new</span> Master(options).ready(callback)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// ./lib/master.js</span></span><br><span class="line"><span class="hljs-keyword">const</span> ready = <span class="hljs-built_in">require</span>(<span class="hljs-string">'get-ready'</span>)</span><br><span class="line"><span class="hljs-keyword">const</span> detectPort = <span class="hljs-built_in">require</span>(<span class="hljs-string">'detect-port'</span>)</span><br><span class="line"><span class="hljs-keyword">const</span> Manager = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./utils/manager'</span>)</span><br><span class="line"><span class="hljs-keyword">const</span> Messenger = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./utils/messenger'</span>)</span><br><span class="line"></span><br><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Master</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">EventEmitter</span> </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">constructor</span>(options) &#123;</span><br><span class="line">    <span class="hljs-keyword">super</span>()</span><br><span class="line">    <span class="hljs-keyword">this</span>.options = parseOptions(options)</span><br><span class="line">    <span class="hljs-keyword">this</span>.workerManager = <span class="hljs-keyword">new</span> Manager()</span><br><span class="line">    <span class="hljs-keyword">this</span>.messenger = <span class="hljs-keyword">new</span> Messenger(<span class="hljs-keyword">this</span>)</span><br><span class="line"></span><br><span class="line">    ready.mixin(<span class="hljs-keyword">this</span>)</span><br><span class="line"></span><br><span class="line">    <span class="hljs-keyword">this</span>.ready(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="hljs-keyword">this</span>.isStarted = <span class="hljs-literal">true</span></span><br><span class="line">      <span class="hljs-keyword">const</span> action = <span class="hljs-string">'egg-ready'</span></span><br><span class="line">      <span class="hljs-keyword">this</span>.messenger.send(&#123;</span><br><span class="line">        action,</span><br><span class="line">        to: <span class="hljs-string">'parent'</span>,</span><br><span class="line">        data: &#123; <span class="hljs-attr">port</span>: <span class="hljs-keyword">this</span>[REALPORT], <span class="hljs-attr">address</span>: <span class="hljs-keyword">this</span>[APP_ADDRESS] &#125;</span><br><span class="line">      &#125;)</span><br><span class="line">      <span class="hljs-keyword">this</span>.messenger.send(&#123; action, <span class="hljs-attr">to</span>: <span class="hljs-string">'app'</span>, <span class="hljs-attr">data</span>: <span class="hljs-keyword">this</span>.options &#125;)</span><br><span class="line">      <span class="hljs-keyword">this</span>.messenger.send(&#123; action, <span class="hljs-attr">to</span>: <span class="hljs-string">'agent'</span>, <span class="hljs-attr">data</span>: <span class="hljs-keyword">this</span>.options &#125;)</span><br><span class="line"></span><br><span class="line">      <span class="hljs-comment">// start check agent and worker status</span></span><br><span class="line">      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.isProduction) &#123;</span><br><span class="line">        <span class="hljs-keyword">this</span>.workerManager.startCheck()</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    <span class="hljs-comment">// fork app workers after agent started</span></span><br><span class="line">    <span class="hljs-keyword">this</span>.once(<span class="hljs-string">'agent-start'</span>, <span class="hljs-keyword">this</span>.forkAppWorkers.bind(<span class="hljs-keyword">this</span>))</span><br><span class="line"></span><br><span class="line">    detectPort(<span class="hljs-function">(<span class="hljs-params">err, port</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="hljs-comment">/* istanbul ignore if */</span></span><br><span class="line">      <span class="hljs-keyword">if</span> (err) &#123;</span><br><span class="line">        err.name = <span class="hljs-string">'ClusterPortConflictError'</span></span><br><span class="line">        err.message = <span class="hljs-string">'[master] try get free port error, '</span> + err.message</span><br><span class="line">        <span class="hljs-keyword">this</span>.logger.error(err)</span><br><span class="line">        process.exit(<span class="hljs-number">1</span>)</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="hljs-keyword">this</span>.options.clusterPort = port</span><br><span class="line">      <span class="hljs-keyword">this</span>.forkAgentWorker()</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">  forkAppWorkers() &#123;</span><br><span class="line">    <span class="hljs-comment">// ...</span></span><br><span class="line">    cluster.on(<span class="hljs-string">'fork'</span>, worker =&gt; &#123;</span><br><span class="line">      <span class="hljs-comment">// ...</span></span><br><span class="line">      worker.on(<span class="hljs-string">'message'</span>, msg =&gt; &#123;</span><br><span class="line">        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> msg === <span class="hljs-string">'string'</span>) msg = &#123; <span class="hljs-attr">action</span>: msg, <span class="hljs-attr">data</span>: msg &#125;;</span><br><span class="line">        msg.from = <span class="hljs-string">'app'</span>;</span><br><span class="line">        <span class="hljs-keyword">this</span>.messenger.send(msg);</span><br><span class="line">      &#125;);</span><br><span class="line">      <span class="hljs-comment">// ...</span></span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">  forkAgentWorker() &#123;</span><br><span class="line">    <span class="hljs-comment">// ...</span></span><br><span class="line">    agentWorker.on(<span class="hljs-string">'message'</span>, msg =&gt; &#123;</span><br><span class="line">      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> msg === <span class="hljs-string">'string'</span>) msg = &#123; <span class="hljs-attr">action</span>: msg, <span class="hljs-attr">data</span>: msg &#125;;</span><br><span class="line">      msg.from = <span class="hljs-string">'agent'</span>;</span><br><span class="line">      <span class="hljs-keyword">this</span>.messenger.send(msg);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="hljs-comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// the callback of ready function will be trigger after all major boots had been loaded</span></span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// forkAgentWorker</span></span><br><span class="line"><span class="hljs-keyword">const</span> agent = <span class="hljs-keyword">new</span> Agent(options)</span><br><span class="line">agent.ready(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span></span><br><span class="line">  process.send(&#123; <span class="hljs-attr">action</span>: <span class="hljs-string">'agent-start'</span>, <span class="hljs-attr">to</span>: <span class="hljs-string">'master'</span> &#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// fork a single worker</span></span><br><span class="line"><span class="hljs-keyword">const</span> app = <span class="hljs-keyword">new</span> Application(options);</span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">startServer</span>(<span class="hljs-params">err</span>) </span>&#123;  </span><br><span class="line">  <span class="hljs-keyword">let</span> server;</span><br><span class="line">  <span class="hljs-keyword">if</span> (options.https) &#123;</span><br><span class="line">    <span class="hljs-keyword">const</span> httpsOptions = <span class="hljs-built_in">Object</span>.assign(&#123;&#125;, options.https, &#123;</span><br><span class="line">      key: fs.readFileSync(options.https.key),</span><br><span class="line">      cert: fs.readFileSync(options.https.cert),</span><br><span class="line">    &#125;);</span><br><span class="line">    server = <span class="hljs-built_in">require</span>(<span class="hljs-string">'https'</span>).createServer(httpsOptions, app.callback());</span><br><span class="line">  &#125; <span class="hljs-keyword">else</span> &#123;</span><br><span class="line">    server = <span class="hljs-built_in">require</span>(<span class="hljs-string">'http'</span>).createServer(app.callback());</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="hljs-comment">// emit `server` event in app</span></span><br><span class="line">  app.emit(<span class="hljs-string">'server'</span>, server);</span><br><span class="line">  </span><br><span class="line">  server.listen(...args);</span><br><span class="line">&#125;</span><br><span class="line">app.ready(startServer);</span><br></pre></td></tr></table></figure>
+<p>On the other hand, this web will be constructed during creating a <code>Master</code> object.</p>
+<ul>
+<li>workerManager: it will hold on all worker porcesses.</li>
+<li>messenger: we make <code>master</code> a transit station that helps process for communicating (IPC). If you read more code, you can get it. I have said above that it is a bridge. I have write an <a href="[http://localhost:4000/2019/01/18/egg-cluster/#Agent-Works%E6%80%8E%E4%B9%88%E9%80%9A%E4%BF%A1%E5%91%A2-IPC](http://localhost:4000/2019/01/18/egg-cluster/#Agent-Works怎么通信呢-IPC">article(Chinese)</a>) about it.</li>
+</ul>
+<blockquote>
+<ul>
+<li>The Master maintains a Messenger instance (egg-cluster/lib/utils/messenger.js)</li>
+<li>EggApplication maintain the other Messenge instance （egg/lib/core/messenger.js）</li>
+<li>Both the agent and worker process base on EggApplication, them can send info to the master process creating them when calling Messenger. The master process is according to entering params to transmit to the agent or worker, you read forkAppWorkers and forkAgentWorker function in the master</li>
+</ul>
+</blockquote>
+<ul>
+<li><p>ready.mixin &amp; this.ready: ‘get-ready’ often is used by the official when an object need trigger a few callbacks after it whole initializes. Here it will broadcast an event to the parent, workers and then agent process, telling them that I am ok.</p>
+</li>
+<li><p>detectPort: apply for an available port, default is 7001.If Successly, it will <code>fork</code> an agent process and register a callback message for new created an agent object.</p>
+</li>
+<li><p><code>[agent process]</code>: create new Agent and run loadPlugin, loadConfig, loadAgentExtend, loadContextExtend, and loadCustomAgent.</p>
+<ul>
+<li><p>loadPlugin: find all plugin, record their dir paths =&gt; this.dirs</p>
+</li>
+<li><p>loadConfig: merge all config, the config content of the app level is more priority than the framework and the latter is more priority than the plugin.</p>
+</li>
+<li>loadAgentExtend: load and merge all of the extending of agent object  (<em>app &gt; plugin &gt; core</em>)</li>
+<li>loadContextExtend: load and merge all of the extending of context object  (<em>app &gt; plugin &gt; core</em>)</li>
+<li>loadCustomAgent: it is important that the lifecycle of app boot will be serially triggered. This lifecycle field is defined in EggCore constructor, we can look at the whole process in the yellow background under the image.【<a href="https://eggjs.org/en/basics/app-start.html" target="_blank" rel="noopener">Application Startup Configuration(official)</a>】. It help you for better writing a few plugins.</li>
+<li>Last, all major boots had been loaded, the agent process will trigger function registered in the callback array, such as sending <code>&#39;agent-start&#39;</code> to the master process.</li>
+</ul>
+</li>
+</ul>
+<p><img src="/images/egg-boot/egg-boot.jpg" alt="egg boot process"></p>
+<ul>
+<li><p><code>[master process]</code>: start to fork a few worker processes in accordance with specifying or using the default being CPU kernel count after the master process get <code>&#39;agent-start&#39;</code> message from the agent process. It will open a new relatable load, we take a single worker process example.</p>
+</li>
+<li><p><code>[a single worker process]</code>: create new Agent and run loadPlugin, loadConfig, loadApplicationExtend, loadRequestExtend, loadResponseExtend, loadContextExtend, loadHelperExtend, loadCustomApp, loadService, loadMiddleware, loadController, loadRouter, and loadCustomLoader.</p>
+<ul>
+<li><p>loadPlugin: same as the agent</p>
+</li>
+<li><p>loadConfig: same as the agent</p>
+</li>
+<li><p>loadApplicationExtend: same as the agent  (<em>app &gt; plugin &gt; core</em>)</p>
+</li>
+<li><p>loadRequestExtend: load and merge all of the extending of request object (<em>app &gt; plugin &gt; core</em>)</p>
+</li>
+<li><p>loadResponseExtend: load and merge all of the extending of response object (<em>app &gt; plugin &gt; core</em>)</p>
+</li>
+<li><p>loadContextExtend: same as the agent</p>
+</li>
+<li><p>loadHelperExtend: load and merge all of the extending of helper object (<em>app &gt; plugin &gt; core</em>)</p>
+</li>
+<li><p>loadCustomApp: same as the agent （<em>app &gt; plugin</em>）</p>
+</li>
+<li><p>loadService: load and merge all of the extending of helper object （<em>app &gt; plugin</em>）</p>
+</li>
+<li><p>loadMiddleware: load middlewares and iterate them =&gt; mw, if it conforms the middleware standard, it will be used with app.use(mw) （<em>app &gt; plugin &gt; core</em>）</p>
+</li>
+<li><p>loadController: iterate all controllers’ functions =&gt; key, wrap a function, make it be a middleware function and is bound to controller.xxx.xxx (only <em>app</em>). This middleware will be triggered when getting a new request, the Controller is defined in the <code>app/controller</code> directory and the key is it’s function.</p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">methodToMiddleware</span>(<span class="hljs-params">Controller, key</span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">classControllerMiddleware</span>(<span class="hljs-params">...args</span>) </span>&#123;</span><br><span class="line">    <span class="hljs-keyword">const</span> controller = <span class="hljs-keyword">new</span> Controller(<span class="hljs-keyword">this</span>);</span><br><span class="line">    <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.app.config.controller || !<span class="hljs-keyword">this</span>.app.config.controller.supportParams) &#123;</span><br><span class="line">      args = [ <span class="hljs-keyword">this</span> ];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="hljs-keyword">return</span> utils.callFn(controller[key], args, controller);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>loadRouter: it makes request’s path associated with the controllers’ function that has been become to middleware (only <em>app</em>)</p>
+</li>
+<li><p>loadCustomLoader: load ourselves function to create some built-in objects for app object or other.<a href="https://eggjs.org/en/advanced/loader.html#customloader" target="_blank" rel="noopener">Customloader</a></p>
+</li>
+</ul>
+<ul>
+<li><code>[master process]</code>: it listens to all worker processes and triggers the master’s ready once they have finished booting.</li>
+<li>send <code>egg-ready</code> to the parent process, the agent process, the app worker processes</li>
+<li>Last, traverse BOOTS and run serverDidReady function of each item.</li>
+</ul>
+<p>It is the whole boot for Eggjs framework but doesn’t include, such as restarting a worker process when it exits or disconnects,  shuting down…</p>
+<p><strong>Second, every process is alone if we have not the master. It like a bridge organizing all island, from creation to IPC.</strong></p>
+<p><strong>What happens when web app get an Http request?</strong></p>
+<p><em>We only discuss Eggjs code in the applaction layer. :)</em></p>
+<p>The <code>agent</code> can’t deal with any request because it doesn’t listen port. All request always hand over to <code>workers</code>. We look at creating worker code, it will run a app.callback function and listen port when it has booted.</p>
+<p>This callback is the members of Appliaction in Koa. If server get new request, it will create a new context and handle it. In Eggjs, this handleRequest function has been overwrited. Last, the framework will iterate over all middleware under the current route including the converted controller’s function.</p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// koa/lib/application</span></span><br><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Application</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Emitter</span> </span>&#123;</span><br><span class="line">  callback() &#123;</span><br><span class="line">    <span class="hljs-keyword">const</span> fn = compose(<span class="hljs-keyword">this</span>.middleware);</span><br><span class="line"></span><br><span class="line">    <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.listenerCount(<span class="hljs-string">'error'</span>)) <span class="hljs-keyword">this</span>.on(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">this</span>.onerror);</span><br><span class="line"></span><br><span class="line">    <span class="hljs-keyword">const</span> handleRequest = <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="hljs-keyword">const</span> ctx = <span class="hljs-keyword">this</span>.createContext(req, res);</span><br><span class="line">      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.handleRequest(ctx, fn);</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="hljs-keyword">return</span> handleRequest;</span><br><span class="line">  &#125;</span><br><span class="line">  handleRequest(ctx, fnMiddleware) &#123;</span><br><span class="line">    <span class="hljs-keyword">const</span> res = ctx.res;</span><br><span class="line">    res.statusCode = <span class="hljs-number">404</span>;</span><br><span class="line">    <span class="hljs-keyword">const</span> onerror = <span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> ctx.onerror(err);</span><br><span class="line">    <span class="hljs-keyword">const</span> handleResponse = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> respond(ctx);</span><br><span class="line">    onFinished(res, onerror);</span><br><span class="line">    <span class="hljs-keyword">return</span> fnMiddleware(ctx).then(handleResponse).catch(onerror);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// egg/lib/application</span></span><br><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Application</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">EggApplication</span> </span>&#123;</span><br><span class="line">	handleRequest(ctx, fnMiddleware) &#123;</span><br><span class="line">    <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'request'</span>, ctx)</span><br><span class="line">    <span class="hljs-keyword">super</span>.handleRequest(ctx, fnMiddleware)</span><br><span class="line">    onFinished(ctx.res, () =&gt; <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'response'</span>, ctx))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>In summary, we have know how to boot web app and deal with request in Eggjs.</strong> When we know it, we can easily write some plugins and middlewares to finish the business requirements.</p>
+
+    
+    </div>
+    
+    <div class="columns is-variable is-1 is-multiline is-mobile">
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/Node-js/">#Node.js</a></span>
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/JavaScript/">#JavaScript</a></span>
+    
+    </div>
+    
+    
+    <div class="columns is-mobile is-multiline article-nav">
+        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
+            
+            <a href="/2019/06/19/bec/">Set A Flag</a>
+            
+        </span>
+        <span class="column is-12-mobile is-half-desktop  article-nav-next">
+            
+            <a href="/2019/01/18/egg-cluster/">Egg Cluster 简单介绍</a>
+            
+        </span>
+    </div>
+    
+</article>
+
+
+
+<div class="comments">
+    <ul class="adv">
+  <li class="img"><img src="/images/give-a-reward.png" alt="reward"></li>
+  <li>
+    欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a>前端组，<a href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3" target="_blank">岗位信息</a>
+  </li>
+  <li>
+    同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank">爱眠物</a>
+  </li>
+</ul>
+
+    <h3 class="title is-4">Comments</h3>
+    
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://mlib.wang/2019/05/09/egg-boot/';
+        this.page.identifier = '2019/05/09/egg-boot/';
+        
+        this.language = 'en';
+        
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'mblof' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</div>
+
+    </div>
+</section> <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Miser&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
+
+            
+            
+        </div>
+    </div>
+</footer> <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+<script src="/js/script.js"></script> 
+  </body>
+</html>

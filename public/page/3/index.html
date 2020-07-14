@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>Miser 胡言</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
+<meta name="baidu-site-verification" content="CXKjj3fklD">
+    
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-129526171-1');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      ul.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item " href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section">
+    <div class="container">
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2019/12/30/summary-2019/" itemprop="url">2019 工作总结</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2019-12-30T15:30:00.000Z" itemprop="datePublished">Dec 30 2019</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/work/">work</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <blockquote>
+<p>It was the best of times, it was the worst of times.</p>
+</blockquote>
+<p>如果真要用一句话形容2019年工作的话，上述的<strong>双城记</strong>节选我觉得是极好。大概2018年尾的时候，公司的前端团队开始用Node.js做些后端业务等相关的工作并积累经验，与现有的Java基础架构做融合，微服务<a href="https://github.com/Netflix/eureka" target="_blank" rel="noopener">Eureka</a>、分布式协调服务<a href="https://zookeeper.apache.org/" target="_blank" rel="noopener">ZooKeeper</a>、分布式配置管理平台<a href="https://disconf.readthedocs.io/zh_CN/latest/" target="_blank" rel="noopener">Discon</a>、应用监控<a href="https://github.com/dianping/cat" target="_blank" rel="noopener">Cat</a>、消息列队<a href="https://rocketmq.apache.org/" target="_blank" rel="noopener">RocketMQ</a>、分布式署存储服务<a href="https://github.com/chrislusf/seaweedfs" target="_blank" rel="noopener">SeaweedFS</a>、数据库<a href="https://www.mysql.com/cn/" target="_blank" rel="noopener">MySQL</a>等等，大量的知识扑面而来。幸好之前有.NET C# + Javascript做Web开发经历，加上一些Node.js开发经验，比如<a href="http://aimianwu.com" target="_blank" rel="noopener">爱眠物</a>等等，上手掌握并不难。基本上每天都有很多东西可以学，上半年忙着产出业务，也忙着封装一些基于<code>Egg.js</code>适合公司项目的基础代码。不过问题也是频发，上面提到的很多东西并非是Node.js生态圈大量使用的，引用一些冷门的第三个类库暴露出了EventLoop被卡住、Memory Leak的情况，下半年忙着优化和排查。</p>
+        <p class="article-more-link">
+            <a href="/2019/12/30/summary-2019/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2019/10/06/travel-zhoushan/" itemprop="url">2019国庆一人初游舟山</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2019-10-05T22:11:21.849Z" itemprop="datePublished">Oct 6 2019</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/travel/">travel</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>国庆一家三口分开旅行，各有自己的目的地，我选了舟山，离开上海不远，之前从来没有去过。一人的旅行自然应该惬意为主，打着走到哪算哪的政策主张，也给自己埋下不少的坑。</p>
+        <p class="article-more-link">
+            <a href="/2019/10/06/travel-zhoushan/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2019/06/19/bec/" itemprop="url">Set A Flag</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2019-06-19T05:30:00.000Z" itemprop="datePublished">Jun 19 2019</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/work/">work</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h5 id="Practice-speaking-and-listening-pass-the-BEC-exam"><a href="#Practice-speaking-and-listening-pass-the-BEC-exam" class="headerlink" title="Practice speaking and listening, pass the BEC exam."></a>Practice speaking and listening, pass the BEC exam.</h5><p><img src="/images/bec/1.jpeg" alt="book1"><br><img src="/images/bec/2.jpeg" alt="book2"></p>
+
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2019/05/09/egg-boot/" itemprop="url">Eggjs Boot</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2019-05-09T07:01:08.568Z" itemprop="datePublished">May 9 2019</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h3 id="Preface"><a href="#Preface" class="headerlink" title="#Preface"></a><strong>#Preface</strong></h3><p>This article will introduce the boot of <a href="https://eggjs.org/" target="_blank" rel="noopener">Eggjs</a> that is a Node.js web framework.</p>
+<p>It is based on Koa and can satisfy  your requirement through a large of plugins and middleware, even a your own framework. It is very important to create a cluster, an agent process and some worker processes when it is running. The cluster makes it stronger. Next, we can understand it by reading the source code.</p>
+<p>Eggjs has a few major libs, egg-core、egg、egg-cluster、egg-bin、egg-scripts and so on.</p>
+<p><strong>egg-core</strong>: it extends Koa and is as a parent object of every agent and worker.</p>
+<p><strong>egg</strong>: it defines some actions for agent and worker,  you can almost use these actions to create an app of a single process.</p>
+<p><strong>egg-cluster</strong>: it creates a cluster and manages them.</p>
+<p><strong>egg-scripts and Egg-bin</strong>: their job is run the whole app in a different environment.</p>
+<p><br></p>
+<p><em><strong>Tips: We will discuss Eggjs with basing 2.x.x version.</strong></em></p>
+<p><br></p>
+        <p class="article-more-link">
+            <a href="/2019/05/09/egg-boot/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2019/01/18/egg-cluster/" itemprop="url">Egg Cluster 简单介绍</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2019-01-18T05:48:01.464Z" itemprop="datePublished">Jan 18 2019</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>如果不清楚什么是Egg.js，希望能移步到它的<a href="https://eggjs.org" target="_blank" rel="noopener">官网</a>简单看下。另外说它是<strong>约定大于配置</strong>的话，我只能说你真的不了解它，或者说不了解框架，哪个框架没有约定？毕竟没有规矩不成方圆，何况是逻辑性的程序呢？官方列出的特性如下：</p>
+<blockquote>
+<p>1.提供基于 Egg <a href="https://eggjs.org/zh-cn/advanced/framework.html" target="_blank" rel="noopener">定制上层框架</a> 的能力<br>2.高度可扩展的<a href="https://eggjs.org/zh-cn/basics/plugin.html" target="_blank" rel="noopener">插件机制</a><br>3.内置<a href="https://eggjs.org/zh-cn/advanced/cluster-client.html" target="_blank" rel="noopener">多进程管理</a><br>4.基于 <a href="http://koajs.com/" target="_blank" rel="noopener">Koa</a> 开发，性能优异<br>5.框架稳定，测试覆盖率高<br>6.<a href="https://eggjs.org/zh-cn/tutorials/progressive.html" target="_blank" rel="noopener">渐进式开发</a></p>
+</blockquote>
+<p>第1条，它有那么Koa也有啊。第2条，它有，难道Koa、Express等就没有嘛？第4条，更好的补充了Koa不是更好吗？第5条，难道别的框架就不稳定了？第6条，前端鼓吹渐进式、后端也鼓吹，那究竟什么是渐进式呢？</p>
+<p>在我看来最吸引我的是第3条，<strong>内置多进程管理</strong>，这个在其它主流nodejs框架中是稀缺的特性，此文就简单聊聊它。</p>
+        <p class="article-more-link">
+            <a href="/2019/01/18/egg-cluster/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+    
+        
+<nav class="pagination is-centered is-rounded" role="navigation" aria-label="pagination">
+    <div class="pagination-previous">
+        <a href="/page/2/">Prev</a>
+    </div>
+    <div class="pagination-next">
+        <a href="/page/4/">Next</a>
+    </div>
+    <ul class="pagination-list is-hidden-mobile">
+        
+        <li><a class="pagination-link" href="/">1</a></li>
+        
+        <li><a class="pagination-link" href="/page/2/">2</a></li>
+        
+        <li><a class="pagination-link is-current" href="/page/3/">3</a></li>
+        
+        <li><a class="pagination-link" href="/page/4/">4</a></li>
+        
+    </ul>
+</nav>
+    
+    </div>
+</section> <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Miser&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
+
+            
+            
+        </div>
+    </div>
+</footer> <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+<script src="/js/script.js"></script> 
+  </body>
+</html>

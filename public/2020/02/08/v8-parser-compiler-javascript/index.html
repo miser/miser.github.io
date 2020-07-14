@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>V8是如何怎么处理JavaScript的 - Miser 胡言</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
+<meta name="baidu-site-verification" content="CXKjj3fklD">
+
+<meta name="description" content="Parer和Compiler是2个重要的过程和概念，理解它们可以帮助开发者根据业务需求写出对V8或其它JavaScript引擎更为“友善”的代码，毕竟花在这两个过程中的成本是巨大的。">
+ 
+<meta name="keywords" content="V8,Node.js,解析编译">
+   
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-129526171-1');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      ul.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item " href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section">
+    <div class="container">
+    <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            V8是如何怎么处理JavaScript的
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-02-08T01:18:53.485Z" itemprop="datePublished">Feb 8 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <blockquote>
+<p>此文介绍的内容已经算是<code>旧闻</code>了，17年的时候就有大量的文章介绍过了，只是2020年伊始的疫情把人困在家里实在无聊，重新翻来几个视频打发下时间，以下文字算是简单梳理，更多的瑰宝需要我们自己翻阅资料研究，<strong>文章中的很多数据应该都过时了吧，仅用来参考吧。</strong></p>
+</blockquote>
+<p><strong>Parer</strong>和<strong>Compiler</strong>是2个重要的过程和概念，理解它们可以帮助开发者根据业务需求写出对V8或其它JavaScript引擎更为“友善”的代码，毕竟花在这两个过程中的成本是巨大的。</p>
+<p><img src="/images/v8-parser-compiler/v8-pare-compile-cost.png" alt="国外几大网站花在Parser上的时间大约在15-20%"></p>
+<a id="more"></a>
+<h1 id="Parser"><a href="#Parser" class="headerlink" title="Parser"></a><strong>Parser</strong></h1><p><img src="/images/v8-parser-compiler/parser-phase.png" alt="红色部分就是接下来讨论的Parser部分"></p>
+<p><strong>解析速率大约为 <code>1 MB / s</code></strong></p>
+<p><br></p>
+<h4 id="V8的Parser分2次解析："><a href="#V8的Parser分2次解析：" class="headerlink" title="V8的Parser分2次解析："></a><strong>V8的Parser分2次解析：</strong></h4><p><code>Layze（Pre-Parsing）：</code></p>
+<ul>
+<li>跳过还未被使用的代码</li>
+<li>不会生成<code>AST</code>，会产生不带有变量引用和声明的<code>Scopes</code>信息</li>
+<li>解析速度是Eage的2倍</li>
+<li>根据JavaScript规范抛出一些特定的错误</li>
+</ul>
+<p><code>Eage（Full-Parsing）：</code></p>
+<ul>
+<li>解析那些被使用的代码</li>
+<li>生成<code>AST</code></li>
+<li>构建具体的<code>Scopes</code>信息，变量的引用、声明等</li>
+<li>抛出所有的语法错误</li>
+</ul>
+<p><br></p>
+<h4 id="Q-为什么会有2次解析？"><a href="#Q-为什么会有2次解析？" class="headerlink" title="Q:为什么会有2次解析？"></a>Q:为什么会有2次解析？</h4><p>如果都是用Full-Parsing的话，那么整个解析会非常漫长浪费时间。我们通过DevTools的<code>coverage</code>工具可以发现页面上大量的代码并没有被使用</p>
+<p><br></p>
+<h4 id="Q-2次解析会有什么负面影响？"><a href="#Q-2次解析会有什么负面影响？" class="headerlink" title="Q:2次解析会有什么负面影响？"></a>Q:2次解析会有什么负面影响？</h4><p>如果代码已经被Pre-Parsing解析过了，当被执行的时候还是会被Full-Parser解析一次那么开销是: <code>0.5 * parse + 1 * parse = 1.5 parse</code> 从某个角度来说更复杂了、开销更大了。鱼和熊掌不可兼得！</p>
+<p><br></p>
+<h4 id="Q-什么样的代码会被-Pre-Parsing-处理，什么样的会被-Full-Parsing-处理？"><a href="#Q-什么样的代码会被-Pre-Parsing-处理，什么样的会被-Full-Parsing-处理？" class="headerlink" title="Q:什么样的代码会被 Pre-Parsing 处理，什么样的会被 Full-Parsing 处理？"></a>Q:什么样的代码会被 <code>Pre-Parsing</code> 处理，什么样的会被 <code>Full-Parsing</code> 处理？</h4><figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">let</span> a = <span class="hljs-number">0</span>; <span class="hljs-comment">// Top-Level 顶层的代码都是 Full-Parsing</span></span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// 立即执行函数表达式 IIFE = Immediately Invoked Function Expression</span></span><br><span class="line">(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">eager</span>(<span class="hljs-params"></span>) </span>&#123;...&#125;)(); <span class="hljs-comment">// 函数体是 Full-Parsing</span></span><br><span class="line">                   </span><br><span class="line"><span class="hljs-comment">// 顶层的函数非IIFE</span></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">lazy</span>(<span class="hljs-params"></span>) </span>&#123;...&#125; <span class="hljs-comment">// 函数体是 Pre-Parsing</span></span><br><span class="line"></span><br><span class="line">lazy(); <span class="hljs-comment">// -&gt; Full-Parsing 开始解析和编译！</span></span><br><span class="line">                 </span><br><span class="line"><span class="hljs-comment">// 强制触发Full-Parsing解析</span></span><br><span class="line">!<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">eager2</span>(<span class="hljs-params"></span>) </span>&#123;...&#125;, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">eager3</span>(<span class="hljs-params"></span>) </span>&#123;...&#125; <span class="hljs-comment">// All eager</span></span><br><span class="line"> </span><br><span class="line"><span class="hljs-keyword">let</span> f1 = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">lazy</span>(<span class="hljs-params"></span>) </span>&#123; ... &#125;; <span class="hljs-comment">// 函数体是 Pre-Parsing</span></span><br><span class="line">              </span><br><span class="line"><span class="hljs-keyword">let</span> f2 = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">lazy</span>(<span class="hljs-params"></span>) </span>&#123;...&#125;(); <span class="hljs-comment">// 先触发了lazy 解析, 然后又eager解析</span></span><br></pre></td></tr></table></figure>
+<p><br></p>
+<h4 id="Q-如何强制Full-Parsing-（eager-）？"><a href="#Q-如何强制Full-Parsing-（eager-）？" class="headerlink" title="Q:如何强制Full-Parsing （eager ）？"></a>Q:如何强制Full-Parsing （eager ）？</h4><ul>
+<li>lazy 预编译由前2位首字母决定；所以如果我们想跳过 lazy 触发 eager 编译，我们应该在前面加位操作符，例如’!|~’。</li>
+<li>使用 <a href="https://github.com/nolanlawson/optimize-js" target="_blank" rel="noopener">optimize-js</a> 重新编译代码，具体的性改变可以参考它Github里的测试数据</li>
+</ul>
+<p><br></p>
+<h4 id="Q-什么是连续重新解析"><a href="#Q-什么是连续重新解析" class="headerlink" title="Q:什么是连续重新解析"></a>Q:什么是连续重新解析</h4><figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">lazy_outer</span>(<span class="hljs-params"></span>) </span>&#123; <span class="hljs-comment">// lazy parse this</span></span><br><span class="line">  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">inner</span>(<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">inner2</span>(<span class="hljs-params"></span>) </span>&#123;</span><br><span class="line">      <span class="hljs-comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">lazy_outer(); <span class="hljs-comment">// lazy parsing inner &amp; inner2</span></span><br><span class="line">inner(); <span class="hljs-comment">// lazy parsing inner &amp; inner2 (3rd time!)</span></span><br></pre></td></tr></table></figure>
+<p>从上可知，大量的深度内嵌的代码对解析有着性能影响，每一层的深度调用都会引发新一轮的<code>Pre-Parsing</code>。</p>
+<p><br></p>
+<h4 id="Q-既然Parser阶段会性能消耗很大，我们该怎么优化代码？"><a href="#Q-既然Parser阶段会性能消耗很大，我们该怎么优化代码？" class="headerlink" title="Q:既然Parser阶段会性能消耗很大，我们该怎么优化代码？"></a>Q:既然Parser阶段会性能消耗很大，我们该怎么优化代码？</h4><ol>
+<li><strong>尽量减少代码</strong>，可以通过DevTools的<code>coverage</code>工具查看当前页面代码的使用率。</li>
+<li>V8会缓存Parser阶段的结果并保存72小时，如果bundle中间有部分代码被修改了，那么整个bundle的Parser缓存都会失效，所以把经常变动的打包在一起，非经常变动的在一起，比如公共类库和业务代码分离。</li>
+</ol>
+<p><br></p>
+<h4 id="Q-如何评估当前网站代码的Parser时间呢？（包括后面将的Compiler时间）"><a href="#Q-如何评估当前网站代码的Parser时间呢？（包括后面将的Compiler时间）" class="headerlink" title="Q:如何评估当前网站代码的Parser时间呢？（包括后面将的Compiler时间）"></a>Q:如何评估当前网站代码的Parser时间呢？（包括后面将的Compiler时间）</h4><p>1.使用 <code>chrome://tracing/</code>工具，我们以<a href="http://aimianwu.com" target="_blank" rel="noopener">爱眠物</a>为例</p>
+<p>2.打开tracing界面，点击左上角的<code>Record</code>按钮</p>
+<p>3.在弹出的界面中选择<code>Web developer</code>和在Edit categories里面选择<code>v8.runtime_stats</code></p>
+<p>4.在新的Tab中输入 <a href="http://aimianwu.com" target="_blank" rel="noopener">http://aimianwu.com</a> ，回到tracing Tab</p>
+<p>5.等待数据采集完成，然后”停止”记录</p>
+<p>6.选择对应的Process和数据</p>
+<p><img src="/images/v8-parser-compiler/parse-time.png" alt></p>
+<p><img src="/images/v8-parser-compiler/parse-time-1.png" alt></p>
+<p>7.查看V8里的Parse和Compile数据</p>
+<p><img src="/images/v8-parser-compiler/parse-time-2.png" alt></p>
+<p><br></p>
+<p><br></p>
+<h1 id="Compiler-Pipeline"><a href="#Compiler-Pipeline" class="headerlink" title="Compiler Pipeline"></a><strong>Compiler Pipeline</strong></h1><p>随着V8的迭代，整个Compiler Pipeline也在发生翻天覆地的变化。最近的一次大更新是在V8 5.9版本，用 Ignition + TurboFan 代替了从2010一直服务的Full-codegen + Crankshaft组合，当然整个过程也不是一蹴而就的，中间夹杂着特殊的版本， Ignition + TurboFan 、Full-codegen + Crankshaft它们以特殊的方式共存了一段时间，因为一开始TurboFan的性能无法满足需求，可以看<a href="https://docs.google.com/presentation/d/1chhN90uB8yPaIhx_h2M3lPyxPgdPmkADqSNAoXYQiVE/edit#slide=id.g18d89eb289_1_389" target="_blank" rel="noopener">这个PPT</a>。</p>
+<p><br></p>
+<h4 id="Q-为什么做了替换？官方介绍"><a href="#Q-为什么做了替换？官方介绍" class="headerlink" title="Q:为什么做了替换？官方介绍"></a>Q:为什么做了替换？<a href="https://v8.dev/blog/launching-ignition-and-turbofan" target="_blank" rel="noopener">官方介绍</a></h4><p>因为老的版本比较激进，直接将JavaScript翻译成了机器码，在执行性能上确实很快，但是带来了几个大问题</p>
+<ul>
+<li>直接将JavaScript编译成机器码既费时间又费内存，几乎占用了V8约1/3的堆内存，导致实际可被使用的内存减少；另外由于复杂的设计导致Crankshaft重复编译代码，拖累性能。</li>
+<li>Crankshaft没有友善处理 try、catch、finally 等关键词 ；维护成本高，需要为多个芯片架构提供优化代码，但性能提升不够明显；对ES新的语法特性支持不够好、也无法支持WebAssembly；<br>在PC端老的组合感受还好，但是在移动端随着网页的不断复杂化，该组合的启动时间和性能慢慢有些力不从心了。</li>
+</ul>
+<p><br></p>
+<h4 id="Q-什么样的代码对-V8-Compiler-友好？"><a href="#Q-什么样的代码对-V8-Compiler-友好？" class="headerlink" title="Q:什么样的代码对 V8 Compiler 友好？"></a>Q:什么样的代码对 V8 Compiler 友好？</h4><p>虽然JavaScript是动态语言，如橡皮泥一样随意被开发者“随意”塑造、快速开发出一个又一个应用，但是没有规矩就会带来混乱，增加编译器的优化负担，目前在V8中优化工作由TurboFan完成。Ignition会收集大量信息交给TurboFan去优化，多方面条件都满足的情况下会被优化成机器码，这个过程成为<code>Optimize</code>，当判断无法优化时就触发去优化——Deoptimize，这些代码逻辑又重新回到Ignition中成为字节码。</p>
+<p>主要有以下2点<a href="https://www.youtube.com/watch?v=p-iiEDtpy6I" target="_blank" rel="noopener">视频</a></p>
+<ul>
+<li>自然是经常被调用的代码部分</li>
+<li>不要总是在改变对象类型（虽然JavaScript是动态的）</li>
+</ul>
+<p><img src="/images/v8-parser-compiler/not-change-types-1.png" alt></p>
+<p><img src="/images/v8-parser-compiler/not-change-types-2.png" alt></p>
+<p><img src="/images/v8-parser-compiler/not-change-types-3.png" alt></p>
+<blockquote>
+<p>如果你总是在改变Objects，V8无法对它做优化。即使做了优化也会被De-optimisation，这意味着会有性能损失。</p>
+</blockquote>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">load</span>(<span class="hljs-params">obj</span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">return</span> obj.x</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-keyword">var</span> obj = &#123;</span><br><span class="line">  x: <span class="hljs-number">1</span>,</span><br><span class="line">  y: <span class="hljs-number">4</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对编译器而言 <code>obj = {}</code> 是一种类型， <code>obj = { x: &quot;Number&quot; }</code> 是另一种类型，<code>obj = { y: &quot;Number&quot; }</code> 又是一种类型等等，也就说数据类型和字段名必须一致，如果用过静态语言比如C++、Java就很容易理解。</p>
+<p>像下面这样的代码</p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">load(&#123; <span class="hljs-attr">x</span>: <span class="hljs-number">4</span>, <span class="hljs-attr">a</span>: <span class="hljs-number">7</span> &#125;);</span><br><span class="line">load(&#123; <span class="hljs-attr">x</span>: <span class="hljs-number">4</span>, <span class="hljs-attr">b</span>: <span class="hljs-number">9</span> &#125;);</span><br><span class="line">load(&#123; <span class="hljs-attr">x</span>: <span class="hljs-number">4</span>, <span class="hljs-attr">c</span>: <span class="hljs-number">3</span> &#125;);</span><br><span class="line">load(&#123; <span class="hljs-attr">x</span>: <span class="hljs-number">4</span>, <span class="hljs-attr">d</span>: <span class="hljs-number">1</span> &#125;);</span><br></pre></td></tr></table></figure>
+<p>没办法被优化，只有将参数的入参格式一致才行，比如</p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">load(&#123; <span class="hljs-attr">x</span>: <span class="hljs-number">4</span>, <span class="hljs-attr">a</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">b</span>: <span class="hljs-literal">undefined</span>, <span class="hljs-attr">c</span>: <span class="hljs-literal">undefined</span>, <span class="hljs-attr">d</span>: <span class="hljs-literal">undefined</span> &#125;);</span><br><span class="line">load(&#123; <span class="hljs-attr">x</span>: <span class="hljs-number">4</span>, <span class="hljs-attr">a</span>: <span class="hljs-literal">undefined</span>, <span class="hljs-attr">b</span>: <span class="hljs-number">9</span>, <span class="hljs-attr">c</span>: <span class="hljs-literal">undefined</span>, <span class="hljs-attr">d</span>: <span class="hljs-literal">undefined</span> &#125;);</span><br><span class="line">load(&#123; <span class="hljs-attr">x</span>: <span class="hljs-number">4</span>, <span class="hljs-attr">a</span>: <span class="hljs-literal">undefined</span>, <span class="hljs-attr">b</span>: <span class="hljs-literal">undefined</span>, <span class="hljs-attr">c</span>: <span class="hljs-number">3</span>, <span class="hljs-attr">d</span>: <span class="hljs-literal">undefined</span> &#125;);</span><br><span class="line">load(&#123; <span class="hljs-attr">x</span>: <span class="hljs-number">4</span>, <span class="hljs-attr">a</span>: <span class="hljs-literal">undefined</span>, <span class="hljs-attr">b</span>: <span class="hljs-literal">undefined</span>, <span class="hljs-attr">c</span>: <span class="hljs-literal">undefined</span>, <span class="hljs-attr">d</span>: <span class="hljs-number">1</span> &#125;);</span><br></pre></td></tr></table></figure>
+<p>是不是觉得学习TypeScript很重要了呢？</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p><code>V8</code>在不断的迭代和进步，还有<a href="https://blog.chromium.org/2015/03/new-javascript-techniques-for-rapid.html" target="_blank" rel="noopener">Script Streaming</a>等等技术没有介绍。随便翻阅 <a href="https://v8.dev/" target="_blank" rel="noopener">https://v8.dev/</a> 就会发现数不尽的干货在里面躺着，等我们动手发掘和尝试。作为一个JavaScript工程师而言，无论是学习V8还是其它的编译引擎都能使得我们更好的写出高性能代码、优化代码、甚至在做架构的时候提供帮助。</p>
+<p>另外，随着WebAssembly进入浏览器和Node.js，越来越多的C++等技术会被更方便的加入到JavaScript阵营当中。最近买了树莓派和Arduino，在它们身上使用JavaScript做一些功能多多少少离不开C/C++，感觉到了需要系统化学习C/C++的时候了。</p>
+<h3 id="主要参考："><a href="#主要参考：" class="headerlink" title="主要参考："></a>主要参考：</h3><p><a href="https://www.youtube.com/watch?v=Fg7niTmNNLg" target="_blank" rel="noopener">Parsing JavaScript - better lazy than eager</a></p>
+<p><a href="https://www.youtube.com/watch?v=p-iiEDtpy6I" target="_blank" rel="noopener">JavaScript engines - how do they even? </a></p>
+<p><a href="https://medium.com/reloading/javascript-start-up-performance-69200f43b201" target="_blank" rel="noopener">JavaScript Start-up Performance</a></p>
+<p><a href="https://docs.google.com/presentation/d/1chhN90uB8yPaIhx_h2M3lPyxPgdPmkADqSNAoXYQiVE/edit#slide=id.g1ba5e472dd_0_103" target="_blank" rel="noopener">V8: Hooking up the Ignition to the Turbofan</a></p>
+
+    
+    </div>
+    
+    <div class="columns is-variable is-1 is-multiline is-mobile">
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/Node-js/">#Node.js</a></span>
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/JavaScript/">#JavaScript</a></span>
+    
+    </div>
+    
+    
+    <div class="columns is-mobile is-multiline article-nav">
+        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
+            
+            <a href="/2020/02/21/node-perf-heapdump-flame-graph/">收集Node.js应用的内存堆栈快照和CPU火焰图</a>
+            
+        </span>
+        <span class="column is-12-mobile is-half-desktop  article-nav-next">
+            
+            <a href="/2020/01/22/express-gateway/">Express Gateway</a>
+            
+        </span>
+    </div>
+    
+</article>
+
+
+
+<div class="comments">
+    <ul class="adv">
+  <li class="img"><img src="/images/give-a-reward.png" alt="reward"></li>
+  <li>
+    欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a>前端组，<a href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3" target="_blank">岗位信息</a>
+  </li>
+  <li>
+    同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank">爱眠物</a>
+  </li>
+</ul>
+
+    <h3 class="title is-4">Comments</h3>
+    
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://mlib.wang/2020/02/08/v8-parser-compiler-javascript/';
+        this.page.identifier = '2020/02/08/v8-parser-compiler-javascript/';
+        
+        this.language = 'en';
+        
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'mblof' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</div>
+
+    </div>
+</section> <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Miser&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
+
+            
+            
+        </div>
+    </div>
+</footer> <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+<script src="/js/script.js"></script> 
+  </body>
+</html>

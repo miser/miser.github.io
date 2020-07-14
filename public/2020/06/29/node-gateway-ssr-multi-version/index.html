@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>Node.js服务支持多SSR版本（适合测试环境） - Miser 胡言</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
+<meta name="baidu-site-verification" content="CXKjj3fklD">
+    
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-129526171-1');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      ul.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item " href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section">
+    <div class="container">
+    <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            Node.js服务支持多SSR版本（适合测试环境）
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-06-29T06:59:30.000Z" itemprop="datePublished">Jun 29 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/架构/">架构</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>通常，系统环境分为生产、测试和开发等多套，测试又可能因为验证不同的业务版本、BUG 部署 N 套， 意味着每套环境都会有一整套系统，从入口网关到大量的微服务节点，还有数据库等等。人力上需要有人去维护它们，无论是用于测试数还是系统的运维工作，每多一套系统都需要额外部署和购买大量资源，其中很多服务节点的版本是相同的，这都大大增加了成本。</p>
+<p>为了解决这样的问题，我们可以通过网关路由的方式，比如测试环境，所有的应用都部署在一套环境中，通过 HTTP Header 信息将不同的应用通过路由串联起来，大概如下：</p>
+<p>Server A V1 -&gt; Server B V1</p>
+<p>Server A V2 -&gt; Server B 其它版本</p>
+<a id="more"></a>
+<p><br></p>
+<h3 id="前端资源怎么区分多版本"><a href="#前端资源怎么区分多版本" class="headerlink" title="前端资源怎么区分多版本"></a>前端资源怎么区分多版本</h3><p><strong>这里的 SSR 服务，基本是移动端的 hybrid 应用，所以在 Native 打开它时可以在 HTTP Header 注入版本信息，如果 PC 端，可以通过其它方式告诉服务器需要路由的版本，比如 URL Query 或 Cookie 之类</strong></p>
+<ol>
+<li>前置一个网关应用，在收到版本信息后，路由到 SSR 服务</li>
+</ol>
+<p>优点：</p>
+<ul>
+<li>无需改变当前的 SSR 服务</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>作为 SSR 服务，其本身已经是一个网关，再前置一个网关有些奇怪</li>
+<li>每部署一个 SSR 服务节点，可能就需要更新前置网关的配置，需要 2 步操作</li>
+<li>需要多个 Docker 部署不同版本的 SSR 服务</li>
+</ul>
+<ol start="2">
+<li>改造 SSR 服务，收到 HTTP Header 版本信息后，在内部做版本的路由</li>
+</ol>
+<p>优点：</p>
+<ul>
+<li>一个 SSR 应用，就一个 Docker</li>
+<li>只要告诉一个应用（SSR）当前有哪些是需要使用的版本即可</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>市面上大部分的 SSR 框架都是对应一个 SSR 版本的，不存在多版本并行，需要一定的开发和维护</li>
+</ul>
+<p><strong>综合考虑，既然是为了节省整体成本，那就彻底点，选择了第二个方案，一劳永逸。</strong></p>
+<p><br></p>
+<h3 id="改造-SSR-服务"><a href="#改造-SSR-服务" class="headerlink" title="改造 SSR 服务"></a>改造 SSR 服务</h3><h4 id="CI-CD-阶段"><a href="#CI-CD-阶段" class="headerlink" title="CI\CD 阶段"></a>CI\CD 阶段</h4><p>打包客户端和服务器资源，上传到静态服务器上，其中包含重要的 client-manifest.json 和 server-manifest.json，两者记录的是资源的名称和其对应的资源访问路径，client-manifest.json 用于在服务渲染时候根据资源名插入指定的访问路径，server-manifest.json 用于将资源从静态服务器下载到 Node.js 服务器上，用于 SSR 用。</p>
+<h4 id="启动和运行阶段"><a href="#启动和运行阶段" class="headerlink" title="启动和运行阶段"></a>启动和运行阶段</h4><ul>
+<li>访问配置中心，找到该应用的部署版本，比如 [‘v1,’v2’]</li>
+<li>与本地版本做 diff 算法，算出新增和遗弃的版本</li>
+<li>拉去新版本的 SSR 文件到本地磁盘</li>
+<li>路由解析，因为内部的 SSR 技术被广泛应用，为了不改动代码，通过@babel/parser 和 @babel/traverse 这两个类库，先将代码转成 AST，再解析出路由信息</li>
+<li>移除本地遗弃的 SSR 文件</li>
+<li>将新的路由信息更新到路由表中</li>
+<li>定时执行上述步骤</li>
+</ul>
+<p>我们用的是 Egg.js，所以上述步骤在 Agent 中完成，再广播给所有 Worker 进程。另外，为了更好的迭代和任务划分，使用<a href="https://mlib.wang/plugboard/?s=blog">PlugBoard</a>插件化所有步骤。</p>
+<p><img src="/images/node-gateway-ssr-multi-version/arch.png" alt="架构"></p>
+<p>客户端发起访问，找到对应的路由版本（如果没有走默认路由），路由请求，有缓存直接输出，没有就走 SSR 流程，查找该版本的 client-manifest.json，找到对应的浏览器访问路径，返回给客户端。</p>
+<p>至此，整个方案的流程完毕。项目上线后，可以通过关闭多版本共存的参数，按照市面上的常规流程运行应用。如果小团队的运维体系薄弱（没有 K8S 之类运维系统），也能用该套方案实现一定的蓝绿发布等。</p>
+
+    
+    </div>
+    
+    <div class="columns is-variable is-1 is-multiline is-mobile">
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/架构/">#架构</a></span>
+    
+    </div>
+    
+    
+    <div class="columns is-mobile is-multiline article-nav">
+        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
+            
+            <a href="/2020/07/07/lighthouse/">Lighthouse 流程和架构分析</a>
+            
+        </span>
+        <span class="column is-12-mobile is-half-desktop  article-nav-next">
+            
+            <a href="/2020/06/28/nodejs-istio-k8s-docker/">Istio简单概念</a>
+            
+        </span>
+    </div>
+    
+</article>
+
+
+
+<div class="comments">
+    <ul class="adv">
+  <li class="img"><img src="/images/give-a-reward.png" alt="reward"></li>
+  <li>
+    欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a>前端组，<a href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3" target="_blank">岗位信息</a>
+  </li>
+  <li>
+    同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank">爱眠物</a>
+  </li>
+</ul>
+
+    <h3 class="title is-4">Comments</h3>
+    
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://mlib.wang/2020/06/29/node-gateway-ssr-multi-version/';
+        this.page.identifier = '2020/06/29/node-gateway-ssr-multi-version/';
+        
+        this.language = 'en';
+        
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'mblof' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</div>
+
+    </div>
+</section> <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Miser&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
+
+            
+            
+        </div>
+    </div>
+</footer> <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+<script src="/js/script.js"></script> 
+  </body>
+</html>

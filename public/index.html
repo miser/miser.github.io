@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>Miser 胡言</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
+<meta name="baidu-site-verification" content="CXKjj3fklD">
+    
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-129526171-1');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      ul.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item " href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section">
+    <div class="container">
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/07/07/lighthouse/" itemprop="url">Lighthouse 流程和架构分析</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-07-07T13:56:46.000Z" itemprop="datePublished">Jul 7 2020</time>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>随着公司业务的不断扩展 ，系统也变得越来越臃肿，需要被不断的拆分，引进诸如微前端这样的框架，开发人员也不断的扩充，甚至有不同办公地点的同事协作开发。除了基本的开发规范外，也需要有一套完善的监控来测试和记录每次代码提交是否比之前版本存在性能不足等问题，在 CI 阶段发现问题，提早解决避免上线后带来性能损失而流失用户。团队成员也能在工作中不断的成长、驱动、交付出优质的应用。</p>
+<h3 id="前端经常要关注的几个指标："><a href="#前端经常要关注的几个指标：" class="headerlink" title="前端经常要关注的几个指标："></a>前端经常要关注的几个指标：</h3><p><strong>First Contentful Paint：</strong>浏览器首次绘制文本、图片（包含背景图）、非白色的 canvas 或 SVG 的时间节点。<em>反映了网络的可用性和页面资源是否庞大导致传输时间过长。</em></p>
+<p><strong>First Meaningful Paint：</strong>页面的“主要内容”开始出现在屏幕上的时间点，测量用户加载体验的主要指标。<em>反映了是否太多非重要资源加载或执行的优先级高于主要的呈现资源。</em></p>
+<p><strong>First CPU Idle：</strong>页面主线程首次可以触发 input 操作，通常叫做最小可交互时间。</p>
+<p><strong>Time to Interactive：</strong>页面完全达到可交互状态的时间点。</p>
+<p><br></p>
+<h2 id="Lighthouse-介绍"><a href="#Lighthouse-介绍" class="headerlink" title="Lighthouse 介绍"></a>Lighthouse 介绍</h2><blockquote>
+<p>是一个开源的自动化工具，用于改进网络应用的质量。 您可以将其作为一个 Chrome 扩展程序运行，或从命令行运行。 您为 Lighthouse 提供一个您要审查的网址，它将针对此页面运行一连串的测试，然后生成一个有关页面性能的报告。</p>
+</blockquote>
+<p><img src="/images/lighthouse/report.png" alt="Lighthouse 报告"></p>
+        <p class="article-more-link">
+            <a href="/2020/07/07/lighthouse/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/06/29/node-gateway-ssr-multi-version/" itemprop="url">Node.js服务支持多SSR版本（适合测试环境）</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-06-29T06:59:30.000Z" itemprop="datePublished">Jun 29 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/架构/">架构</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>通常，系统环境分为生产、测试和开发等多套，测试又可能因为验证不同的业务版本、BUG 部署 N 套， 意味着每套环境都会有一整套系统，从入口网关到大量的微服务节点，还有数据库等等。人力上需要有人去维护它们，无论是用于测试数还是系统的运维工作，每多一套系统都需要额外部署和购买大量资源，其中很多服务节点的版本是相同的，这都大大增加了成本。</p>
+<p>为了解决这样的问题，我们可以通过网关路由的方式，比如测试环境，所有的应用都部署在一套环境中，通过 HTTP Header 信息将不同的应用通过路由串联起来，大概如下：</p>
+<p>Server A V1 -&gt; Server B V1</p>
+<p>Server A V2 -&gt; Server B 其它版本</p>
+        <p class="article-more-link">
+            <a href="/2020/06/29/node-gateway-ssr-multi-version/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/06/28/nodejs-istio-k8s-docker/" itemprop="url">Istio简单概念</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-06-28T02:00:00.000Z" itemprop="datePublished">Jun 28 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/架构/">架构</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p><em>文章中主要是一些概念，简单记录这段时间对 Istio 的学习。</em></p>
+<p>对于全栈来说，学习 Istio 还是很有必要的，在此过程中还要学习 K8s、Docker 等基本的运维知识，那么在设计 BFF 层时候也会考虑到部署、扩容、金丝雀发布等问题，提升程序的健壮性。</p>
+<h3 id="JavaScript-全栈"><a href="#JavaScript-全栈" class="headerlink" title="JavaScript 全栈"></a>JavaScript 全栈</h3><p>在 JavaScript 流行的今天，各种框架层出不穷，无论是学习前端的 3 架马车（React\Vue\Angular）、还是运用后端的 Node.js 框架（Express\Koa\Egg.js）等，最后你都会前后端通吃，它们被 JavaScript 这门语言串联在了一起，尤其是当你去翻阅大量前端使用的 CLI 工具源码的时候，几乎都有 Express 的影子，所以在 JavaScript 技术栈里，前后端（这里的后端不是指复杂的后端架构和设计）本身并不分家。<em>当然复杂的后端或前端工作并不适合全栈工程师去做，那也是后话了。</em></p>
+<p><br></p>
+<h3 id="BFF-层"><a href="#BFF-层" class="headerlink" title="BFF 层"></a>BFF 层</h3><p>这些年来提出了 BFF 层的概念，根据业务的不同，不同公司有自己的设计和实现，比如将纯前端从 Nginx 移到了 Node.js Server 运行环境、服务端渲染（SSR）、生成或者拼接业务数据返回给前端使用（Node.js 微服务、GraphQL 等）…</p>
+<p><br></p>
+<h3 id="Node-js-微服务"><a href="#Node-js-微服务" class="headerlink" title="Node.js 微服务"></a>Node.js 微服务</h3><p>自己也做过很长一段时间的全栈，用 Node.js 开发后端业务，把数据吐给前端，不需要等着后端同事返回数据或者来回沟通的烦恼。现在做后端必定会遇到微服务的概念，不同的微服务有自己的 SDK 等工具帮助完成相关的注册发现，大多数情况下它们对 Java 的支持度最好，Node.js 有时候并不友善，要完善你不得不去写一些代码，比如熔断、报警等等，也是带来大量的开发测试成本。如果不幸公司内部 Java 组选择了不支持 Node.js 的架构，那么简直是灾难。</p>
+<p><strong>微服务的 SDK 基本上和网络通讯相关，下文的网络化可以解决这个问题。</strong></p>
+        <p class="article-more-link">
+            <a href="/2020/06/28/nodejs-istio-k8s-docker/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/05/03/node-js-net-cluster-fork/" itemprop="url">简单梳理Node.js创建子进程的方法（下）—— cluster</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-05-03T07:24:53.000Z" itemprop="datePublished">May 3 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>前文简单梳理了Node.js使用<strong>child_process</strong>模块创建子进程的4种方法，<code>exec</code>、<code>execFile</code>、<code>fork</code>和<code>spawn</code>。接下来我们看看<strong>cluster</strong>模块如何创建子进程，后续更多内容会介绍cluster.fork启动Net Server时候为何不会因为共同监听同一个端口而不报错。</p>
+<p><strong>cluster</strong></p>
+<ul>
+<li><a href="http://nodejs.cn/api/cluster.html#cluster_cluster_fork_env" target="_blank" rel="noopener">fork</a>: 衍生出一个新的工作进程，这只能通过主进程调用。</li>
+</ul>
+        <p class="article-more-link">
+            <a href="/2020/05/03/node-js-net-cluster-fork/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/04/06/child_process-exec-fork-spawn/" itemprop="url">简单梳理Node.js创建子进程的方法（上）</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-04-06T00:09:36.472Z" itemprop="datePublished">Apr 6 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p><strong>Node.js 创建子进程的方法常用的有如下几种：</strong></p>
+<p><strong>child_process</strong></p>
+<ul>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_exec_command_options_callback" target="_blank" rel="noopener">exec</a>: 衍生一个 shell 然后在该 shell 中执行 <code>command</code>，并缓冲任何产生的输出，最大缓存 1024*1024 个字节。</li>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_execfile_file_args_options_callback" target="_blank" rel="noopener">execFile</a>: 函数类似<code>exec</code>，但默认情况下不会衍生 shell。 相反，指定的可执行文件<code>file</code> 会作为新进程直接地衍生，使其比<code>exec</code> 稍微更高效。和<code>exec</code>一样，它也有最大 1024*1204 个字节的显示缓存。</li>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_fork_modulepath_args_options" target="_blank" rel="noopener">fork</a>: 是 <code>spawn</code>的一个特例，专门用于衍生新的 Node.js 进程。 与<code>spawn</code>一样返回<code>ChildProcess</code>对象。 返回的<code>ChildProcess</code>将会内置一个额外的通信通道，允许消息在父进程和子进程之间来回传递。</li>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_spawn_command_args_options" target="_blank" rel="noopener">spawn</a>: 上诉的几个方法其实都是通过 spawn 实现的。</li>
+</ul>
+<p><strong>cluster</strong></p>
+<ul>
+<li><a href="http://nodejs.cn/api/cluster.html#cluster_cluster_fork_env" target="_blank" rel="noopener">fork</a>: 衍生出一个新的工作进程，这只能通过主进程调用。</li>
+</ul>
+        <p class="article-more-link">
+            <a href="/2020/04/06/child_process-exec-fork-spawn/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+    
+        
+<nav class="pagination is-centered is-rounded" role="navigation" aria-label="pagination">
+    <div class="pagination-previous is-invisible is-hidden-mobile">
+        <a href="/page/0/">Prev</a>
+    </div>
+    <div class="pagination-next">
+        <a href="/page/2/">Next</a>
+    </div>
+    <ul class="pagination-list is-hidden-mobile">
+        
+        <li><a class="pagination-link is-current" href="/">1</a></li>
+        
+        <li><a class="pagination-link" href="/page/2/">2</a></li>
+        
+        <li><a class="pagination-link" href="/page/3/">3</a></li>
+        
+        <li><a class="pagination-link" href="/page/4/">4</a></li>
+        
+    </ul>
+</nav>
+    
+    </div>
+</section> <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Miser&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
+
+            
+            
+        </div>
+    </div>
+</footer> <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+<script src="/js/script.js"></script> 
+  </body>
+</html>

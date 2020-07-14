@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>收集Node.js应用的内存堆栈快照和CPU火焰图 - Miser 胡言</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
+<meta name="baidu-site-verification" content="CXKjj3fklD">
+
+<meta name="description" content="如果你在一家对数据安全性很高的公司工作，团队规定不允许提交数据到第三方服务上，甚至连服务器内存、CPU使用情况等监控数据都不行，那对于像Alinode这样监控和排查问题的大杀器基本都是无福享用了。大多数情况不得不面临自己开发一套类似监控体制去为生产环境保驾护航。">
+ 
+<meta name="keywords" content="内存堆栈快照,CPU火焰图">
+   
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-129526171-1');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      ul.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item " href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section">
+    <div class="container">
+    <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            收集Node.js应用的内存堆栈快照和CPU火焰图
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-02-20T23:31:54.489Z" itemprop="datePublished">Feb 21 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>如果你在一家对数据安全性很高的公司工作，团队规定不允许提交数据到第三方服务上，甚至连服务器内存、CPU使用情况等监控数据都不行，那对于像<a href="https://cn.aliyun.com/product/nodejs" target="_blank" rel="noopener">Alinode</a>这样监控和排查问题的大杀器基本都是无福享用了。大多数情况不得不面临自己开发一套类似监控体制去为生产环境保驾护航。</p>
+<a id="more"></a>
+<p><br></p>
+<p><br></p>
+<h2 id="数据"><a href="#数据" class="headerlink" title="数据"></a>数据</h2><p><em>Node.js是单进程的，即使像Egg.js这样的项目存在Agent、多个Worker进程，但依旧应该把它们分为独立的进程对待，所以监控的粒度是进程级别。</em></p>
+<h4 id="基础数据"><a href="#基础数据" class="headerlink" title="基础数据"></a>基础数据</h4><ul>
+<li>进程级别：内存、CPU、EventLoop、GC、调用该系统的时间消耗、该系统调用它人系统的时间消耗等。</li>
+<li>系统级别：负载均衡 （<code>os.loadavg()</code>）</li>
+</ul>
+<p>上述这些数据，有些Node.js API直接暴露出来，有些需要写C++扩展去调用底层的V8 API来获取，好在市面上存在比较多的此类类库，比如<a href="https://github.com/RuntimeTools/appmetrics" target="_blank" rel="noopener">IBM appmetrics</a>就不错，它还有很多额外的监控数据可以收集，<code>主动</code>定时将它们提交到Elasticsearch，在用Grafana加载出来，还是很容易做到的。</p>
+<p><br></p>
+<h4 id="内存堆栈快照"><a href="#内存堆栈快照" class="headerlink" title="内存堆栈快照"></a>内存堆栈快照</h4><ul>
+<li>通过多份内存堆栈快照可以帮助我们定位内存溢出的原因。</li>
+</ul>
+<h4 id="CPU火焰图"><a href="#CPU火焰图" class="headerlink" title="CPU火焰图"></a><a href="http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html" target="_blank" rel="noopener">CPU火焰图</a></h4><ul>
+<li>通过它可以让我们知道是代码的哪部分导致CPU非常繁忙。</li>
+</ul>
+<p>上面这2个文件在系统调优和排查问题时起到至关重要的帮助，但是它们都是以文件的形式存储，又不像<code>基础数据</code>那么简易可以直接塞进DB里；另外获取这些资源过程是影响应用性能的，比如<code>内存堆栈快照</code>因为要罗列出所有的堆栈对象相互之间的关系和字节大小需要一定的计算量和时间，在此过程中系统处于无法响应的状态。为此，我们需要设计一套方法，在需要的时候去通知对应的Node.js进程，<code>被动</code>生成这些文件，而不是向先前那样<code>主动</code>收集。</p>
+<p><br></p>
+<p><br></p>
+<h2 id="命令-amp-传输"><a href="#命令-amp-传输" class="headerlink" title="命令&amp;传输"></a>命令&amp;传输</h2><p>我们需要通过一些方法，告诉对应的Node.js进程该干些什么事情，是生成内存堆栈快照还是CPU火焰图，又或是别的什么。需要一个发送<code>命令</code>的地方，也需要一种方式将命令发送给指定的Node.js进程。将一个个孤立的Node.js进程连接起来有很多方式，比如TCP，或者HTTP。</p>
+<p>我个人比较倾向用TCP，长链、双向、数据帧也轻巧很多，等等。像下图那样将他们连起来，<strong>仅用来示意，具体细节会有些不同，简单的粗暴将单箭头表示HTTP，双箭头表示TCP双向。</strong></p>
+<p><img src="/images/node-perf-heapdump-flame-graph/connection_01.png" alt="连接示意图"></p>
+<ul>
+<li><strong>命令发送：</strong>一般会有一个Web界面，通过按钮提交命令请求。</li>
+<li><strong>Hub：</strong>一个TCP服务，接受命令并将其转发到对应的Node.js进程上。</li>
+<li><strong>Node.js Process:</strong> 可能一台服务器（或者Docker等）就一个Node.js进程，如Express；也有可能如Egg.js一样是多个Node.js进程。</li>
+<li><strong>DFS：</strong>因为现在的服务基本都是部署在像Docker这样虚拟机上的，服务出现问题或人工原因很容易随时被系统销毁导致生产的快照或火焰图丢失，所以需要有个文件服务器持久化它们，因此一旦文件生产后就推送到文件服务器上待使用者去下载它们。</li>
+</ul>
+<p><br></p>
+<p><br></p>
+<h2 id="内存堆栈快照-1"><a href="#内存堆栈快照-1" class="headerlink" title="内存堆栈快照"></a>内存堆栈快照</h2><p>Node.js Process监听到发来的<code>命令</code>，通过调用<a href="https://www.npmjs.com/package/heapdump" target="_blank" rel="noopener">heapdump</a>很容易获得内存堆栈快照，再将文件推送到DFS上。如果想像<code>Alinode</code>那样自动又直接显示内存信息的话，改下<a href="https://github.com/ChromeDevTools/devtools-frontend" target="_blank" rel="noopener">devtools-frontend</a>，将其加入到系统中即可。</p>
+<p><img src="/images/node-perf-heapdump-flame-graph/heapdump_01.png" alt="devtools 自动加载内存快照"></p>
+<p><br></p>
+<p><br></p>
+<h2 id="CPU火焰图-1"><a href="#CPU火焰图-1" class="headerlink" title="CPU火焰图"></a>CPU火焰图</h2><p>火焰图比其它的数据麻烦很多，官方有专门的<a href="https://nodejs.org/zh-cn/docs/guides/diagnostics-flamegraph/" target="_blank" rel="noopener">文档</a>说明了整个流程，总的来说需要<a href="http://www.brendangregg.com/perf.html" target="_blank" rel="noopener">perf</a>和<a href="https://github.com/brendangregg/FlameGraph" target="_blank" rel="noopener">FlameGraph</a>这两个工具，具体的方法随意Google都能查到很多，就不多叙述了，关键是如何将它融入到上述的框架中呢？</p>
+<p>假设和之前一样，Node.js进程用<code>socket.on(&quot;readable&quot;,callback)</code> 或 <code>socket.on(&quot;data&quot;,callback)</code>接受命令，并在callback中开启一个新的进程来执行<code>perf</code>等shell脚本，那么生成的火焰图不准确，为何？</p>
+<p>Node.js是单进程，JavaScript部分是事件循环，密集计算会阻塞其它的操作，比如运行一个<code>斐波那契数列</code>计算。此刻，其它的异步任务就算完成也无法得到执行，比如底层IO获得了命令，但是由于JavaScript堵塞了而无法执行<code>callback</code>创建新进程执行shell脚本。等到<code>斐波那契数列</code>执行完后，callback才被执行。而我们火焰图需要排查的就是什么导致CPU一直繁忙的嗡嗡作响，而上述的问题就是密集的斐波那契数列计算，但是由于JavaScript的执行机制而有可能错过了开启perf的时机。大多数的时候，我们都是发现进程阻塞了或者CPU一直处于繁忙而去主动命令进程开启<code>perf</code>排查问题，所以这个方法获得的数据并不准确。</p>
+<p>如果当前进程一直进程因为繁忙而无法执行新的JavaScript命令，那么我们是否可以通过一个简单的辅助进程来帮忙开启shell脚本呢？</p>
+<h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><p>因为perf需要Linux环境，我们可以通过Docker在本地启动一个Node.js容器实验下，以Node.js 12为例。</p>
+<p>下载完对应版本的Node.js Docker后，通过下面命令开启一个新的容器，必须带<code>--privileged</code>不然无法使用perf。</p>
+<figure class="highlight shell hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker run --privileged -itd node:12-buster /bin/bash // 启动</span><br><span class="line"></span><br><span class="line">docker attach xxxx  // 进入</span><br></pre></td></tr></table></figure>
+<p>进入Docker容器后安装<code>perf</code></p>
+<figure class="highlight shell hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">apt-get update</span><br><span class="line"></span><br><span class="line">apt-get install linux-perf</span><br><span class="line"></span><br><span class="line">perf_4.19 // 执行该命令查看是否安装成功，不同的linux内核版本对应不同的perf版本</span><br></pre></td></tr></table></figure>
+<p><a href="https://github.com/miser/test-perf" target="_blank" rel="noopener">代码</a></p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// index.js</span></span><br><span class="line"><span class="hljs-keyword">const</span> &#123;fork &#125; = <span class="hljs-built_in">require</span>(<span class="hljs-string">'child_process'</span>)</span><br><span class="line">fork(<span class="hljs-string">'./helper'</span>)</span><br><span class="line"></span><br><span class="line">fibonacci(<span class="hljs-number">50</span>)</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fibonacci</span>(<span class="hljs-params">n</span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">if</span>(n==<span class="hljs-number">0</span> || n == <span class="hljs-number">1</span>) <span class="hljs-keyword">return</span> n;</span><br><span class="line">  <span class="hljs-keyword">return</span> fibonacci(n<span class="hljs-number">-1</span>) + fibonacci(n<span class="hljs-number">-2</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// helper.js</span></span><br><span class="line"><span class="hljs-keyword">const</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);</span><br><span class="line"><span class="hljs-keyword">const</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>);</span><br><span class="line"><span class="hljs-keyword">const</span> &#123; spawn, exec &#125; = <span class="hljs-built_in">require</span>(<span class="hljs-string">'child_process'</span>);</span><br><span class="line"><span class="hljs-keyword">const</span> unzipper = <span class="hljs-built_in">require</span>(<span class="hljs-string">"unzipper"</span>);</span><br><span class="line"></span><br><span class="line"><span class="hljs-keyword">const</span> perfCMD = <span class="hljs-string">'perf_4.19'</span></span><br><span class="line"><span class="hljs-keyword">const</span> perfTime = <span class="hljs-number">60</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">execCMD</span>(<span class="hljs-params">cmd, callback</span>) </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    exec(cmd, (error, stdout, stderr) =&gt; &#123;</span><br><span class="line">      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'shell: '</span>,cmd)</span><br><span class="line">      <span class="hljs-keyword">if</span> (error) &#123;</span><br><span class="line">        <span class="hljs-built_in">console</span>.error(<span class="hljs-string">`执行的错误: <span class="hljs-subst">$&#123;error&#125;</span>`</span>);</span><br><span class="line">        reject(error)</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="hljs-keyword">if</span>(callback) &#123;</span><br><span class="line">        callback(stdout, stderr, resolve, reject);</span><br><span class="line">      &#125; <span class="hljs-keyword">else</span> &#123;</span><br><span class="line">        resolve()</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Flame</span> </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">constructor</span>() &#123;</span><br><span class="line"></span><br><span class="line">    <span class="hljs-keyword">this</span>.nodes = [];</span><br><span class="line"></span><br><span class="line">    <span class="hljs-keyword">this</span>._init().catch(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">e</span>)</span>&#123;</span><br><span class="line">      <span class="hljs-built_in">console</span>.log(e)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  _init () &#123;</span><br><span class="line">    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="hljs-keyword">const</span> zipFilePath = path.join(<span class="hljs-string">'.'</span>, <span class="hljs-string">'FlameGraph.zip'</span>)</span><br><span class="line">      <span class="hljs-keyword">const</span> saveDir = process.cwd();</span><br><span class="line">      fs.createReadStream(zipFilePath)</span><br><span class="line">        .pipe(unzipper.Extract(&#123; <span class="hljs-attr">path</span>: saveDir &#125;))</span><br><span class="line">        .on(<span class="hljs-string">"error"</span>, reject)</span><br><span class="line">        .on(<span class="hljs-string">"finish"</span>, () =&gt; &#123;</span><br><span class="line">          <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"zip finish"</span>);</span><br><span class="line">          resolve();</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;).then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="hljs-keyword">const</span> cmd = <span class="hljs-string">`chmod 700 ./FlameGraph/stackcollapse-perf.pl`</span>;</span><br><span class="line">      <span class="hljs-keyword">return</span> execCMD(cmd);</span><br><span class="line">    &#125;).then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="hljs-keyword">const</span> cmd = <span class="hljs-string">`chmod 700 ./FlameGraph/flamegraph.pl`</span>;</span><br><span class="line">      <span class="hljs-keyword">return</span> execCMD(cmd);</span><br><span class="line">    &#125;).then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="hljs-keyword">const</span> cmd = <span class="hljs-string">`ps -ef|grep node|grep -v grep|grep -v FlameGraph|awk '&#123;print $2&#125;'`</span>;</span><br><span class="line">      <span class="hljs-keyword">return</span> execCMD(cmd, (stdout, stderr, resolve, reject) =&gt; &#123;</span><br><span class="line">        <span class="hljs-keyword">this</span>.nodes = stdout.split(<span class="hljs-string">'\n'</span>).filter( <span class="hljs-function"><span class="hljs-params">pid</span> =&gt;</span> pid &amp;&amp; pid != process.pid)</span><br><span class="line">        resolve();</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  _chownMapFile()&#123;</span><br><span class="line">    <span class="hljs-keyword">const</span> cmd = <span class="hljs-string">`chown root /tmp/perf-<span class="hljs-subst">$&#123;<span class="hljs-keyword">this</span>.nodes[<span class="hljs-number">0</span>]&#125;</span>.map &amp;&amp; <span class="hljs-subst">$&#123;perfCMD&#125;</span> script &gt; nodestacks`</span>;</span><br><span class="line">    execCMD(cmd).then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="hljs-keyword">this</span>._genFlameGraph();</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  _genFlameGraph()&#123;</span><br><span class="line">    <span class="hljs-keyword">const</span> cmd = <span class="hljs-string">`./FlameGraph/stackcollapse-perf.pl &lt; nodestacks | ./FlameGraph/flamegraph.pl --colors js &gt; node-flamegraph-<span class="hljs-subst">$&#123;process.pid&#125;</span>.svg`</span></span><br><span class="line">    execCMD(cmd).then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'had completed'</span>);</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  record() &#123;</span><br><span class="line">    <span class="hljs-keyword">const</span> cmd = <span class="hljs-string">`<span class="hljs-subst">$&#123;perfCMD&#125;</span> record -F 99 -p <span class="hljs-subst">$&#123;<span class="hljs-keyword">this</span>.nodes[<span class="hljs-number">0</span>]&#125;</span> -g -- sleep <span class="hljs-subst">$&#123;perfTime&#125;</span>`</span>;</span><br><span class="line">    execCMD(cmd).then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="hljs-keyword">const</span> t = <span class="hljs-number">1000</span> * (perfTime + <span class="hljs-number">5</span>);</span><br><span class="line">      setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="hljs-keyword">this</span>._chownMapFile()</span><br><span class="line">      &#125;, <span class="hljs-number">1000</span> * (perfTime + <span class="hljs-number">5</span>))</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-keyword">const</span> flame = <span class="hljs-keyword">new</span> Flame();</span><br><span class="line">setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="hljs-comment">// 模拟收到tcp命令</span></span><br><span class="line">  flame.record();</span><br><span class="line">&#125;, <span class="hljs-number">1000</span> * <span class="hljs-number">5</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight json hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">// package.json</span><br><span class="line">&#123;</span><br><span class="line">  <span class="hljs-attr">"name"</span>: <span class="hljs-string">"test-perf"</span>,</span><br><span class="line">  <span class="hljs-attr">"version"</span>: <span class="hljs-string">"1.0.0"</span>,</span><br><span class="line">  <span class="hljs-attr">"description"</span>: <span class="hljs-string">""</span>,</span><br><span class="line">  <span class="hljs-attr">"main"</span>: <span class="hljs-string">"index.js"</span>,</span><br><span class="line">  <span class="hljs-attr">"scripts"</span>: &#123;</span><br><span class="line">    <span class="hljs-attr">"dev"</span>: <span class="hljs-string">"node --perf-basic-prof index.js"</span>,</span><br><span class="line">    <span class="hljs-attr">"clear"</span>: <span class="hljs-string">"rm isolate-* &amp; rm node-flamegraph-*.svg &amp; rm -rf FlameGraph"</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="hljs-attr">"keywords"</span>: [],</span><br><span class="line">  <span class="hljs-attr">"author"</span>: <span class="hljs-string">""</span>,</span><br><span class="line">  <span class="hljs-attr">"license"</span>: <span class="hljs-string">"ISC"</span>,</span><br><span class="line">  <span class="hljs-attr">"dependencies"</span>: &#123;</span><br><span class="line">    <span class="hljs-attr">"unzipper"</span>: <span class="hljs-string">"^0.10.8"</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>index.js: 创建一个辅助进程；执行斐波那契数列计算</li>
+<li>hepler.js: 将压缩的FlameGraph.zip解压 =&gt; 给相关文件执行权限 =&gt; 获得当前系统中除自己以外的Node.js进程号（因为可能是多个，所以是个数组，例子中假设就一个进程）=&gt; 定时模拟获得生成火焰图的命令 =&gt; 执行 perf record =&gt; 延迟5秒后生成火焰图</li>
+<li>package.json: 启动 index.js 需要加上<code>--perf-basic-prof</code>命令行参数；另外还需要<code>unzipper</code>类包</li>
+</ul>
+<p>将他们通过docker cp 从本地上传到docker中，并执行npm i安装依赖。</p>
+<figure class="highlight shell hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm run dev // 开始实验</span><br></pre></td></tr></table></figure>
+<p>随着一阵的风扇狂响（CPU密集计算）之后，火焰图也生成好了，大致如下：</p>
+<p><img src="/images/node-perf-heapdump-flame-graph/node-flamegraph.png" alt="CPU火焰图"></p>
+<p>之前的框架也做部分调整，每个容器需要一个Helper.js进程</p>
+<p><img src="/images/node-perf-heapdump-flame-graph/connection_02.png" alt="调整后的框架"></p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>我觉得程序员和程序猿之间的差别就在有没有一套好的监控体系和善用监控调优及排查问题的方法。如果没办法使用现成的第三方服务，往往需要自己动手去搭建，无论业务多么繁忙，唯有趁手的“兵器”才能取得真经，这是需要据理力争的东西。只有水下的冰够厚，水上的冰山才能更高。</p>
+
+    
+    </div>
+    
+    <div class="columns is-variable is-1 is-multiline is-mobile">
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/Node-js/">#Node.js</a></span>
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/JavaScript/">#JavaScript</a></span>
+    
+    </div>
+    
+    
+    <div class="columns is-mobile is-multiline article-nav">
+        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
+            
+            <a href="/2020/03/01/v8-libuv-timer-event-loop/">libuv &amp; Node.js EventLoop （一）</a>
+            
+        </span>
+        <span class="column is-12-mobile is-half-desktop  article-nav-next">
+            
+            <a href="/2020/02/08/v8-parser-compiler-javascript/">V8是如何怎么处理JavaScript的</a>
+            
+        </span>
+    </div>
+    
+</article>
+
+
+
+<div class="comments">
+    <ul class="adv">
+  <li class="img"><img src="/images/give-a-reward.png" alt="reward"></li>
+  <li>
+    欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a>前端组，<a href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3" target="_blank">岗位信息</a>
+  </li>
+  <li>
+    同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank">爱眠物</a>
+  </li>
+</ul>
+
+    <h3 class="title is-4">Comments</h3>
+    
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://mlib.wang/2020/02/21/node-perf-heapdump-flame-graph/';
+        this.page.identifier = '2020/02/21/node-perf-heapdump-flame-graph/';
+        
+        this.language = 'en';
+        
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'mblof' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</div>
+
+    </div>
+</section> <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Miser&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
+
+            
+            
+        </div>
+    </div>
+</footer> <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+<script src="/js/script.js"></script> 
+  </body>
+</html>
