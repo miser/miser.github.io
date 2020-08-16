@@ -4,6 +4,7 @@ category: JavaScript
 keywords: Express,Gateway,Node.js 网关
 description: 为了更好的做BFF层，最近看了一些网关资料，Node.js的网关类库相对薄弱很多。Express Gateway，背靠强大的Express社区，很多现成的中间件可以运用其中，省去了不少开发成本和风险。
 tags:
+  - 性能监控
   - Node.js
   - JavaScript
 date: 2020-04-03T07:17:29.367Z
