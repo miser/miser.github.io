@@ -24,16 +24,6 @@
 <script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
 
       
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'UA-129526171-1');
-</script>
-
-  
 
     <style type="text/css">
       body {
@@ -101,6 +91,50 @@
 </nav>
  <section class="section">
     <div class="container">
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/04/06/child_process-exec-fork-spawn/" itemprop="url">简单梳理Node.js创建子进程的方法（上）</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-04-06T00:09:36.472Z" itemprop="datePublished">Apr 6 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p><strong>Node.js 创建子进程的方法常用的有如下几种：</strong></p>
+<p><strong>child_process</strong></p>
+<ul>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_exec_command_options_callback" target="_blank" rel="noopener">exec</a>: 衍生一个 shell 然后在该 shell 中执行 <code>command</code>，并缓冲任何产生的输出，最大缓存 1024*1024 个字节。</li>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_execfile_file_args_options_callback" target="_blank" rel="noopener">execFile</a>: 函数类似<code>exec</code>，但默认情况下不会衍生 shell。 相反，指定的可执行文件<code>file</code> 会作为新进程直接地衍生，使其比<code>exec</code> 稍微更高效。和<code>exec</code>一样，它也有最大 1024*1204 个字节的显示缓存。</li>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_fork_modulepath_args_options" target="_blank" rel="noopener">fork</a>: 是 <code>spawn</code>的一个特例，专门用于衍生新的 Node.js 进程。 与<code>spawn</code>一样返回<code>ChildProcess</code>对象。 返回的<code>ChildProcess</code>将会内置一个额外的通信通道，允许消息在父进程和子进程之间来回传递。</li>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_spawn_command_args_options" target="_blank" rel="noopener">spawn</a>: 上诉的几个方法其实都是通过 spawn 实现的。</li>
+</ul>
+<p><strong>cluster</strong></p>
+<ul>
+<li><a href="http://nodejs.cn/api/cluster.html#cluster_cluster_fork_env" target="_blank" rel="noopener">fork</a>: 衍生出一个新的工作进程，这只能通过主进程调用。</li>
+</ul>
+        <p class="article-more-link">
+            <a href="/2020/04/06/child_process-exec-fork-spawn/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
     
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
@@ -246,45 +280,6 @@
 
 
     
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="/2020/01/22/express-gateway/" itemprop="url">Express Gateway</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            <time datetime="2020-01-22T07:32:03.586Z" itemprop="datePublished">Jan 22 2020</time>
-        </span>
-        
-        <span class="column is-narrow article-category">
-            <i class="far fa-folder"></i>
-            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-        </span>
-        
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <p>为了更好的做BFF层，最近看了一些网关资料，Node.js的网关类库相对薄弱很多，主要有2个</p>
-<ul>
-<li><a href="https://www.express-gateway.io/" target="_blank" rel="noopener">Express Gateway</a></li>
-<li><a href="https://moleculer.services/" target="_blank" rel="noopener">Moleculer</a></li>
-</ul>
-<p>和Lua <a href="https://konghq.com/" target="_blank" rel="noopener">Kong</a>相比缺少很多刚需，比如金丝雀发布、灰度发布等等；和Java Zuul等相比，又少了很多中文文档。但是不管如何这2个是Javascript技术栈的，对于一个Node.js程序工作者来说怎能不香呢？</p>
-<p>今天我们主要介绍<strong>Express Gateway</strong>，背靠强大的Express社区，很多现成的中间件可以运用其中，省去了不少开发成本和风险。一些不是很大的项目或者没有时间慢慢构建底层的团队来说，我觉得可以试试。</p>
-        <p class="article-more-link">
-            <a href="/2020/01/22/express-gateway/#more">Read More</a>
-        </p>
-    
-    </div>
-    
-    
-</article>
-
-
-
-    
     
         
 <nav class="pagination is-centered is-rounded" role="navigation" aria-label="pagination">
@@ -303,6 +298,8 @@
         <li><a class="pagination-link" href="/page/3/">3</a></li>
         
         <li><a class="pagination-link" href="/page/4/">4</a></li>
+        
+        <li><a class="pagination-link" href="/page/5/">5</a></li>
         
     </ul>
 </nav>
@@ -377,9 +374,6 @@
         });
     })(jQuery);
 </script>
-
-    
-    
 
     
 

@@ -105,8 +105,8 @@ comment:
 plugins:
   mathjax: true
   gallery: true
-  google-analytics:
-    tracking_id: UA-129526171-1
+  # google-analytics:
+  #   tracking_id: UA-129526171-1
 
 navbar_links:
   Twitter:
