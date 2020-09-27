@@ -62,7 +62,7 @@ date: 2020-03-01T05:39:36.647Z
 
 > This phase executes callbacks for some system operations such as types of TCP errors. For example if a TCP socket receives `ECONNREFUSED` when attempting to connect, some *nix systems want to wait to report the error. This will be queued to execute in the **pending callbacks** phase. —— Node.js
 
-**Node.js**里的`pending callbacks`：这个阶段会执行系统上发生的一些错误而导致的callbacks，如TCP错误。
+**Node.js**里的`pending callbacks`：这个阶段会执行系统上因一些错误而引起的callbacks，如TCP错误。
 
 我觉得`pending callbacks`比较合理，一方面如libuv所说，它是一部分延迟的I/O回调，在Node.js里面指的是一些系统上的错误（这些错误也是I/O引起的）。而大多数的I/O操作其实是在 `poll`阶段。
 
