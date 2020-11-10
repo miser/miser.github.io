@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>monitorEventLoopDelay 实现原理 - Miser 胡言</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
+<meta name="baidu-site-verification" content="CXKjj3fklD">
+
+<meta name="description" content="monitorEventLoopDelay原理介绍，通过向libuv注册uv_timer_t句柄，定时触发回调事件">
+ 
+<meta name="keywords" content="Node.js,monitorEventLoopDelay">
+   
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-129526171-1');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      div.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item " href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section">
+    <div class="container">
+    <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            monitorEventLoopDelay 实现原理
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-11-06T08:16:40.000Z" itemprop="datePublished">Nov 6 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h2 id="monitorEventLoopDelay-是什么"><a href="#monitorEventLoopDelay-是什么" class="headerlink" title="monitorEventLoopDelay 是什么"></a>monitorEventLoopDelay 是什么</h2><p>perf_hooks.monitorEventLoopDelay([options])</p>
+<ul>
+<li>options: Object<br>– <code>resolution</code>: The sampling rate in milliseconds. Must be greater than zero. Default: 10.</li>
+<li>Returns: Histogram<blockquote>
+<p>Creates a Histogram object that samples and reports the event loop delay over time. The delays will be reported in nanoseconds.<br>Using a timer to detect approximate event loop delay works because the execution of timers is tied specifically to the lifecycle of the libuv event loop. That is, a delay in the loop will cause a delay in the execution of the timer, and those delays are specifically what this API is intended to detect.</p>
+</blockquote>
+</li>
+</ul>
+<p>监控 EventLoop 运行情况是判断系统是否健康的重要指标之一，如果有大量的延迟，说明系统存在密集计算，降低了系统的吞吐。Node.js 在 v11 版本引入了<code>monitorEventLoopDelay</code>，而之前需要自己去实现。</p>
+<!-- monitorEventLoopDelay 的功能介绍 -->
+<a id="more"></a>
+<p><strong>版本</strong></p>
+<figure class="highlight c++ hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// libuv</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> UV_VERSION_MAJOR 1</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> UV_VERSION_MINOR 33</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> UV_VERSION_PATCH 1</span></span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// V8</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> V8_MAJOR_VERSION 7</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> V8_MINOR_VERSION 8</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> V8_BUILD_NUMBER 279</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> V8_PATCH_LEVEL 17</span></span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// Node.js</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> NODE_MAJOR_VERSION 14</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> NODE_MINOR_VERSION 0</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> NODE_PATCH_VERSION 0</span></span><br></pre></td></tr></table></figure>
+<h2 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h2><p><em>代码中隐去了当前介绍过程中不重要的代码，有兴趣可以查看源码</em></p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// perf_hooks.js</span></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">monitorEventLoopDelay</span>(<span class="hljs-params">options = &#123;&#125;</span>) </span>&#123;</span><br><span class="line">  <span class="hljs-comment">// _ELDHistogram 是 C++ 暴露出来的对象</span></span><br><span class="line">  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> ELDHistogram(<span class="hljs-keyword">new</span> _ELDHistogram(resolution));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// ELDHistogram 基本是对 handle 入参对象的代理</span></span><br><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ELDHistogram</span> </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">constructor</span>(handle) &#123;</span><br><span class="line">    <span class="hljs-keyword">this</span>[kHandle] = handle;</span><br><span class="line">  &#125;</span><br><span class="line">  enable() &#123;</span><br><span class="line">    <span class="hljs-comment">// 开启监控</span></span><br><span class="line">    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>[kHandle].enable();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++ hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// node_perf.h</span></span><br><span class="line"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ELDHistogram</span> :</span> <span class="hljs-keyword">public</span> HandleWrap, <span class="hljs-keyword">public</span> Histogram &#123;</span><br><span class="line"> <span class="hljs-keyword">public</span>:</span><br><span class="line">  ELDHistogram(Environment* env,</span><br><span class="line">               Local&lt;Object&gt; wrap,</span><br><span class="line">               <span class="hljs-keyword">int32_t</span> resolution);</span><br><span class="line">  <span class="hljs-function"><span class="hljs-keyword">bool</span> <span class="hljs-title">Enable</span><span class="hljs-params">()</span></span>;</span><br><span class="line"> <span class="hljs-keyword">private</span>:</span><br><span class="line">  <span class="hljs-comment">// Enable 开启后，注册到 EventLoop里的回调</span></span><br><span class="line">  <span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">DelayIntervalCallback</span><span class="hljs-params">(<span class="hljs-keyword">uv_timer_t</span>* req)</span></span>;</span><br><span class="line"></span><br><span class="line">  <span class="hljs-keyword">bool</span> enabled_ = <span class="hljs-literal">false</span>;</span><br><span class="line">  <span class="hljs-comment">// 注册在EventLoop上的 Handle</span></span><br><span class="line">  <span class="hljs-keyword">uv_timer_t</span> timer_;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// node_perf.cc</span></span><br><span class="line"><span class="hljs-keyword">bool</span> ELDHistogram::Enable() &#123;</span><br><span class="line">  <span class="hljs-keyword">if</span> (enabled_ || IsHandleClosing()) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;</span><br><span class="line">  enabled_ = <span class="hljs-literal">true</span>;</span><br><span class="line">  <span class="hljs-comment">// resolution_ 可以通过 js 传入的参数</span></span><br><span class="line">  <span class="hljs-comment">// 多少时间记录一次数据</span></span><br><span class="line">  uv_timer_start(&amp;timer_,</span><br><span class="line">                 DelayIntervalCallback,</span><br><span class="line">                 resolution_,</span><br><span class="line">                 resolution_);</span><br><span class="line">  <span class="hljs-comment">//  设置成 unref</span></span><br><span class="line">  uv_unref(<span class="hljs-keyword">reinterpret_cast</span>&lt;<span class="hljs-keyword">uv_handle_t</span>*&gt;(&amp;timer_));</span><br><span class="line">  <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// 每次定时触发回调，记录相关的值</span></span><br><span class="line"><span class="hljs-keyword">void</span> ELDHistogram::DelayIntervalCallback(<span class="hljs-keyword">uv_timer_t</span>* req) &#123;</span><br><span class="line">  ELDHistogram* histogram = ContainerOf(&amp;ELDHistogram::timer_, req);</span><br><span class="line">  histogram-&gt;RecordDelta();</span><br><span class="line">  TRACE_COUNTER1(TRACING_CATEGORY_NODE2(perf, event_loop),</span><br><span class="line">                 <span class="hljs-string">"min"</span>, histogram-&gt;Min());</span><br><span class="line">  TRACE_COUNTER1(TRACING_CATEGORY_NODE2(perf, event_loop),</span><br><span class="line">                 <span class="hljs-string">"max"</span>, histogram-&gt;Max());</span><br><span class="line">  TRACE_COUNTER1(TRACING_CATEGORY_NODE2(perf, event_loop),</span><br><span class="line">                 <span class="hljs-string">"mean"</span>, histogram-&gt;Mean());</span><br><span class="line">  TRACE_COUNTER1(TRACING_CATEGORY_NODE2(perf, event_loop),</span><br><span class="line">                 <span class="hljs-string">"stddev"</span>, histogram-&gt;Stddev());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从上述代码我们可以和很容易的知道，js 调用一个<code>ELDHistogram</code>对象，该对象代理底层 C++的方法，一旦开启监控，就会在 EventLoop 上注册一个回调，每次时间一到就记录相关的值放在<a href="https://github.com/HdrHistogram/HdrHistogram_c" target="_blank" rel="noopener">HdrHistogram_c</a>中，它是 C 对<a href="https://github.com/HdrHistogram/HdrHistogram" target="_blank" rel="noopener">HdrHistogram</a>的实现，可以获取从记录开始到当前时间点的最大、最小、平均值、95 线等数据。</p>
+<p>直白点讲就是开启一个定时器，通过向 libuv 注册 uv_timer_t 句柄，执行回调，获取数据存在一个特定的容器中，我们从该容器拿被处理好的数据。</p>
+
+    
+    </div>
+    
+    <div class="columns is-variable is-1 is-multiline is-mobile">
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/Node-js/">#Node.js</a></span>
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/原理/">#原理</a></span>
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/V8/">#V8</a></span>
+    
+    </div>
+    
+    
+    <div class="columns is-mobile is-multiline article-nav">
+        <span class="column is-12-mobile is-half-desktop is-hidden-mobile article-nav-prev">
+            
+        </span>
+        <span class="column is-12-mobile is-half-desktop  article-nav-next">
+            
+            <a href="/2020/11/04/node-gateway-ssr-multi-version-2/">前端调度工具（内部培训PPT）</a>
+            
+        </span>
+    </div>
+    
+</article>
+
+
+
+<div class="comments">
+    <div class="adv">
+  <ul>
+    <li class="img"><img src="/images/give-a-reward.png" alt="reward"></li>
+    <li>
+      欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a>前端组，<a href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3" target="_blank">岗位信息</a>
+    </li>
+    <li>
+      同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank">爱眠物</a>
+    </li>
+  </ul>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <!-- 尾部广告 -->
+  <ins class="adsbygoogle" style="display: block" data-ad-client="ca-pub-6006630417531788" data-ad-slot="2988625841" data-ad-format="auto" data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+    <h3 class="title is-4">Comments</h3>
+    
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://mlib.wang/2020/11/06/monitorEventLoopDelay-libuv-uv-timer-start/';
+        this.page.identifier = '2020/11/06/monitorEventLoopDelay-libuv-uv-timer-start/';
+        
+        this.language = 'en';
+        
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'mblof' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</div>
+
+    </div>
+</section> <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Miser&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
+
+            
+            
+        </div>
+    </div>
+</footer> <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+<script src="/js/script.js"></script> 
+  </body>
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>Node.js 除了 Cluster 还有 Worker Threads - Miser 胡言</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css">
+<meta name="baidu-site-verification" content="CXKjj3fklD">
+
+<meta name="description" content="Cluster 这种复杂的编程方式对轻巧的 Node.js 并不有好，加之容器化技术的不断发展，多个 K8s Pod 完全就可以覆盖 Cluster 功能，Egg.js 从 18 年就开始讨论是否使用单进程模型，目前新版本已近支持。所以，对于 Node.js 而言 Worker Threads 才是今后解决密集计算的方向">
+ 
+<meta name="keywords" content="Node.js,Worker Threads,Cluster,单线程,多线程">
+   
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css">
+
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+
+<link rel="stylesheet" href="/css/style.css">
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129526171-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-129526171-1');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      div.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item " href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section">
+    <div class="container">
+    <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            Node.js 除了 Cluster 还有 Worker Threads
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-09-01T16:00:00.000Z" itemprop="datePublished">Sep 2 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h4 id="Cluster"><a href="#Cluster" class="headerlink" title="Cluster"></a><a href="https://nodejs.org/dist/latest-v14.x/docs/api/cluster.html" target="_blank" rel="noopener">Cluster</a></h4><p>这是一个比较熟悉的模块，早在 Node.js V0.8 版本的时候就已经被加入进来，平时在生产部署 Web 应用的时候，为了充分压榨多核 CPU，总是根据核数开启对应的数量的应用进程，来处理用户请求，这些在 PM2 工具 或者 Egg.js 框架里有相应的介绍，之前自己写的 <a href="https://mlib.wang/2020/05/03/node-js-net-cluster-fork/?s=node-js-net-cluster-fork">简单梳理 Node.js 创建子进程的方法（下）—— cluster</a> 有其原理介绍。</p>
+<p>虽然 Cluster 已经很成熟，但是也有一些问题：</p>
+<ul>
+<li>进程开销较大</li>
+<li>很多第三方工具对 Cluster 不是很友好，还是以单进程为主，比如一些监控系统</li>
+<li>需要有一个管理进程，在某个 Cluster 进程出错退出后将其重启起来；单进程出错奔溃，运维可以通过健康检查未能通过的方式重启整个 Docker 等，相比而言 Cluster 模式复杂的多</li>
+<li>目前从框架上自然支持 Cluster 的只有 Egg.js，其它都需要辅助工具，比如 PM2，然而它并完全免费，所以真使用该项技术，又面临框架选择的问题</li>
+</ul>
+<p><br></p>
+<h4 id="Worker-Threads"><a href="#Worker-Threads" class="headerlink" title="Worker Threads"></a><a href="https://nodejs.org/dist/latest-v14.x/docs/api/worker_threads.html" target="_blank" rel="noopener">Worker Threads</a></h4><p>在 Node.js V10.5.0 加入，但需要通过<code>--experimental-worker</code>开启，直到 V12 才默认支持。在密集计算任务处理上带来了新的解决方案。</p>
+<p>我带领的团队有一个重要的业务需求，就是服务端渲染（SSR)，我们使用 Egg.js 的 Cluster 模式来帮助我们提升吞吐量。虽然业务问题解决了，但是 Egg.js 比起 Express 或者 Koa 这样的框架来说复杂很多，让一个前端同事学习或者招募有经验的新同事还是有点棘手。另外就是和其它非其生态圈的工具搭配使用也遇到不少麻烦。</p>
+<p>好在 Worker Threads 同样可以压榨 CPU，提升整体吞吐量。</p>
+<a id="more"></a>
+<p><br></p>
+<h4 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h4><p><strong>实验说明</strong></p>
+<p>对一个 List（100 条）数据进行渲染，分别查看单线程和多线程所花费的时间和吞吐量</p>
+<p><strong>实验环境：</strong></p>
+<ul>
+<li>MacBook Pro (Retina, 13-inch, Mid 2014)</li>
+<li>CPU 2.6 GHz 双核 Intel Core i5</li>
+<li>内存 8 GB 1600 MHz DDR3</li>
+</ul>
+<p><strong>实验代码：</strong></p>
+<p><a href="https://github.com/miser/ssr-thread-test" target="_blank" rel="noopener">ssr-thread-test</a></p>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node one.js <span class="hljs-comment">// 启动单线程的 web服务</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node multiple.js <span class="hljs-comment">// 启动多线程的 web服务</span></span><br></pre></td></tr></table></figure>
+<p>多线程使用了线程池，基本上是<a href="https://nodejs.org/dist/latest-v14.x/docs/api/async_hooks.html#async_hooks_using_asyncresource_for_a_worker_thread_pool" target="_blank" rel="noopener">官方的例子</a>，不过官方用的是事件监听的机制，在高并发下会发出发出超出最大监听数的警告，我将其改为队列的形式。</p>
+<p>分别进行压力测试， 2W 个请求，每次并发 30 个</p>
+<figure class="highlight shell hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ab -n 20000 -c 30 -k "http://localhost:9000/test"</span><br></pre></td></tr></table></figure>
+<p><strong>得分计算：</strong><br>对单线程和多线程各跑 10 次压测，去掉最高最低算平均分</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>单线程</th>
+<th>多线程</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Time Taken For Tests</td>
+<td>47.187</td>
+<td>45.147</td>
+</tr>
+<tr>
+<td>Requests Per Second</td>
+<td>423.938</td>
+<td>444.377</td>
+</tr>
+<tr>
+<td>95%的请求小于多少毫秒</td>
+<td>44.571</td>
+<td>40</td>
+</tr>
+</tbody>
+</table>
+<p>从此次实验可以得出，多线程比单线程的性能有一定提升，当然这是在简单的环境下，更为复杂的 SSR 计算相信会有更多的性能提升。</p>
+<p>Cluster 这种复杂的编程方式对轻巧的 Node.js 并不有好，加之容器化技术的不断发展，多个 K8s Pod 完全就可以覆盖 Cluster 功能，Egg.js 从 18 年就开始讨论是否使用单进程模型，目前新版本已近支持。所以，对于 Node.js 而言 Worker Threads 才是今后解决密集计算的方向。</p>
+
+    
+    </div>
+    
+    <div class="columns is-variable is-1 is-multiline is-mobile">
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/SSR/">#SSR</a></span>
+    
+    </div>
+    
+    
+    <div class="columns is-mobile is-multiline article-nav">
+        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
+            
+            <a href="/2020/09/28/debug-libuv/">debug libuv</a>
+            
+        </span>
+        <span class="column is-12-mobile is-half-desktop  article-nav-next">
+            
+            <a href="/2020/08/16/coder-painter/">码农与画家</a>
+            
+        </span>
+    </div>
+    
+</article>
+
+
+
+<div class="comments">
+    <div class="adv">
+  <ul>
+    <li class="img"><img src="/images/give-a-reward.png" alt="reward"></li>
+    <li>
+      欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a>前端组，<a href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3" target="_blank">岗位信息</a>
+    </li>
+    <li>
+      同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank">爱眠物</a>
+    </li>
+  </ul>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <!-- 尾部广告 -->
+  <ins class="adsbygoogle" style="display: block" data-ad-client="ca-pub-6006630417531788" data-ad-slot="2988625841" data-ad-format="auto" data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+    <h3 class="title is-4">Comments</h3>
+    
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://mlib.wang/2020/09/02/ssr-nodejs-thread-test/';
+        this.page.identifier = '2020/09/02/ssr-nodejs-thread-test/';
+        
+        this.language = 'en';
+        
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'mblof' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</div>
+
+    </div>
+</section> <footer class="footer">
+    <div class="container">
+        <div class="columns content">
+            <div class="column is-narrow has-text-centered">
+                &copy; 2020 Miser&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+            </div>
+            <div class="column is-hidden-mobile"></div>
+
+            
+            
+        </div>
+    </div>
+</footer> <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+<script src="/js/script.js"></script> 
+  </body>
+</html>

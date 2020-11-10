@@ -46,7 +46,7 @@
       .gallery-item .caption {
         text-align: center;
       }
-      ul.adv {
+      div.adv {
         margin-bottom: 60px;
       }
       ul .img {
@@ -105,6 +105,165 @@
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
+            <a href="/2020/11/06/monitorEventLoopDelay-libuv-uv-timer-start/" itemprop="url">monitorEventLoopDelay 实现原理</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-11-06T08:16:40.000Z" itemprop="datePublished">Nov 6 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h2 id="monitorEventLoopDelay-是什么"><a href="#monitorEventLoopDelay-是什么" class="headerlink" title="monitorEventLoopDelay 是什么"></a>monitorEventLoopDelay 是什么</h2><p>perf_hooks.monitorEventLoopDelay([options])</p>
+<ul>
+<li>options: Object<br>– <code>resolution</code>: The sampling rate in milliseconds. Must be greater than zero. Default: 10.</li>
+<li>Returns: Histogram<blockquote>
+<p>Creates a Histogram object that samples and reports the event loop delay over time. The delays will be reported in nanoseconds.<br>Using a timer to detect approximate event loop delay works because the execution of timers is tied specifically to the lifecycle of the libuv event loop. That is, a delay in the loop will cause a delay in the execution of the timer, and those delays are specifically what this API is intended to detect.</p>
+</blockquote>
+</li>
+</ul>
+<p>监控 EventLoop 运行情况是判断系统是否健康的重要指标之一，如果有大量的延迟，说明系统存在密集计算，降低了系统的吞吐。Node.js 在 v11 版本引入了<code>monitorEventLoopDelay</code>，而之前需要自己去实现。</p>
+<!-- monitorEventLoopDelay 的功能介绍 -->
+        <p class="article-more-link">
+            <a href="/2020/11/06/monitorEventLoopDelay-libuv-uv-timer-start/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/11/04/node-gateway-ssr-multi-version-2/" itemprop="url">前端调度工具（内部培训PPT）</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-11-04T14:30:39.000Z" itemprop="datePublished">Nov 4 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/架构/">架构</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>书接上文 <a href="/2020/06/29/node-gateway-ssr-multi-version/">Node.js 服务支持多 SSR 版本</a>，之前的架构只是支持 SSR 应用的版本切换，最近为了支持微前端多版本切换（每个子应用也可自己配置自己的版本号），因为 SSR 和纯前端有较多差别所以又做了一套，之后会做一定合并，抽出底层，上层逻辑以插件形式注入。</p>
+<p><a href="/images/node-gateway-ssr-multi-version-2/FE-Schedule.pptx">前端调度工具 PPT 下载</a></p>
+        <p class="article-more-link">
+            <a href="/2020/11/04/node-gateway-ssr-multi-version-2/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/09/28/debug-libuv/" itemprop="url">debug libuv</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-09-28T10:31:53.000Z" itemprop="datePublished">Sep 28 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/C-C/">C/C++</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>libuv 在 v1.36.0 之后移除了 <code>gyp_uv.py</code> (<a href="https://github.com/libuv/libuv/commit/53f3c687fc288708721a5a3d9563febda1b9d2c1" target="_blank" rel="noopener">commit</a>)，没办法通过它去创建一个 libuv.a 静态链接库（<a href="https://github.com/libuv/libuv/tree/v1.35.0" target="_blank" rel="noopener">v1.35 文档</a>有详细的介绍），现在我们需要通过<code>cmake</code>去创建。</p>
+<h3 id="构建静态链接库"><a href="#构建静态链接库" class="headerlink" title="构建静态链接库"></a>构建静态链接库</h3><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// 下载 libuv</span><br><span class="line">git clone https://github.com/libuv/libuv</span><br><span class="line">cd libuv</span><br><span class="line">mkdir -p build</span><br><span class="line">// DCMAKE_BUILD_TYPE 将其设置为 Debug 模式，不然断点没办法进入 libuv 源码中</span><br><span class="line"> (cd build &amp;&amp; cmake -DCMAKE_BUILD_TYPE=Debug ..)</span><br><span class="line">cmake --build build</span><br></pre></td></tr></table></figure>
+<p>之后 build 目录 如下，libuv_a.a 就是我们需要的 静态链接库。<br><img src="/images/debug-libuv/build.jpg" alt="build dir"></p>
+<h3 id="新建-hello-world-项目"><a href="#新建-hello-world-项目" class="headerlink" title="新建 hello world 项目"></a>新建 hello world 项目</h3><p>通过 CLion 创建一个<code>helloworld</code>项目，在 CMakeLists.txt 里添加 libuv 相关的信息，将 libuv 的头文件和源码添加进来，最后把项目和 linuv 链接在一起</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">cmake_minimum_required(VERSION 3.17)</span><br><span class="line">project(helloworld)</span><br><span class="line">add_executable(helloworld main.cpp)</span><br><span class="line"></span><br><span class="line"># 前面 clone libuv 绝对路径</span><br><span class="line">set(LIBUVDIR /your/libuv/path)</span><br><span class="line"># 将源码导入</span><br><span class="line">include_directories($&#123;LIBUVDIR&#125;/src)</span><br><span class="line">include_directories($&#123;LIBUVDIR&#125;/include)</span><br><span class="line"></span><br><span class="line">add_library(libuv STATIC IMPORTED)</span><br><span class="line">set_target_properties(libuv</span><br><span class="line">        PROPERTIES IMPORTED_LOCATION</span><br><span class="line">        $&#123;LIBUVDIR&#125;/build/libuv_a.a)</span><br><span class="line"></span><br><span class="line"># 链接起来</span><br><span class="line">target_link_libraries(helloworld libuv)</span><br></pre></td></tr></table></figure>
+<p>创建 main.cpp 文件</p>
+<figure class="highlight cpp hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;uv.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">cb</span><span class="hljs-params">(<span class="hljs-keyword">uv_write_t</span> *req, <span class="hljs-keyword">int</span> status)</span> </span>&#123;</span><br><span class="line">  <span class="hljs-built_in">printf</span>(<span class="hljs-string">"Hello from Callback.\n"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">uv_tty_t</span> tty;</span><br><span class="line">  <span class="hljs-keyword">uv_write_t</span> req;</span><br><span class="line">  uv_tty_init(uv_default_loop(), &amp;tty, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>);</span><br><span class="line">  <span class="hljs-keyword">char</span> str[] = <span class="hljs-string">"Hello UV!\n"</span>;</span><br><span class="line">  <span class="hljs-keyword">int</span> len = <span class="hljs-built_in">strlen</span>(str);</span><br><span class="line">  <span class="hljs-keyword">uv_buf_t</span> bufs[] = &#123;uv_buf_init(str, len)&#125;;</span><br><span class="line">  uv_write(&amp;req, (<span class="hljs-keyword">uv_stream_t</span> *) &amp;tty, bufs, <span class="hljs-number">1</span>, cb);</span><br><span class="line">  uv_run(uv_default_loop(), UV_RUN_DEFAULT);</span><br><span class="line">  <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>之后就能愉快的打断点调试 libuv 了<br><img src="/images/debug-libuv/debug.jpg" alt="debug libuv"></p>
+<p>学习 libuv 或者其它 C/C++相关的技术，感觉又回到了刚开始学习编程的时候，很多的不懂和挑战，不再像用 JavaScript 那样随心所欲，但是越是对底层的学习，越是能了解计算机原理，职业寿命才能变得更长。出于兴趣也好，出于无奈也好，总之新的学习让一切又变得有意思起来。</p>
+
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/09/02/ssr-nodejs-thread-test/" itemprop="url">Node.js 除了 Cluster 还有 Worker Threads</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-09-01T16:00:00.000Z" itemprop="datePublished">Sep 2 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h4 id="Cluster"><a href="#Cluster" class="headerlink" title="Cluster"></a><a href="https://nodejs.org/dist/latest-v14.x/docs/api/cluster.html" target="_blank" rel="noopener">Cluster</a></h4><p>这是一个比较熟悉的模块，早在 Node.js V0.8 版本的时候就已经被加入进来，平时在生产部署 Web 应用的时候，为了充分压榨多核 CPU，总是根据核数开启对应的数量的应用进程，来处理用户请求，这些在 PM2 工具 或者 Egg.js 框架里有相应的介绍，之前自己写的 <a href="https://mlib.wang/2020/05/03/node-js-net-cluster-fork/?s=node-js-net-cluster-fork">简单梳理 Node.js 创建子进程的方法（下）—— cluster</a> 有其原理介绍。</p>
+<p>虽然 Cluster 已经很成熟，但是也有一些问题：</p>
+<ul>
+<li>进程开销较大</li>
+<li>很多第三方工具对 Cluster 不是很友好，还是以单进程为主，比如一些监控系统</li>
+<li>需要有一个管理进程，在某个 Cluster 进程出错退出后将其重启起来；单进程出错奔溃，运维可以通过健康检查未能通过的方式重启整个 Docker 等，相比而言 Cluster 模式复杂的多</li>
+<li>目前从框架上自然支持 Cluster 的只有 Egg.js，其它都需要辅助工具，比如 PM2，然而它并完全免费，所以真使用该项技术，又面临框架选择的问题</li>
+</ul>
+<p><br></p>
+<h4 id="Worker-Threads"><a href="#Worker-Threads" class="headerlink" title="Worker Threads"></a><a href="https://nodejs.org/dist/latest-v14.x/docs/api/worker_threads.html" target="_blank" rel="noopener">Worker Threads</a></h4><p>在 Node.js V10.5.0 加入，但需要通过<code>--experimental-worker</code>开启，直到 V12 才默认支持。在密集计算任务处理上带来了新的解决方案。</p>
+<p>我带领的团队有一个重要的业务需求，就是服务端渲染（SSR)，我们使用 Egg.js 的 Cluster 模式来帮助我们提升吞吐量。虽然业务问题解决了，但是 Egg.js 比起 Express 或者 Koa 这样的框架来说复杂很多，让一个前端同事学习或者招募有经验的新同事还是有点棘手。另外就是和其它非其生态圈的工具搭配使用也遇到不少麻烦。</p>
+<p>好在 Worker Threads 同样可以压榨 CPU，提升整体吞吐量。</p>
+        <p class="article-more-link">
+            <a href="/2020/09/02/ssr-nodejs-thread-test/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
             <a href="/2020/08/16/coder-painter/" itemprop="url">码农与画家</a>
         
     </h1>
@@ -128,156 +287,6 @@
 <p>最近在给团队里年轻同事做培训或 Code Review 的时候也是感触良多，总是想起过去的自己，脑子中又闪现出了，<strong>码农与程序猿</strong>。</p>
         <p class="article-more-link">
             <a href="/2020/08/16/coder-painter/#more">Read More</a>
-        </p>
-    
-    </div>
-    
-    
-</article>
-
-
-
-    
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="/2020/07/07/lighthouse/" itemprop="url">Lighthouse 流程和架构分析</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            <time datetime="2020-07-07T13:56:46.000Z" itemprop="datePublished">Jul 7 2020</time>
-        </span>
-        
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>随着公司业务的不断扩展 ，系统也变得越来越臃肿，需要被不断的拆分，引进诸如微前端这样的框架，开发人员也不断的扩充，甚至有不同办公地点的同事协作开发。除了基本的开发规范外，也需要有一套完善的监控来测试和记录每次代码提交是否比之前版本存在性能不足等问题，在 CI 阶段发现问题，提早解决避免上线后带来性能损失而流失用户。团队成员也能在工作中不断的成长、驱动、交付出优质的应用。</p>
-<h3 id="前端经常要关注的几个指标："><a href="#前端经常要关注的几个指标：" class="headerlink" title="前端经常要关注的几个指标："></a>前端经常要关注的几个指标：</h3><p><strong>First Contentful Paint：</strong>浏览器首次绘制文本、图片（包含背景图）、非白色的 canvas 或 SVG 的时间节点。<em>反映了网络的可用性和页面资源是否庞大导致传输时间过长。</em></p>
-<p><strong>First Meaningful Paint：</strong>页面的“主要内容”开始出现在屏幕上的时间点，测量用户加载体验的主要指标。<em>反映了是否太多非重要资源加载或执行的优先级高于主要的呈现资源。</em></p>
-<p><strong>First CPU Idle：</strong>页面主线程首次可以触发 input 操作，通常叫做最小可交互时间。</p>
-<p><strong>Time to Interactive：</strong>页面完全达到可交互状态的时间点。</p>
-<p><br></p>
-<h2 id="Lighthouse-介绍"><a href="#Lighthouse-介绍" class="headerlink" title="Lighthouse 介绍"></a>Lighthouse 介绍</h2><blockquote>
-<p>是一个开源的自动化工具，用于改进网络应用的质量。 您可以将其作为一个 Chrome 扩展程序运行，或从命令行运行。 您为 Lighthouse 提供一个您要审查的网址，它将针对此页面运行一连串的测试，然后生成一个有关页面性能的报告。</p>
-</blockquote>
-<p><img src="/images/lighthouse/report.png" alt="Lighthouse 报告"></p>
-        <p class="article-more-link">
-            <a href="/2020/07/07/lighthouse/#more">Read More</a>
-        </p>
-    
-    </div>
-    
-    
-</article>
-
-
-
-    
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="/2020/06/29/node-gateway-ssr-multi-version/" itemprop="url">Node.js服务支持多SSR版本（适合测试环境）</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            <time datetime="2020-06-29T06:59:30.000Z" itemprop="datePublished">Jun 29 2020</time>
-        </span>
-        
-        <span class="column is-narrow article-category">
-            <i class="far fa-folder"></i>
-            <a class="article-category-link" href="/categories/架构/">架构</a>
-        </span>
-        
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>通常，系统环境分为生产、测试和开发等多套，测试又可能因为验证不同的业务版本、BUG 部署 N 套， 意味着每套环境都会有一整套系统，从入口网关到大量的微服务节点，还有数据库等等。人力上需要有人去维护它们，无论是用于测试数还是系统的运维工作，每多一套系统都需要额外部署和购买大量资源，其中很多服务节点的版本是相同的，这都大大增加了成本。</p>
-<p>为了解决这样的问题，我们可以通过网关路由的方式，比如测试环境，所有的应用都部署在一套环境中，通过 HTTP Header 信息将不同的应用通过路由串联起来，大概如下：</p>
-<p>Server A V1 -&gt; Server B V1</p>
-<p>Server A V2 -&gt; Server B 其它版本</p>
-        <p class="article-more-link">
-            <a href="/2020/06/29/node-gateway-ssr-multi-version/#more">Read More</a>
-        </p>
-    
-    </div>
-    
-    
-</article>
-
-
-
-    
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="/2020/06/28/nodejs-istio-k8s-docker/" itemprop="url">Istio简单概念</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            <time datetime="2020-06-28T02:00:00.000Z" itemprop="datePublished">Jun 28 2020</time>
-        </span>
-        
-        <span class="column is-narrow article-category">
-            <i class="far fa-folder"></i>
-            <a class="article-category-link" href="/categories/架构/">架构</a>
-        </span>
-        
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <p><em>文章中主要是一些概念，简单记录这段时间对 Istio 的学习。</em></p>
-<p>对于全栈来说，学习 Istio 还是很有必要的，在此过程中还要学习 K8s、Docker 等基本的运维知识，那么在设计 BFF 层时候也会考虑到部署、扩容、金丝雀发布等问题，提升程序的健壮性。</p>
-<h3 id="JavaScript-全栈"><a href="#JavaScript-全栈" class="headerlink" title="JavaScript 全栈"></a>JavaScript 全栈</h3><p>在 JavaScript 流行的今天，各种框架层出不穷，无论是学习前端的 3 架马车（React\Vue\Angular）、还是运用后端的 Node.js 框架（Express\Koa\Egg.js）等，最后你都会前后端通吃，它们被 JavaScript 这门语言串联在了一起，尤其是当你去翻阅大量前端使用的 CLI 工具源码的时候，几乎都有 Express 的影子，所以在 JavaScript 技术栈里，前后端（这里的后端不是指复杂的后端架构和设计）本身并不分家。<em>当然复杂的后端或前端工作并不适合全栈工程师去做，那也是后话了。</em></p>
-<p><br></p>
-<h3 id="BFF-层"><a href="#BFF-层" class="headerlink" title="BFF 层"></a>BFF 层</h3><p>这些年来提出了 BFF 层的概念，根据业务的不同，不同公司有自己的设计和实现，比如将纯前端从 Nginx 移到了 Node.js Server 运行环境、服务端渲染（SSR）、生成或者拼接业务数据返回给前端使用（Node.js 微服务、GraphQL 等）…</p>
-<p><br></p>
-<h3 id="Node-js-微服务"><a href="#Node-js-微服务" class="headerlink" title="Node.js 微服务"></a>Node.js 微服务</h3><p>自己也做过很长一段时间的全栈，用 Node.js 开发后端业务，把数据吐给前端，不需要等着后端同事返回数据或者来回沟通的烦恼。现在做后端必定会遇到微服务的概念，不同的微服务有自己的 SDK 等工具帮助完成相关的注册发现，大多数情况下它们对 Java 的支持度最好，Node.js 有时候并不友善，要完善你不得不去写一些代码，比如熔断、报警等等，也是带来大量的开发测试成本。如果不幸公司内部 Java 组选择了不支持 Node.js 的架构，那么简直是灾难。</p>
-<p><strong>微服务的 SDK 基本上和网络通讯相关，下文的网络化可以解决这个问题。</strong></p>
-        <p class="article-more-link">
-            <a href="/2020/06/28/nodejs-istio-k8s-docker/#more">Read More</a>
-        </p>
-    
-    </div>
-    
-    
-</article>
-
-
-
-    
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="/2020/05/03/node-js-net-cluster-fork/" itemprop="url">简单梳理Node.js创建子进程的方法（下）—— cluster</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            <time datetime="2020-05-03T07:24:53.000Z" itemprop="datePublished">May 3 2020</time>
-        </span>
-        
-        <span class="column is-narrow article-category">
-            <i class="far fa-folder"></i>
-            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-        </span>
-        
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <p>前文简单梳理了Node.js使用<strong>child_process</strong>模块创建子进程的4种方法，<code>exec</code>、<code>execFile</code>、<code>fork</code>和<code>spawn</code>。接下来我们看看<strong>cluster</strong>模块如何创建子进程，后续更多内容会介绍cluster.fork启动Net Server时候为何不会因为共同监听同一个端口而不报错。</p>
-<p><strong>cluster</strong></p>
-<ul>
-<li><a href="http://nodejs.cn/api/cluster.html#cluster_cluster_fork_env" target="_blank" rel="noopener">fork</a>: 衍生出一个新的工作进程，这只能通过主进程调用。</li>
-</ul>
-        <p class="article-more-link">
-            <a href="/2020/05/03/node-js-net-cluster-fork/#more">Read More</a>
         </p>
     
     </div>

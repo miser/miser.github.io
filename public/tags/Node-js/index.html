@@ -46,7 +46,7 @@
       .gallery-item .caption {
         text-align: center;
       }
-      ul.adv {
+      div.adv {
         margin-bottom: 60px;
       }
       ul .img {
@@ -108,6 +108,87 @@
 </section>
 <section class="section">
     <div class="container">
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/11/06/monitorEventLoopDelay-libuv-uv-timer-start/" itemprop="url">monitorEventLoopDelay 实现原理</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-11-06T08:16:40.000Z" itemprop="datePublished">Nov 6 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h2 id="monitorEventLoopDelay-是什么"><a href="#monitorEventLoopDelay-是什么" class="headerlink" title="monitorEventLoopDelay 是什么"></a>monitorEventLoopDelay 是什么</h2><p>perf_hooks.monitorEventLoopDelay([options])</p>
+<ul>
+<li>options: Object<br>– <code>resolution</code>: The sampling rate in milliseconds. Must be greater than zero. Default: 10.</li>
+<li>Returns: Histogram<blockquote>
+<p>Creates a Histogram object that samples and reports the event loop delay over time. The delays will be reported in nanoseconds.<br>Using a timer to detect approximate event loop delay works because the execution of timers is tied specifically to the lifecycle of the libuv event loop. That is, a delay in the loop will cause a delay in the execution of the timer, and those delays are specifically what this API is intended to detect.</p>
+</blockquote>
+</li>
+</ul>
+<p>监控 EventLoop 运行情况是判断系统是否健康的重要指标之一，如果有大量的延迟，说明系统存在密集计算，降低了系统的吞吐。Node.js 在 v11 版本引入了<code>monitorEventLoopDelay</code>，而之前需要自己去实现。</p>
+<!-- monitorEventLoopDelay 的功能介绍 -->
+        <p class="article-more-link">
+            <a href="/2020/11/06/monitorEventLoopDelay-libuv-uv-timer-start/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/09/28/debug-libuv/" itemprop="url">debug libuv</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-09-28T10:31:53.000Z" itemprop="datePublished">Sep 28 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/C-C/">C/C++</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>libuv 在 v1.36.0 之后移除了 <code>gyp_uv.py</code> (<a href="https://github.com/libuv/libuv/commit/53f3c687fc288708721a5a3d9563febda1b9d2c1" target="_blank" rel="noopener">commit</a>)，没办法通过它去创建一个 libuv.a 静态链接库（<a href="https://github.com/libuv/libuv/tree/v1.35.0" target="_blank" rel="noopener">v1.35 文档</a>有详细的介绍），现在我们需要通过<code>cmake</code>去创建。</p>
+<h3 id="构建静态链接库"><a href="#构建静态链接库" class="headerlink" title="构建静态链接库"></a>构建静态链接库</h3><figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// 下载 libuv</span><br><span class="line">git clone https://github.com/libuv/libuv</span><br><span class="line">cd libuv</span><br><span class="line">mkdir -p build</span><br><span class="line">// DCMAKE_BUILD_TYPE 将其设置为 Debug 模式，不然断点没办法进入 libuv 源码中</span><br><span class="line"> (cd build &amp;&amp; cmake -DCMAKE_BUILD_TYPE=Debug ..)</span><br><span class="line">cmake --build build</span><br></pre></td></tr></table></figure>
+<p>之后 build 目录 如下，libuv_a.a 就是我们需要的 静态链接库。<br><img src="/images/debug-libuv/build.jpg" alt="build dir"></p>
+<h3 id="新建-hello-world-项目"><a href="#新建-hello-world-项目" class="headerlink" title="新建 hello world 项目"></a>新建 hello world 项目</h3><p>通过 CLion 创建一个<code>helloworld</code>项目，在 CMakeLists.txt 里添加 libuv 相关的信息，将 libuv 的头文件和源码添加进来，最后把项目和 linuv 链接在一起</p>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">cmake_minimum_required(VERSION 3.17)</span><br><span class="line">project(helloworld)</span><br><span class="line">add_executable(helloworld main.cpp)</span><br><span class="line"></span><br><span class="line"># 前面 clone libuv 绝对路径</span><br><span class="line">set(LIBUVDIR /your/libuv/path)</span><br><span class="line"># 将源码导入</span><br><span class="line">include_directories($&#123;LIBUVDIR&#125;/src)</span><br><span class="line">include_directories($&#123;LIBUVDIR&#125;/include)</span><br><span class="line"></span><br><span class="line">add_library(libuv STATIC IMPORTED)</span><br><span class="line">set_target_properties(libuv</span><br><span class="line">        PROPERTIES IMPORTED_LOCATION</span><br><span class="line">        $&#123;LIBUVDIR&#125;/build/libuv_a.a)</span><br><span class="line"></span><br><span class="line"># 链接起来</span><br><span class="line">target_link_libraries(helloworld libuv)</span><br></pre></td></tr></table></figure>
+<p>创建 main.cpp 文件</p>
+<figure class="highlight cpp hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;uv.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">cb</span><span class="hljs-params">(<span class="hljs-keyword">uv_write_t</span> *req, <span class="hljs-keyword">int</span> status)</span> </span>&#123;</span><br><span class="line">  <span class="hljs-built_in">printf</span>(<span class="hljs-string">"Hello from Callback.\n"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;</span><br><span class="line">  <span class="hljs-keyword">uv_tty_t</span> tty;</span><br><span class="line">  <span class="hljs-keyword">uv_write_t</span> req;</span><br><span class="line">  uv_tty_init(uv_default_loop(), &amp;tty, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>);</span><br><span class="line">  <span class="hljs-keyword">char</span> str[] = <span class="hljs-string">"Hello UV!\n"</span>;</span><br><span class="line">  <span class="hljs-keyword">int</span> len = <span class="hljs-built_in">strlen</span>(str);</span><br><span class="line">  <span class="hljs-keyword">uv_buf_t</span> bufs[] = &#123;uv_buf_init(str, len)&#125;;</span><br><span class="line">  uv_write(&amp;req, (<span class="hljs-keyword">uv_stream_t</span> *) &amp;tty, bufs, <span class="hljs-number">1</span>, cb);</span><br><span class="line">  uv_run(uv_default_loop(), UV_RUN_DEFAULT);</span><br><span class="line">  <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>之后就能愉快的打断点调试 libuv 了<br><img src="/images/debug-libuv/debug.jpg" alt="debug libuv"></p>
+<p>学习 libuv 或者其它 C/C++相关的技术，感觉又回到了刚开始学习编程的时候，很多的不懂和挑战，不再像用 JavaScript 那样随心所欲，但是越是对底层的学习，越是能了解计算机原理，职业寿命才能变得更长。出于兴趣也好，出于无奈也好，总之新的学习让一切又变得有意思起来。</p>
+
+    
+    </div>
+    
+    
+</article>
+
+
+
     
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
@@ -415,44 +496,23 @@
 
 
     
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+    
         
-            <a href="/2019/01/18/egg-cluster/" itemprop="url">Egg Cluster 简单介绍</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            <time datetime="2019-01-18T05:48:01.464Z" itemprop="datePublished">Jan 18 2019</time>
-        </span>
-        
-        <span class="column is-narrow article-category">
-            <i class="far fa-folder"></i>
-            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
-        </span>
-        
-        
+<nav class="pagination is-centered is-rounded" role="navigation" aria-label="pagination">
+    <div class="pagination-previous is-invisible is-hidden-mobile">
+        <a href="/tags/Node-js/page/0/">Prev</a>
     </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <p>如果不清楚什么是Egg.js，希望能移步到它的<a href="https://eggjs.org" target="_blank" rel="noopener">官网</a>简单看下。另外说它是<strong>约定大于配置</strong>的话，我只能说你真的不了解它，或者说不了解框架，哪个框架没有约定？毕竟没有规矩不成方圆，何况是逻辑性的程序呢？官方列出的特性如下：</p>
-<blockquote>
-<p>1.提供基于 Egg <a href="https://eggjs.org/zh-cn/advanced/framework.html" target="_blank" rel="noopener">定制上层框架</a> 的能力<br>2.高度可扩展的<a href="https://eggjs.org/zh-cn/basics/plugin.html" target="_blank" rel="noopener">插件机制</a><br>3.内置<a href="https://eggjs.org/zh-cn/advanced/cluster-client.html" target="_blank" rel="noopener">多进程管理</a><br>4.基于 <a href="http://koajs.com/" target="_blank" rel="noopener">Koa</a> 开发，性能优异<br>5.框架稳定，测试覆盖率高<br>6.<a href="https://eggjs.org/zh-cn/tutorials/progressive.html" target="_blank" rel="noopener">渐进式开发</a></p>
-</blockquote>
-<p>第1条，它有那么Koa也有啊。第2条，它有，难道Koa、Express等就没有嘛？第4条，更好的补充了Koa不是更好吗？第5条，难道别的框架就不稳定了？第6条，前端鼓吹渐进式、后端也鼓吹，那究竟什么是渐进式呢？</p>
-<p>在我看来最吸引我的是第3条，<strong>内置多进程管理</strong>，这个在其它主流nodejs框架中是稀缺的特性，此文就简单聊聊它。</p>
-        <p class="article-more-link">
-            <a href="/2019/01/18/egg-cluster/#more">Read More</a>
-        </p>
-    
+    <div class="pagination-next">
+        <a href="/tags/Node-js/page/2/">Next</a>
     </div>
-    
-    
-</article>
-
-
-
-    
+    <ul class="pagination-list is-hidden-mobile">
+        
+        <li><a class="pagination-link is-current" href="/tags/Node-js/">1</a></li>
+        
+        <li><a class="pagination-link" href="/tags/Node-js/page/2/">2</a></li>
+        
+    </ul>
+</nav>
     
     </div>
 </section> <footer class="footer">

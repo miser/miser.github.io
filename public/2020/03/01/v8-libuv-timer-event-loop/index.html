@@ -50,7 +50,7 @@
       .gallery-item .caption {
         text-align: center;
       }
-      ul.adv {
+      div.adv {
         margin-bottom: 60px;
       }
       ul .img {
@@ -149,7 +149,7 @@
 <blockquote>
 <p>This phase executes callbacks for some system operations such as types of TCP errors. For example if a TCP socket receives <code>ECONNREFUSED</code> when attempting to connect, some *nix systems want to wait to report the error. This will be queued to execute in the <strong>pending callbacks</strong> phase. —— Node.js</p>
 </blockquote>
-<p><strong>Node.js</strong>里的<code>pending callbacks</code>：这个阶段会执行系统上发生的一些错误而导致的callbacks，如TCP错误。</p>
+<p><strong>Node.js</strong>里的<code>pending callbacks</code>：这个阶段会执行系统上因一些错误而引起的callbacks，如TCP错误。</p>
 <p>我觉得<code>pending callbacks</code>比较合理，一方面如libuv所说，它是一部分延迟的I/O回调，在Node.js里面指的是一些系统上的错误（这些错误也是I/O引起的）。而大多数的I/O操作其实是在 <code>poll</code>阶段。</p>
 <p><br></p>
 <p><br></p>
@@ -233,15 +233,23 @@
 
 
 <div class="comments">
-    <ul class="adv">
-  <li class="img"><img src="/images/give-a-reward.png" alt="reward"></li>
-  <li>
-    欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a>前端组，<a href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3" target="_blank">岗位信息</a>
-  </li>
-  <li>
-    同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank">爱眠物</a>
-  </li>
-</ul>
+    <div class="adv">
+  <ul>
+    <li class="img"><img src="/images/give-a-reward.png" alt="reward"></li>
+    <li>
+      欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a>前端组，<a href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3" target="_blank">岗位信息</a>
+    </li>
+    <li>
+      同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank">爱眠物</a>
+    </li>
+  </ul>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <!-- 尾部广告 -->
+  <ins class="adsbygoogle" style="display: block" data-ad-client="ca-pub-6006630417531788" data-ad-slot="2988625841" data-ad-format="auto" data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
 
     <h3 class="title is-4">Comments</h3>
     
