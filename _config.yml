@@ -90,7 +90,7 @@ menu:
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   - type: git
-    repo: https://github.com/miser/miser.github.io
+    repo: git@github.com:miser/miser.github.io.git
     branch: master
   - type: baidu_url_submitter
 
