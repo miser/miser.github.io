@@ -123,6 +123,6 @@ baidusitemap:
 
 baidu_url_submit:
   count: 1
-  host: mlib.wang
+  host: miser.github.io
   token: B2RgE4J30NMelgy2
   path: baidu_urls.txt

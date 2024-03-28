@@ -67,7 +67,7 @@ Server A V2 -> Server B 其它版本
 - 将新的路由信息更新到路由表中
 - 定时执行上述步骤
 
-我们用的是 Egg.js，所以上述步骤在 Agent 中完成，再广播给所有 Worker 进程。另外，为了更好的迭代和任务划分，使用[PlugBoard](https://mlib.wang/plugboard/?s=blog)插件化所有步骤。
+我们用的是 Egg.js，所以上述步骤在 Agent 中完成，再广播给所有 Worker 进程。另外，为了更好的迭代和任务划分，使用[PlugBoard](https://miser.github.io/plugboard/?s=blog)插件化所有步骤。
 
 ![架构](/images/node-gateway-ssr-multi-version/arch.png)
 

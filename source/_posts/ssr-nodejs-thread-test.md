@@ -12,7 +12,7 @@ date: 2020-09-02
 
 #### [Cluster](https://nodejs.org/dist/latest-v14.x/docs/api/cluster.html)
 
-这是一个比较熟悉的模块，早在 Node.js V0.8 版本的时候就已经被加入进来，平时在生产部署 Web 应用的时候，为了充分压榨多核 CPU，总是根据核数开启对应的数量的应用进程，来处理用户请求，这些在 PM2 工具 或者 Egg.js 框架里有相应的介绍，之前自己写的 [简单梳理 Node.js 创建子进程的方法（下）—— cluster](https://mlib.wang/2020/05/03/node-js-net-cluster-fork/?s=node-js-net-cluster-fork) 有其原理介绍。
+这是一个比较熟悉的模块，早在 Node.js V0.8 版本的时候就已经被加入进来，平时在生产部署 Web 应用的时候，为了充分压榨多核 CPU，总是根据核数开启对应的数量的应用进程，来处理用户请求，这些在 PM2 工具 或者 Egg.js 框架里有相应的介绍，之前自己写的 [简单梳理 Node.js 创建子进程的方法（下）—— cluster](https://miser.github.io/2020/05/03/node-js-net-cluster-fork/?s=node-js-net-cluster-fork) 有其原理介绍。
 
 虽然 Cluster 已经很成熟，但是也有一些问题：
 
