@@ -191,7 +191,7 @@
 <li>将新的路由信息更新到路由表中</li>
 <li>定时执行上述步骤</li>
 </ul>
-<p>我们用的是 Egg.js，所以上述步骤在 Agent 中完成，再广播给所有 Worker 进程。另外，为了更好的迭代和任务划分，使用<a href="https://mlib.wang/plugboard/?s=blog">PlugBoard</a>插件化所有步骤。</p>
+<p>我们用的是 Egg.js，所以上述步骤在 Agent 中完成，再广播给所有 Worker 进程。另外，为了更好的迭代和任务划分，使用<a href="https://miser.github.io/plugboard/?s=blog">PlugBoard</a>插件化所有步骤。</p>
 <p><img src="/images/node-gateway-ssr-multi-version/arch.png" alt="架构"></p>
 <p>客户端发起访问，找到对应的路由版本（如果没有走默认路由），路由请求，有缓存直接输出，没有就走 SSR 流程，查找该版本的 client-manifest.json，找到对应的浏览器访问路径，返回给客户端。</p>
 <p>至此，整个方案的流程完毕。项目上线后，可以通过关闭多版本共存的参数，按照市面上的常规流程运行应用。如果小团队的运维体系薄弱（没有 K8S 之类运维系统），也能用该套方案实现一定的蓝绿发布等。</p>
