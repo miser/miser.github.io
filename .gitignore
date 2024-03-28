@@ -4,3 +4,10 @@ _site
 
 .deploy_git
 node_modules
+
+.DS_Store
+Thumbs.db
+db.json
+*.log
+public/
+.deploy*
