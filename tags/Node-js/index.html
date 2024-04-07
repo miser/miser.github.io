@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head>
+    <meta charset="utf-8" />
+<title>Tag: Node.js - Miser 胡言</title>
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, maximum-scale=1"
+/>
+
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css"
+/>
+<meta name="baidu-site-verification" content="CXKjj3fklD" />
+    
+
+<link
+  rel="stylesheet"
+  href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro"
+/>
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css"
+/>
+
+
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css"
+/>
+
+
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"
+/>
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKHJQL3QC0"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-ZKHJQL3QC0');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      div.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  <meta name="generator" content="Hexo 7.1.1"></head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item "
+               href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section section-heading">
+    <div class="container">
+        <div class="content">
+            <h5>#Node.js</h5>
+        </div>
+    </div>
+</section>
+<section class="section">
+    <div class="container">
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/11/06/monitorEventLoopDelay-libuv-uv-timer-start/" itemprop="url">monitorEventLoopDelay 实现原理</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-11-06T08:16:40.000Z" itemprop="datePublished">Nov 6 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h2 id="monitorEventLoopDelay-是什么"><a href="#monitorEventLoopDelay-是什么" class="headerlink" title="monitorEventLoopDelay 是什么"></a>monitorEventLoopDelay 是什么</h2><p>perf_hooks.monitorEventLoopDelay([options])</p>
+<ul>
+<li>options: Object<br>– <code>resolution</code>: The sampling rate in milliseconds. Must be greater than zero. Default: 10.</li>
+<li>Returns: Histogram<blockquote>
+<p>Creates a Histogram object that samples and reports the event loop delay over time. The delays will be reported in nanoseconds.<br>Using a timer to detect approximate event loop delay works because the execution of timers is tied specifically to the lifecycle of the libuv event loop. That is, a delay in the loop will cause a delay in the execution of the timer, and those delays are specifically what this API is intended to detect.</p>
+</blockquote>
+</li>
+</ul>
+<p>监控 EventLoop 运行情况是判断系统是否健康的重要指标之一，如果有大量的延迟，说明系统存在密集计算，降低了系统的吞吐。Node.js 在 v11 版本引入了<code>monitorEventLoopDelay</code>，而之前需要自己去实现。</p>
+<!-- monitorEventLoopDelay 的功能介绍 -->
+        <p class="article-more-link">
+            <a href="/2020/11/06/monitorEventLoopDelay-libuv-uv-timer-start/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/09/28/debug-libuv/" itemprop="url">debug libuv</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-09-28T10:31:53.000Z" itemprop="datePublished">Sep 28 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/C-C/">C/C++</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>libuv 在 v1.36.0 之后移除了 <code>gyp_uv.py</code> (<a href="https://github.com/libuv/libuv/commit/53f3c687fc288708721a5a3d9563febda1b9d2c1">commit</a>)，没办法通过它去创建一个 libuv.a 静态链接库（<a href="https://github.com/libuv/libuv/tree/v1.35.0">v1.35 文档</a>有详细的介绍），现在我们需要通过<code>cmake</code>去创建。</p>
+<h3 id="构建静态链接库"><a href="#构建静态链接库" class="headerlink" title="构建静态链接库"></a>构建静态链接库</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// 下载 libuv</span><br><span class="line">git clone https://github.com/libuv/libuv</span><br><span class="line">cd libuv</span><br><span class="line">mkdir -p build</span><br><span class="line">// DCMAKE_BUILD_TYPE 将其设置为 Debug 模式，不然断点没办法进入 libuv 源码中</span><br><span class="line"> (cd build &amp;&amp; cmake -DCMAKE_BUILD_TYPE=Debug ..)</span><br><span class="line">cmake --build build</span><br></pre></td></tr></table></figure>
+
+<p>之后 build 目录 如下，libuv_a.a 就是我们需要的 静态链接库。<br><img src="/images/debug-libuv/build.jpg" alt="build dir"></p>
+<h3 id="新建-hello-world-项目"><a href="#新建-hello-world-项目" class="headerlink" title="新建 hello world 项目"></a>新建 hello world 项目</h3><p>通过 CLion 创建一个<code>helloworld</code>项目，在 CMakeLists.txt 里添加 libuv 相关的信息，将 libuv 的头文件和源码添加进来，最后把项目和 linuv 链接在一起</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">cmake_minimum_required(VERSION 3.17)</span><br><span class="line">project(helloworld)</span><br><span class="line">add_executable(helloworld main.cpp)</span><br><span class="line"></span><br><span class="line"># 前面 clone libuv 绝对路径</span><br><span class="line">set(LIBUVDIR /your/libuv/path)</span><br><span class="line"># 将源码导入</span><br><span class="line">include_directories($&#123;LIBUVDIR&#125;/src)</span><br><span class="line">include_directories($&#123;LIBUVDIR&#125;/include)</span><br><span class="line"></span><br><span class="line">add_library(libuv STATIC IMPORTED)</span><br><span class="line">set_target_properties(libuv</span><br><span class="line">        PROPERTIES IMPORTED_LOCATION</span><br><span class="line">        $&#123;LIBUVDIR&#125;/build/libuv_a.a)</span><br><span class="line"></span><br><span class="line"># 链接起来</span><br><span class="line">target_link_libraries(helloworld libuv)</span><br></pre></td></tr></table></figure>
+
+<p>创建 main.cpp 文件</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;uv.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">cb</span><span class="params">(<span class="type">uv_write_t</span> *req, <span class="type">int</span> status)</span> </span>&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Hello from Callback.\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="type">uv_tty_t</span> tty;</span><br><span class="line">  <span class="type">uv_write_t</span> req;</span><br><span class="line">  <span class="built_in">uv_tty_init</span>(<span class="built_in">uv_default_loop</span>(), &amp;tty, <span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line">  <span class="type">char</span> str[] = <span class="string">&quot;Hello UV!\n&quot;</span>;</span><br><span class="line">  <span class="type">int</span> len = <span class="built_in">strlen</span>(str);</span><br><span class="line">  <span class="type">uv_buf_t</span> bufs[] = &#123;<span class="built_in">uv_buf_init</span>(str, len)&#125;;</span><br><span class="line">  <span class="built_in">uv_write</span>(&amp;req, (<span class="type">uv_stream_t</span> *) &amp;tty, bufs, <span class="number">1</span>, cb);</span><br><span class="line">  <span class="built_in">uv_run</span>(<span class="built_in">uv_default_loop</span>(), UV_RUN_DEFAULT);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>之后就能愉快的打断点调试 libuv 了<br><img src="/images/debug-libuv/debug.jpg" alt="debug libuv"></p>
+<p>学习 libuv 或者其它 C&#x2F;C++相关的技术，感觉又回到了刚开始学习编程的时候，很多的不懂和挑战，不再像用 JavaScript 那样随心所欲，但是越是对底层的学习，越是能了解计算机原理，职业寿命才能变得更长。出于兴趣也好，出于无奈也好，总之新的学习让一切又变得有意思起来。</p>
+
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/05/03/node-js-net-cluster-fork/" itemprop="url">简单梳理Node.js创建子进程的方法（下）—— cluster</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-05-03T07:24:53.000Z" itemprop="datePublished">May 3 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>前文简单梳理了Node.js使用<strong>child_process</strong>模块创建子进程的4种方法，<code>exec</code>、<code>execFile</code>、<code>fork</code>和<code>spawn</code>。接下来我们看看<strong>cluster</strong>模块如何创建子进程，后续更多内容会介绍cluster.fork启动Net Server时候为何不会因为共同监听同一个端口而不报错。</p>
+<p><strong>cluster</strong></p>
+<ul>
+<li><a href="http://nodejs.cn/api/cluster.html#cluster_cluster_fork_env">fork</a>: 衍生出一个新的工作进程，这只能通过主进程调用。</li>
+</ul>
+        <p class="article-more-link">
+            <a href="/2020/05/03/node-js-net-cluster-fork/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/04/06/child_process-exec-fork-spawn/" itemprop="url">简单梳理Node.js创建子进程的方法（上）</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-04-06T00:09:36.472Z" itemprop="datePublished">Apr 6 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p><strong>Node.js 创建子进程的方法常用的有如下几种：</strong></p>
+<p><strong>child_process</strong></p>
+<ul>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_exec_command_options_callback">exec</a>: 衍生一个 shell 然后在该 shell 中执行 <code>command</code>，并缓冲任何产生的输出，最大缓存 1024*1024 个字节。</li>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_execfile_file_args_options_callback">execFile</a>: 函数类似<code>exec</code>，但默认情况下不会衍生 shell。 相反，指定的可执行文件<code>file</code> 会作为新进程直接地衍生，使其比<code>exec</code> 稍微更高效。和<code>exec</code>一样，它也有最大 1024*1204 个字节的显示缓存。</li>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_fork_modulepath_args_options">fork</a>: 是 <code>spawn</code>的一个特例，专门用于衍生新的 Node.js 进程。 与<code>spawn</code>一样返回<code>ChildProcess</code>对象。 返回的<code>ChildProcess</code>将会内置一个额外的通信通道，允许消息在父进程和子进程之间来回传递。</li>
+<li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_spawn_command_args_options">spawn</a>: 上诉的几个方法其实都是通过 spawn 实现的。</li>
+</ul>
+<p><strong>cluster</strong></p>
+<ul>
+<li><a href="http://nodejs.cn/api/cluster.html#cluster_cluster_fork_env">fork</a>: 衍生出一个新的工作进程，这只能通过主进程调用。</li>
+</ul>
+        <p class="article-more-link">
+            <a href="/2020/04/06/child_process-exec-fork-spawn/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/04/03/monitor-hub/" itemprop="url">Node.js 监控中心架构迭代</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-04-02T23:17:29.367Z" itemprop="datePublished">Apr 3 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>之前写了一篇<a href="https://miser.github.io/2020/02/21/node-perf-heapdump-flame-graph/">收集 Node.js 应用的内存堆栈快照和 CPU 火焰图</a>文章，其中的架构非常粗糙，但是初步算是满足了现在的监控需求。不过随着业务的增长，单台<strong>TCP Server</strong>可定无法满足高可用的需求，一旦出现问题那就没办法持续使用了，所以需要一个重新设计和改造。</p>
+        <p class="article-more-link">
+            <a href="/2020/04/03/monitor-hub/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/03/01/v8-libuv-timer-event-loop/" itemprop="url">libuv &amp; Node.js EventLoop （一）</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-02-29T21:39:36.647Z" itemprop="datePublished">Mar 1 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>在网络上查询<a href="https://libuv.org/">libuv</a>和EventLoop相关信息的时候，经常看到不同的文章所表达的意思差距较多，主要原因有二吧：</p>
+<ul>
+<li>它们的<code>libuv</code>和<code>V8</code>大版本不同，导致具体的实现略有差异</li>
+<li>另外它们的代码错综复杂，又是大多数JavaScript工作者不擅长的C&#x2F;C++，只是从上而下的看，或许一些细节无法完全理解或是认知的分歧</li>
+</ul>
+<p>与其受他人影响，不如自己来好好梳理下。</p>
+<p><strong>版本</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// libuv</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> UV_VERSION_MAJOR 1</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> UV_VERSION_MINOR 33</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> UV_VERSION_PATCH 1</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// V8</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> V8_MAJOR_VERSION 7</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> V8_MINOR_VERSION 8</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> V8_BUILD_NUMBER 279</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> V8_PATCH_LEVEL 17</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Node.js</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NODE_MAJOR_VERSION 14</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NODE_MINOR_VERSION 0</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NODE_PATCH_VERSION 0</span></span><br></pre></td></tr></table></figure>
+
+<p>没有列出具体版本号的代码分析都是耍流氓，2010年的代码和2020年的代码可能差距甚远，“上古”分析固然在当时是对的，但是在今日也许是错误的。</p>
+        <p class="article-more-link">
+            <a href="/2020/03/01/v8-libuv-timer-event-loop/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/02/21/node-perf-heapdump-flame-graph/" itemprop="url">收集Node.js应用的内存堆栈快照和CPU火焰图</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-02-20T23:31:54.489Z" itemprop="datePublished">Feb 21 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>如果你在一家对数据安全性很高的公司工作，团队规定不允许提交数据到第三方服务上，甚至连服务器内存、CPU使用情况等监控数据都不行，那对于像<a href="https://cn.aliyun.com/product/nodejs">Alinode</a>这样监控和排查问题的大杀器基本都是无福享用了。大多数情况不得不面临自己开发一套类似监控体制去为生产环境保驾护航。</p>
+        <p class="article-more-link">
+            <a href="/2020/02/21/node-perf-heapdump-flame-graph/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/02/08/v8-parser-compiler-javascript/" itemprop="url">V8是如何怎么处理JavaScript的</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-02-08T01:18:53.485Z" itemprop="datePublished">Feb 8 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <blockquote>
+<p>此文介绍的内容已经算是<code>旧闻</code>了，17年的时候就有大量的文章介绍过了，只是2020年伊始的疫情把人困在家里实在无聊，重新翻来几个视频打发下时间，以下文字算是简单梳理，更多的瑰宝需要我们自己翻阅资料研究，<strong>文章中的很多数据应该都过时了吧，仅用来参考吧。</strong></p>
+</blockquote>
+<p><strong>Parer</strong>和<strong>Compiler</strong>是2个重要的过程和概念，理解它们可以帮助开发者根据业务需求写出对V8或其它JavaScript引擎更为“友善”的代码，毕竟花在这两个过程中的成本是巨大的。</p>
+<p><img src="/images/v8-parser-compiler/v8-pare-compile-cost.png" alt="国外几大网站花在Parser上的时间大约在15-20%"></p>
+        <p class="article-more-link">
+            <a href="/2020/02/08/v8-parser-compiler-javascript/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2020/01/22/express-gateway/" itemprop="url">Express Gateway</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2020-01-22T07:32:03.586Z" itemprop="datePublished">Jan 22 2020</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>为了更好的做BFF层，最近看了一些网关资料，Node.js的网关类库相对薄弱很多，主要有2个</p>
+<ul>
+<li><a href="https://www.express-gateway.io/">Express Gateway</a></li>
+<li><a href="https://moleculer.services/">Moleculer</a></li>
+</ul>
+<p>和Lua <a href="https://konghq.com/">Kong</a>相比缺少很多刚需，比如金丝雀发布、灰度发布等等；和Java Zuul等相比，又少了很多中文文档。但是不管如何这2个是Javascript技术栈的，对于一个Node.js程序工作者来说怎能不香呢？</p>
+<p>今天我们主要介绍<strong>Express Gateway</strong>，背靠强大的Express社区，很多现成的中间件可以运用其中，省去了不少开发成本和风险。一些不是很大的项目或者没有时间慢慢构建底层的团队来说，我觉得可以试试。</p>
+        <p class="article-more-link">
+            <a href="/2020/01/22/express-gateway/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2019/05/09/egg-boot/" itemprop="url">Eggjs Boot</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2019-05-09T07:01:08.568Z" itemprop="datePublished">May 9 2019</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h3 id="Preface"><a href="#Preface" class="headerlink" title="#Preface"></a><strong>#Preface</strong></h3><p>This article will introduce the boot of <a href="https://eggjs.org/">Eggjs</a> that is a Node.js web framework.</p>
+<p>It is based on Koa and can satisfy  your requirement through a large of plugins and middleware, even a your own framework. It is very important to create a cluster, an agent process and some worker processes when it is running. The cluster makes it stronger. Next, we can understand it by reading the source code.</p>
+<p>Eggjs has a few major libs, egg-core、egg、egg-cluster、egg-bin、egg-scripts and so on.</p>
+<p><strong>egg-core</strong>: it extends Koa and is as a parent object of every agent and worker.</p>
+<p><strong>egg</strong>: it defines some actions for agent and worker,  you can almost use these actions to create an app of a single process.</p>
+<p><strong>egg-cluster</strong>: it creates a cluster and manages them.</p>
+<p><strong>egg-scripts and Egg-bin</strong>: their job is run the whole app in a different environment.</p>
+<br/>
+
+<p><em><strong>Tips: We will discuss Eggjs with basing 2.x.x version.</strong></em></p>
+<br/>
+        <p class="article-more-link">
+            <a href="/2019/05/09/egg-boot/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+    
+        
+<nav class="pagination is-centered is-rounded" role="navigation" aria-label="pagination">
+    <div class="pagination-previous is-invisible is-hidden-mobile">
+        <a href="/tags/Node-js/page/0/">Prev</a>
+    </div>
+    <div class="pagination-next">
+        <a href="/tags/Node-js/page/2/">Next</a>
+    </div>
+    <ul class="pagination-list is-hidden-mobile">
+        
+        <li><a class="pagination-link is-current" href="/tags/Node-js/">1</a></li>
+        
+        <li><a class="pagination-link" href="/tags/Node-js/page/2/">2</a></li>
+        
+    </ul>
+</nav>
+    
+    </div>
+</section> <footer class="footer">
+  <div class="container">
+    <div class="columns content">
+      <div class="column is-narrow has-text-centered">
+        &copy; 2024 Miser&nbsp; Powered by
+        <a href="http://hexo.io/" target="_blank">Hexo</a> &
+        <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+      </div>
+      <div class="column is-hidden-mobile"></div>
+
+       
+    </div>
+  </div>
+</footer>
+ <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+
+<script src="/js/script.js"></script>
+ 
+  </body>
+</html>

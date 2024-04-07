@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head>
+    <meta charset="utf-8" />
+<title>前端错误捕获提交错误日志 - Miser 胡言</title>
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, maximum-scale=1"
+/>
+
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css"
+/>
+<meta name="baidu-site-verification" content="CXKjj3fklD" />
+    
+
+<link
+  rel="stylesheet"
+  href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro"
+/>
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css"
+/>
+
+
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css"
+/>
+
+
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"
+/>
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKHJQL3QC0"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-ZKHJQL3QC0');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace;
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      div.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  <meta name="generator" content="Hexo 7.1.1"></head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item "
+               href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section">
+    <div class="container">
+    <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            前端错误捕获提交错误日志
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2018-10-23T02:29:29.089Z" itemprop="datePublished">Oct 23 2018</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h4 id="为什么需要捕获？"><a href="#为什么需要捕获？" class="headerlink" title="为什么需要捕获？"></a>为什么需要捕获？</h4><p>前端代码运行在客户端的浏览器里，当客户端（浏览器）出现任何问题，在没有错误日志的情况下，我们都是不知道问题发生在哪，我们只能依靠猜测或者自己不断尝试才知道，或者永远不知道问题。</p>
+<h4 id="客户端怎么捕获？"><a href="#客户端怎么捕获？" class="headerlink" title="客户端怎么捕获？"></a>客户端怎么捕获？</h4><p>1.通过 window.onerror，可惜只能获得基础的 js 错误，Promise、async&#x2F;await 里的错误无法捕获，它收到同源决策的影响</p>
+<p>2.Promise 通过<strong>catch</strong>方法</p>
+<p>3.async&#x2F;await 通过 <strong>try - catch</strong></p>
+<p>4.Vue 可以通过全局 Vue.config.errorHandler 去获得非 Promise、async&#x2F;await 里的错误，可以理解为 Vue 里的 window.onerror</p>
+<span id="more"></span>
+
+<h4 id="不同的捕获错误用法（测试环境-chrome-https-jsbin-com）"><a href="#不同的捕获错误用法（测试环境-chrome-https-jsbin-com）" class="headerlink" title="不同的捕获错误用法（测试环境 chrome &amp; https://jsbin.com）"></a>不同的捕获错误用法（测试环境 chrome &amp; <a href="https://jsbin.com)/">https://jsbin.com）</a></h4><h5 id="window-onerror"><a href="#window-onerror" class="headerlink" title="window.onerror"></a><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/GlobalEventHandlers/onerror">window.onerror</a></h5><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="property">onerror</span> = <span class="keyword">function</span> (<span class="params">message, source, lineno, colno, error</span>) &#123;</span><br><span class="line">  <span class="comment">/*</span></span><br><span class="line"><span class="comment">    message：错误信息（字符串）。可用于HTML onerror=&quot;&quot;处理程序中的event。</span></span><br><span class="line"><span class="comment">    source：发生错误的脚本URL（字符串）</span></span><br><span class="line"><span class="comment">    lineno：发生错误的行号（数字）</span></span><br><span class="line"><span class="comment">    colno：发生错误的列号（数字）</span></span><br><span class="line"><span class="comment">    error：Error对象（对象）</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="property">onerror</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">arguments</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> data;</span><br><span class="line"><span class="keyword">let</span> info = data.<span class="property">info</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* console 输出</span></span><br><span class="line"><span class="comment">[object Arguments] &#123;</span></span><br><span class="line"><span class="comment">  0: &quot;Uncaught TypeError: Cannot read property &#x27;info&#x27; of undefined&quot;,</span></span><br><span class="line"><span class="comment">  1: &quot;yiveral.js&quot;,</span></span><br><span class="line"><span class="comment">  2: 6,</span></span><br><span class="line"><span class="comment">  3: 17,</span></span><br><span class="line"><span class="comment">  4: [object Error] &#123; ... &#125;</span></span><br><span class="line"><span class="comment">&#125;</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<p>虽然<strong>onerror</strong>无法捕获 Promise 里的错误，但是如果 Promise 里面是被 setTimeout 包裹的 js 还是能捕获的</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="property">onerror</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">arguments</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">timer</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="built_in">setTimeout</span>(<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> data;</span><br><span class="line">    <span class="keyword">let</span> info = data.<span class="property">info</span>;</span><br><span class="line">  &#125;, <span class="number">100</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">p</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="keyword">function</span> (<span class="params">resolve, reject</span>) &#123;</span><br><span class="line">    <span class="title function_">timer</span>();</span><br><span class="line">  &#125;).<span class="title function_">catch</span>(<span class="keyword">function</span> (<span class="params">error</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(error);</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;inner error&quot;</span>);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title function_">p</span>()</span><br><span class="line">  .<span class="title function_">then</span>(<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;running then&quot;</span>);</span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">catch</span>(<span class="keyword">function</span> (<span class="params">error</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(error);</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;outer error&quot;</span>);</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* console 输出</span></span><br><span class="line"><span class="comment">[object Arguments] &#123;</span></span><br><span class="line"><span class="comment">  0: &quot;Uncaught TypeError: Cannot read property &#x27;info&#x27; of undefined&quot;,</span></span><br><span class="line"><span class="comment">  1: &quot;yiveral.js&quot;,</span></span><br><span class="line"><span class="comment">  2: 8,</span></span><br><span class="line"><span class="comment">  3: 22,</span></span><br><span class="line"><span class="comment">  4: [object Error] &#123; ... &#125;</span></span><br><span class="line"><span class="comment">&#125;</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="Promise-catch"><a href="#Promise-catch" class="headerlink" title="Promise catch"></a><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise/catch">Promise catch</a></h5><h5 id="Q：如果没有-catch-方法，是否能捕获-Promise-里的错误？"><a href="#Q：如果没有-catch-方法，是否能捕获-Promise-里的错误？" class="headerlink" title="Q：如果没有 catch 方法，是否能捕获 Promise 里的错误？"></a>Q：如果没有 catch 方法，是否能捕获 Promise 里的错误？</h5><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="property">onerror</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">arguments</span>);</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;onerror&quot;</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">errorFn</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> data;</span><br><span class="line">  <span class="keyword">let</span> info = data.<span class="property">info</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">p</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="keyword">function</span> (<span class="params">resolve, reject</span>) &#123;</span><br><span class="line">    <span class="title function_">errorFn</span>();</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  <span class="title function_">p</span>().<span class="title function_">then</span>(<span class="keyword">function</span> (<span class="params">res</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;running then&quot;</span>);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(e);</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;try - catch&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* console 没有任何输出</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<p>我们通过上面的代码发现，Promise 里的错误无论在<strong>try - catch</strong>还是<strong>onerror</strong>里都无法被捕获</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">errorFn</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> data;</span><br><span class="line">  <span class="keyword">let</span> info = data.<span class="property">info</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">p</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="keyword">function</span> (<span class="params">resolve, reject</span>) &#123;</span><br><span class="line">    <span class="title function_">errorFn</span>();</span><br><span class="line">  &#125;).<span class="title function_">catch</span>(<span class="keyword">function</span> (<span class="params">error</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(error);</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;inner error&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;return inner error&quot;</span>;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  <span class="title function_">p</span>()</span><br><span class="line">    .<span class="title function_">then</span>(<span class="keyword">function</span> (<span class="params">res</span>) &#123;</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(res);</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;running then&quot;</span>);</span><br><span class="line">    &#125;)</span><br><span class="line">    .<span class="title function_">catch</span>(<span class="keyword">function</span> (<span class="params">error</span>) &#123;</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(error);</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;outer error&quot;</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(e);</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;try - catch&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* console 输出</span></span><br><span class="line"><span class="comment">[object Error] &#123; ... &#125;</span></span><br><span class="line"><span class="comment">&quot;inner error&quot;</span></span><br><span class="line"><span class="comment">&quot;return inner error&quot;</span></span><br><span class="line"><span class="comment">&quot;running then&quot;</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<p>通过上面代码发现，已经被捕获的错误代码，在外层不会再被捕获而是继续执行 then 里的方法，可见在一条 Promise 链上的错误，会被之后最近的<strong>catch</strong>捕获。</p>
+<h5 id="async-await-通过-try-catch"><a href="#async-await-通过-try-catch" class="headerlink" title="async&#x2F;await 通过 try - catch"></a><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/async_function">async&#x2F;await</a> 通过 <strong>try - catch</strong></h5><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="property">onerror</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">arguments</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">errorFn</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> data;</span><br><span class="line">  <span class="keyword">let</span> info = data.<span class="property">info</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">p</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="keyword">function</span> (<span class="params">resolve, reject</span>) &#123;</span><br><span class="line">    <span class="title function_">errorFn</span>();</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line">(<span class="keyword">async</span> <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> res = <span class="keyword">await</span> <span class="title function_">p</span>();</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(res);</span><br><span class="line">&#125;)();</span><br><span class="line"></span><br><span class="line"><span class="comment">/* console 没有任何输出</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<p>我们通过上面的代码发现，Promise 构造函数里的错误并没有被<strong>onerror</strong>捕获</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="property">onerror</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">arguments</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">errorFn</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> data;</span><br><span class="line">  <span class="keyword">let</span> info = data.<span class="property">info</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">p</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="keyword">function</span> (<span class="params">resolve, reject</span>) &#123;</span><br><span class="line">    <span class="title function_">resolve</span>(<span class="string">&quot;resolve&quot;</span>);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line">(<span class="keyword">async</span> <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> res = <span class="keyword">await</span> <span class="title function_">p</span>();</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;get res&quot;</span>);</span><br><span class="line">  <span class="title function_">errorFn</span>();</span><br><span class="line">&#125;)();</span><br><span class="line"></span><br><span class="line"><span class="comment">/* console 输出</span></span><br><span class="line"><span class="comment">get res</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<p>虽然 Promise 正常执行，但是当后续的代码出错<strong>onerror</strong>依旧没有被捕获</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">errorFn</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> data;</span><br><span class="line">  <span class="keyword">let</span> info = data.<span class="property">info</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">p</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="keyword">function</span> (<span class="params">resolve, reject</span>) &#123;</span><br><span class="line">    <span class="title function_">errorFn</span>();</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line">(<span class="keyword">async</span> <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> res = <span class="keyword">await</span> <span class="title function_">p</span>();</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(res);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(e);</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;try - catch&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)();</span><br><span class="line"></span><br><span class="line"><span class="comment">/* console 输出</span></span><br><span class="line"><span class="comment">[object Error] &#123; ... &#125;</span></span><br><span class="line"><span class="comment">&quot;try - catch&quot;</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>try - catch</strong>捕获了</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">errorFn</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> data;</span><br><span class="line">  <span class="keyword">let</span> info = data.<span class="property">info</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">p</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="keyword">function</span> (<span class="params">resolve, reject</span>) &#123;</span><br><span class="line">    <span class="title function_">errorFn</span>();</span><br><span class="line">  &#125;).<span class="title function_">catch</span>(<span class="keyword">function</span> (<span class="params">error</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(error);</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;inner error&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;return inner error&quot;</span>;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line">(<span class="keyword">async</span> <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> res = <span class="keyword">await</span> <span class="title function_">p</span>();</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(res);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(e);</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;try - catch&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)();</span><br><span class="line"></span><br><span class="line"><span class="comment">/* console 输出</span></span><br><span class="line"><span class="comment">[object Error] &#123; ... &#125;</span></span><br><span class="line"><span class="comment">&quot;inner error&quot;</span></span><br><span class="line"><span class="comment">&quot;return inner error&quot;</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<p>从上面代码我们知道，如果 Promise 构造函数里的错误被它自己 catch 的话，那么 async&#x2F;await 后续的 <strong>try - catch</strong>将不再对它捕获</p>
+<h5 id="Vue-config-errorHandler"><a href="#Vue-config-errorHandler" class="headerlink" title="Vue.config.errorHandler"></a><a href="https://cn.vuejs.org/v2/api/index.html#errorHandler">Vue.config.errorHandler</a></h5><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Vue</span>.<span class="property">config</span>.<span class="property">errorHandler</span> = <span class="keyword">function</span> (<span class="params">err, vm, info</span>) &#123;</span><br><span class="line">  <span class="comment">// handle error</span></span><br><span class="line">  <span class="comment">// `info` 是 Vue 特定的错误信息，比如错误所在的生命周期钩子</span></span><br><span class="line">  <span class="comment">// 只在 2.2.0+ 可用</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>指定组件的渲染和观察期间未捕获错误的处理函数。这个处理函数被调用时，可获取错误信息和 Vue 实例。</p>
+</blockquote>
+<p>我们该如何去理解官方对 errorHandler 的解释呢？通过 vue-cli 构建工具，创建一个非常基础的 vue 项目，做一些实验。</p>
+<p>测试代码库：<a href="https://github.com/miser/vue-capture-error">https://github.com/miser/vue-capture-error</a></p>
+<p>在 main.js</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Vue</span>.<span class="property">config</span>.<span class="property">errorHandler</span> = <span class="keyword">function</span> (<span class="params">err, vm, info</span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">arguments</span>);</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;vue errorHandler&quot;</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在 App.vue</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  created () &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">normal</span>()</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">methods</span>: &#123;</span><br><span class="line">    normal () &#123;</span><br><span class="line">      <span class="keyword">let</span> data</span><br><span class="line">      <span class="keyword">let</span> info = data.<span class="property">info</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 刷新页面 console 输出</span></span><br><span class="line"><span class="comment">0: TypeError: Cannot read property &#x27;info&#x27; of undefined at VueComponent.normal …</span></span><br><span class="line"><span class="comment">1: VueComponent &#123;_uid: 1, _isVue: true, $options: &#123;…&#125;, _renderProxy: Proxy, _self: VueComponent, …&#125;</span></span><br><span class="line"><span class="comment">2: &quot;created hook</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<p>从上面代码可以看出，errorHandler 确实可以满足我们的需求，在一个统一的地方捕获代码的错误，但是真的如此吗？上文也提到 errorHandler 和 window.onerror 类似，那么当我们使用 Promse 或者 async&#x2F;await 时会不会得愿以偿。</p>
+<p>js 中的异步很大一部分来自网络请求，那么在这我们用 <a href="https://github.com/axios/axios">axios</a> （它做了一层 ajax 与 Promise 之间的封装）。</p>
+<p>main.js 里添加</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> request = axios.<span class="title function_">create</span>();</span><br><span class="line">request.<span class="property">interceptors</span>.<span class="property">response</span>.<span class="title function_">use</span>(<span class="function">(<span class="params">response</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> response;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="title class_">Vue</span>.<span class="property">request</span> = <span class="function">(<span class="params">args</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="title function_">request</span>(args)</span><br><span class="line">      .<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="title function_">resolve</span>(res);</span><br><span class="line">      &#125;)</span><br><span class="line">      .<span class="title function_">catch</span>(<span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="title function_">reject</span>(err);</span><br><span class="line">      &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在 App.vue</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  created () &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">fetch1</span>()</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">methods</span>: &#123;</span><br><span class="line">    fetch1 () &#123;</span><br><span class="line">        <span class="title class_">Vue</span>.<span class="title function_">request</span>(<span class="string">&#x27;https://api1.github.com/&#x27;</span>)</span><br><span class="line">	      .<span class="title function_">then</span>(<span class="function"><span class="params">response</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(response)</span><br><span class="line">          &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>api.github.com 会返回 github 的 api 列表，当我们拼错域名，比如上面代码中的 api1.github.com 时，那肯定是无法获得我们想要的，可是 errorHandler 并没有获得该错误，不过幸好，我们可以在全局统一的 Vue.request 里的 catch 方法去统一捕获网络层面的错误。那如果是非网络层面的呢？比如数据请求回来了，但是绑定数据的时候，后端因为业务的修改等原因并没有返回我们需要的字段，造成 Promise.then 方法的业务处理错误。</p>
+<p>在 App.vue</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  created () &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">fetch2</span>()</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">methods</span>: &#123;</span><br><span class="line">    fetch2 () &#123;</span><br><span class="line">      <span class="title class_">Vue</span>.<span class="title function_">request</span>(<span class="string">&#x27;https://api.github.com/&#x27;</span>)</span><br><span class="line">      .<span class="title function_">then</span>(<span class="function"><span class="params">response</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">let</span> data = response.<span class="property">data</span></span><br><span class="line">        <span class="keyword">let</span> info = data.<span class="property">api</span>.<span class="property">info</span></span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上诉代码运行后，errorHandler 同样未能捕获错误，从 vue 的 issue 里面去查询关于捕获 Promise 或者 async&#x2F;await 时，会得到作者的答复:</p>
+<blockquote>
+<p><a href="https://github.com/vuejs/vue/issues/6551">https://github.com/vuejs/vue/issues/6551</a></p>
+<p>Vue cannot capture errors that are thrown asynchronously, similar to how try… catch won’t catch async errors. It’s your responsibility to handle async errors properly, e.g. using Promise.catch — @yyx990803</p>
+</blockquote>
+<p>那么该怎么办，不可能每个地方都加 Promise.catch 方法吧！</p>
+<blockquote>
+<p><a href="https://github.com/vuejs/vue/issues/7653">https://github.com/vuejs/vue/issues/7653</a></p>
+<p>@Doeke 在这个地方给出一个解决方案，通过全局 mixin，给那些 Promise 方法外面包一层 Promise，在这个外层 Promise 链上 catch 里面的错误，不过这样需要做代码的约定，就是原来的方法需要返回一个 Promise 对象。</p>
+</blockquote>
+<p>main.js 里添加@Doeke 的思路</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Vue</span>.<span class="title function_">mixin</span>(&#123;</span><br><span class="line">  <span class="attr">beforeCreate</span>: <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> methods = <span class="variable language_">this</span>.<span class="property">$options</span>.<span class="property">methods</span> || &#123;&#125;;</span><br><span class="line">    <span class="title class_">Object</span>.<span class="title function_">entries</span>(methods).<span class="title function_">forEach</span>(<span class="function">(<span class="params">[key, method]</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (method.<span class="property">_asyncWrapped</span>) <span class="keyword">return</span>;</span><br><span class="line">      <span class="keyword">const</span> wrappedMethod = <span class="keyword">function</span> (<span class="params">...args</span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> result = method.<span class="title function_">apply</span>(<span class="variable language_">this</span>, args);</span><br><span class="line">        <span class="keyword">const</span> resultIsPromise = result &amp;&amp; <span class="keyword">typeof</span> result.<span class="property">then</span> === <span class="string">&quot;function&quot;</span>;</span><br><span class="line">        <span class="keyword">if</span> (!resultIsPromise) <span class="keyword">return</span> result;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="keyword">async</span> (resolve, reject) =&gt; &#123;</span><br><span class="line">          <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="title function_">resolve</span>(<span class="keyword">await</span> result);</span><br><span class="line">          &#125; <span class="keyword">catch</span> (error) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!error.<span class="property">_handled</span>) &#123;</span><br><span class="line">              <span class="keyword">const</span> errorHandler = <span class="title class_">Vue</span>.<span class="property">config</span>.<span class="property">errorHandler</span>;</span><br><span class="line">              <span class="title function_">errorHandler</span>(error);</span><br><span class="line">              error.<span class="property">_handled</span> = <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="title function_">reject</span>(error);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">      &#125;;</span><br><span class="line">      wrappedMethod.<span class="property">_asyncWrapped</span> = <span class="literal">true</span>;</span><br><span class="line">      methods[key] = wrappedMethod;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>在 App.vue</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  created () &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">fetch2</span>()</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">fetch3</span>()</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">methods</span>: &#123;</span><br><span class="line">    fetch2 () &#123;</span><br><span class="line">      <span class="title class_">Vue</span>.<span class="title function_">request</span>(<span class="string">&#x27;https://api.github.com/&#x27;</span>)</span><br><span class="line">        .<span class="title function_">then</span>(<span class="function"><span class="params">response</span> =&gt;</span> &#123;</span><br><span class="line">          <span class="keyword">let</span> data = response.<span class="property">data</span></span><br><span class="line">          <span class="keyword">let</span> info = data.<span class="property">api</span>.<span class="property">fetch2</span></span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;,</span><br><span class="line">    fetch3 () &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="title class_">Vue</span>.<span class="title function_">request</span>(<span class="string">&#x27;https://api.github.com/&#x27;</span>)</span><br><span class="line">        .<span class="title function_">then</span>(<span class="function"><span class="params">response</span> =&gt;</span> &#123;</span><br><span class="line">          <span class="keyword">let</span> data = response.<span class="property">data</span></span><br><span class="line">          <span class="keyword">let</span> info = data.<span class="property">api</span>.<span class="property">fetch3</span></span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过运行并观察 console 打印可以看出，fetch3 的错误被 errorHandler 捕获，而 fetch2 的错误并没有。</p>
+<p>那么 Promise 里的错误统一捕获的问题差不多应该解决了，那么 async&#x2F;await 的呢？</p>
+<p>在 App.vue</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  created () &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">fetch4</span>()</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">fetch5</span>()</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">methods</span>: &#123;</span><br><span class="line">    <span class="keyword">async</span> fetch4 () &#123;</span><br><span class="line">      <span class="keyword">let</span> response = <span class="keyword">await</span> <span class="title class_">Vue</span>.<span class="title function_">request</span>(<span class="string">&#x27;https://api.github.com/&#x27;</span>)</span><br><span class="line">      <span class="keyword">let</span> data = response.<span class="property">data</span></span><br><span class="line">      <span class="keyword">let</span> info = data.<span class="property">api</span>.<span class="property">fetch4</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="keyword">async</span> fetch5 () &#123;</span><br><span class="line">      <span class="keyword">let</span> response = <span class="keyword">await</span> <span class="title class_">Vue</span>.<span class="title function_">request</span>(<span class="string">&#x27;https://api.github.com/&#x27;</span>)</span><br><span class="line">      <span class="keyword">let</span> data = response.<span class="property">data</span></span><br><span class="line">      <span class="keyword">let</span> info = data.<span class="property">api</span>.<span class="property">fetch5</span></span><br><span class="line">      <span class="keyword">return</span> response</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>fetch4 并没有返回 Promise，fetch5 返回的也不是 Promise 对象，但是当运行的时候我们会发现 fetch4 和 fetch5 的错误信息都被捕获了，这是为什么呢？因为 async&#x2F;await 本身就是 Promise 的语法糖，在 <a href="https://babeljs.io/">babeljs</a> 官网的 “Try it out” 尝试用 async&#x2F;await，你会发现最后编译后的代码就是在外包了一层 Promise。</p>
+<h4 id="在哪里捕获更为优雅？（尽量以更少的代码覆盖大部分或者全部代码）"><a href="#在哪里捕获更为优雅？（尽量以更少的代码覆盖大部分或者全部代码）" class="headerlink" title="在哪里捕获更为优雅？（尽量以更少的代码覆盖大部分或者全部代码）"></a>在哪里捕获更为优雅？（尽量以更少的代码覆盖大部分或者全部代码）</h4><p><strong>网络层</strong>：可以在 axios.create 创建的实例中</p>
+<p><strong>逻辑层</strong>：非 Promise 本身就会被 errorHandler 捕获；Promise 相关的可以通过全局 mixin 给返回 Promise 对象的方法做一个外层包装，统一 catch 并调用 errorHandler 处理（**<em>这个方法的是否有副作用还需要研究!</em>**）</p>
+<h4 id="捕获的错误存放在哪？"><a href="#捕获的错误存放在哪？" class="headerlink" title="捕获的错误存放在哪？"></a>捕获的错误存放在哪？</h4><p><strong># 自己简易服务 ？</strong></p>
+<p>感觉成本很大（人力和工时）</p>
+<p>**# 官方推荐的 <a href="https://sentry.io/">Sentry</a> **</p>
+<p>注册后安装官方的 JS SDK</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install raven-js --save</span><br></pre></td></tr></table></figure>
+
+<p>修改 main.js</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="keyword">import</span> <span class="title class_">Raven</span> <span class="keyword">from</span> <span class="string">&quot;raven-js&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="title class_">RavenVue</span> <span class="keyword">from</span> <span class="string">&quot;raven-js/plugins/vue&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="title class_">Raven</span>.<span class="title function_">config</span>(<span class="string">&quot;https://1dfc5e63808b41058675b4b3aed4cfb6@sentry.io/1298044&quot;</span>) <span class="comment">// sentry token</span></span><br><span class="line">  .<span class="title function_">addPlugin</span>(<span class="title class_">RavenVue</span>, <span class="title class_">Vue</span>)</span><br><span class="line">  .<span class="title function_">install</span>();</span><br><span class="line"></span><br><span class="line"><span class="title class_">Vue</span>.<span class="property">config</span>.<span class="property">errorHandler</span> = <span class="keyword">function</span> (<span class="params">err, vm, info</span>) &#123;</span><br><span class="line">  <span class="title class_">Raven</span>.<span class="title function_">captureException</span>(err);</span><br><span class="line">&#125;;</span><br><span class="line"><span class="title class_">Vue</span>.<span class="property">request</span> = <span class="function">(<span class="params">args</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="title function_">request</span>(args)</span><br><span class="line">      .<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="title function_">resolve</span>(res);</span><br><span class="line">      &#125;)</span><br><span class="line">      .<span class="title function_">catch</span>(<span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="title class_">Raven</span>.<span class="title function_">captureException</span>(err);</span><br><span class="line">        <span class="title function_">reject</span>(err);</span><br><span class="line">      &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+
+<p>修改 App.vue （我们从最普通的 js 测试起）</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ...</span></span><br><span class="line">created () &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">normal</span>()</span><br><span class="line">    <span class="comment">// this.fetch1()</span></span><br><span class="line">    <span class="comment">// this.fetch2()</span></span><br><span class="line">    <span class="comment">// this.fetch3()</span></span><br><span class="line">    <span class="comment">// this.fetch4()</span></span><br><span class="line">    <span class="comment">// this.fetch5()</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+
+<p>打开 sentry 页面查看<br><img src="/images/js-capture-error/1.png" alt="错误报告列表"><br><img src="/images/js-capture-error/2.jpg" alt="错误报告详情（模糊了IP部分）"><br>我们通过上面 2 张图片可以看出，sentry 自带一个简单的 issue 管理功能，此外详情页面的错误栈已经方便我们知道问题出在哪里了。</p>
+<p>测试 fetch1 的 ajax 请求错误<br><img src="/images/js-capture-error/3.jpg" alt="成功截获api1.github.com这个错误域名"></p>
+<p>除了 fetch2 无法被捕获外（之前提过，它没有返回 Promise 对象），其它的都能被捕获。不过 Promise 和 async&#x2F;await 的错误栈比较少。尤其是 Promise.then 里的错误，如下 2 张图的对比：</p>
+<p><img src="/images/js-capture-error/4.jpg" alt="Promise.then里的错误"><br><img src="/images/js-capture-error/5.jpg" alt="async/await里的错误"></p>
+<p>除了默认的数据的收集外，还能收集一些其他数据，比如用户信息</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Raven</span>.<span class="title function_">setUser</span>(&#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="string">&quot;miser name&quot;</span>,</span><br><span class="line">  <span class="attr">id</span>: <span class="string">&quot;miser id&quot;</span>,</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/js-capture-error/6.jpg" alt="用户信息顺收集"></p>
+<p><strong>我们测试了代码未被压缩的情况，如果代码压缩了呢？</strong></p>
+<p><img src="/images/js-capture-error/7.jpg" alt="通过npm run build 压缩代码打开首页，一脸懵逼"></p>
+<p>显然我们不能直观的获得错误定位，不过 sentry 提供<a href="https://github.com/google/closure-compiler/wiki/Source-Maps">SourceMaps</a>存储服务，它能方便的 debug 被压缩的代码。</p>
+<p>我们可以通过<a href="https://www.npmjs.com/package/webpack-sentry-plugin">webpack-sentry-plugin</a>工具将整个上传过程写进 webpack 里，我们创建一个 vue.config.js 文件</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">SentryPlugin</span> = <span class="built_in">require</span>(<span class="string">&quot;webpack-sentry-plugin&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = &#123;</span><br><span class="line">  <span class="attr">configureWebpack</span>: &#123;</span><br><span class="line">    <span class="attr">plugins</span>: [</span><br><span class="line">      <span class="keyword">new</span> <span class="title class_">SentryPlugin</span>(&#123;</span><br><span class="line">        <span class="attr">organization</span>: <span class="string">&quot;fe-org&quot;</span>, <span class="comment">// 组织名称 类似公司名吧（一个用户下可以有多个组织）</span></span><br><span class="line">        <span class="attr">project</span>: <span class="string">&quot;popcorn-vue&quot;</span>, <span class="comment">// 项目名称 （一个组织下可以有多个项目）</span></span><br><span class="line">        <span class="attr">apiKey</span>:</span><br><span class="line">          <span class="string">&quot;17c7d61a800f495c803196e2c02cadeb1b41454247db4f06a5c54193510da150&quot;</span>,</span><br><span class="line">        <span class="attr">release</span>: <span class="string">&quot;1.2.4-beta&quot;</span>, <span class="comment">// 发布后的代码和这个对应，可以找到这个sourcemaps</span></span><br><span class="line">      &#125;),</span><br><span class="line">    ],</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>修改 main.js</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Raven</span>.<span class="title function_">config</span>(<span class="string">&quot;https://1dfc5e63808b41058675b4b3aed4cfb6@sentry.io/1298044&quot;</span>, &#123;</span><br><span class="line">  <span class="attr">release</span>: <span class="string">&quot;1.2.4-beta&quot;</span>, <span class="comment">// 新增</span></span><br><span class="line">&#125;)</span><br><span class="line">  .<span class="title function_">addPlugin</span>(<span class="title class_">RavenVue</span>, <span class="title class_">Vue</span>)</span><br><span class="line">  .<span class="title function_">install</span>();</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm run build</span><br></pre></td></tr></table></figure>
+
+<p>查看 sentry 里 popcorn-vue 项目中的<strong>版本</strong></p>
+<p><img src="/images/js-capture-error/8.jpg" alt="1.2.4-beta是目前的，1.2.3-beta是以前版本"><br><img src="/images/js-capture-error/9.jpg" alt="点击 1.2.4-beta 进去，很容易找到刚刚上传的js和js.map文件"></p>
+<p>我们打开 build 完的 index.html，虽然错误成功捕获但依旧和上图的一样，无法被 SourceMaps 解析，大概的原因是 js 和 js.map 的目录结构问题。</p>
+<p>这个 issue <a href="https://github.com/getsentry/sentry-electron/issues/54">https://github.com/getsentry/sentry-electron/issues/54</a> 是一个很经典的例子，它犯了 2 个错误</p>
+<p>– 仅仅传了 js.map 而没有传被压缩的 js 文件，它们应该一一对应的上传到服务器上<br>– js 和 js.map 目录路径不匹配</p>
+<p>这 2 个原因都会导致无法正常解析被压缩的文件。</p>
+<p>那么不直接通过浏览器打开 index.html（file:&#x2F;&#x2F;&#x2F;<strong>**</strong>&#x2F;vue-capture-error&#x2F;dist&#x2F;index.html），通过 nginx 去模拟正式环境。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">brew install nginx</span><br><span class="line">nginx</span><br></pre></td></tr></table></figure>
+
+<p>将 build 出的代码 dist 拷贝到 nginx 默认目录下 &#x2F;usr&#x2F;local&#x2F;var&#x2F;www&#x2F;，打开浏览器 <a href="http://localhost:8080/">http://localhost:8080</a></p>
+<p>回到 sentry 中查看新的错误记录</p>
+<p><img src="/images/js-capture-error/10.jpg" alt="已经很详细的记录了出错的方法"></p>
+
+    
+    </div>
+    
+    
+    <div class="columns is-mobile is-multiline article-nav">
+        <span class="column is-12-mobile is-half-desktop  article-nav-prev">
+            
+            <a href="/2018/11/17/vue-component-extends/">Vue Component 继承与复用</a>
+            
+        </span>
+        <span class="column is-12-mobile is-half-desktop  article-nav-next">
+            
+            <a href="/2018/09/24/traveling-to-the-philippines/">出差菲律宾</a>
+            
+        </span>
+    </div>
+    
+</article>
+
+
+
+<div class="comments">
+    <div class="adv">
+  <!-- <ul>
+    <li class="img"><img src="/images/give-a-reward.png" alt="reward" /></li>
+    <li>
+      欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a
+      >前端组，<a
+        href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3"
+        target="_blank"
+        >岗位信息</a
+      >
+    </li>
+    <li>
+      同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank"
+        >爱眠物</a
+      >
+    </li>
+  </ul> -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6006630417531788"
+     crossorigin="anonymous"></script>
+  <!-- 尾部广告 -->
+  <!-- <ins
+    class="adsbygoogle"
+    style="display: block"
+    data-ad-client="ca-pub-6006630417531788"
+    data-ad-slot="2988625841"
+    data-ad-format="auto"
+    data-full-width-responsive="true"
+  ></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script> -->
+</div>
+
+    <h3 class="title is-4">Comments</h3>
+    
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://miser.github.io/2018/10/23/js-capture-error/';
+        this.page.identifier = '2018/10/23/js-capture-error/';
+        
+        this.language = 'en';
+        
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'mblof' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</div>
+
+    </div>
+</section> <footer class="footer">
+  <div class="container">
+    <div class="columns content">
+      <div class="column is-narrow has-text-centered">
+        &copy; 2024 Miser&nbsp; Powered by
+        <a href="http://hexo.io/" target="_blank">Hexo</a> &
+        <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+      </div>
+      <div class="column is-hidden-mobile"></div>
+
+       
+    </div>
+  </div>
+</footer>
+ <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+
+<script src="/js/script.js"></script>
+ 
+  </body>
+</html>
