@@ -10,7 +10,7 @@ tags:
 keywords: Node.js,monitorEventLoopDelay
 ---
 
-## monitorEventLoopDelay 是什么
+## monitorEventLoopDelay 是什么
 
 perf_hooks.monitorEventLoopDelay([options])
 
@@ -20,9 +20,9 @@ perf_hooks.monitorEventLoopDelay([options])
   > Creates a Histogram object that samples and reports the event loop delay over time. The delays will be reported in nanoseconds.
   > Using a timer to detect approximate event loop delay works because the execution of timers is tied specifically to the lifecycle of the libuv event loop. That is, a delay in the loop will cause a delay in the execution of the timer, and those delays are specifically what this API is intended to detect.
 
-监控 EventLoop 运行情况是判断系统是否健康的重要指标之一，如果有大量的延迟，说明系统存在密集计算，降低了系统的吞吐。Node.js 在 v11 版本引入了`monitorEventLoopDelay`，而之前需要自己去实现。
+监控 EventLoop 运行情况是判断系统是否健康的重要指标之一，如果有大量的延迟，说明系统存在密集计算，降低了系统的吞吐。Node.js 在 v11 版本引入了`monitorEventLoopDelay`，而之前需要自己去实现。
 
-<!-- monitorEventLoopDelay 的功能介绍 -->
+<!-- monitorEventLoopDelay 的功能介绍 -->
 
 <!-- more -->
 
