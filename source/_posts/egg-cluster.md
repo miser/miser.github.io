@@ -36,7 +36,7 @@ date: 2019-01-18T13:48:01.464Z
 
 ### egg-cluster
 
-```js
+```javascript
 // egg-cluster index.js 唯一对外暴露的接口 startCluster
 exports.startCluster = function (options, callback) {
     new Master(options).ready(callback)
@@ -47,7 +47,7 @@ egg-cluster就是靠Master在管理egg里面的angent和workers（application）
 ![Master-Agent-Works 模型](/images/egg-cluster/1.jpg)
 
 ### Agent-Works怎么启动的？
-```js
+```javascript
 class Master extends EventEmitter {
     constructor(options) {
         this.workerManager = new Manager();
@@ -78,7 +78,7 @@ class Master extends EventEmitter {
 
 agent_worker.js主要逻辑就是创建egg类库里的Agent类，完成后发"agent-start"给父进程，触发Master的订阅创建Workers
 
-```js
+```javascript
 // egg-cluster/lib/agent_worker.js
 // ...
 process.send({ action: 'agent-start', to: 'master' }); 
@@ -92,7 +92,7 @@ process.send({ action: 'agent-start', to: 'master' });
 
 由于Agent和Worker(Application)都继承EggApplication，它们调用Messenger的时候会send到创建它们的Master里，然后Master再根据传过来的参数send给不同的Agent或Worker，Master里的转发逻辑如下。
 
-```js
+```javascript
 // egg-cluster master.js
 class Master extends EventEmitter {
     forkAppWorkers() {
@@ -119,7 +119,7 @@ class Master extends EventEmitter {
 }
 ```
 
-```js
+```javascript
 // egg messenger.js
 class Messenger extends EventEmitter {
     send(action, data, to) {
@@ -156,7 +156,7 @@ class Messenger extends EventEmitter {
 
 ### cluster-client 源码一瞥
 
-```js
+```javascript
 class ClusterClient extends Base {
     // ...
     async [init]() {

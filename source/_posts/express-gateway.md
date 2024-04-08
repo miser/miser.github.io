@@ -70,7 +70,7 @@ cd `Dir Path` && npm start
 
 在浏览器里输入 http://localhost:8080/ip ，就会被路由到 https://httpbin.org/ip 这个网站，获得一个JSON数据
 
-```json
+```javascripton
 {
   "origin": "180.167.xxx.xxx"
 }
@@ -183,7 +183,7 @@ pipelines:
 
 POST http://localhost:8080/account/login ,它在配置中也未加JWT策略，返回如下：
 
-```json
+```javascripton
 {
     "code": 200,
     "message": "success",
@@ -193,7 +193,7 @@ POST http://localhost:8080/account/login ,它在配置中也未加JWT策略，�
 
 将token以URL query形式传参，重新访问profile接口，就正常返回用户ID了
 
-```json
+```javascripton
 {
     "code": 200,
     "message": "success",
@@ -346,7 +346,7 @@ module.exports = {
 
 当我们再GET http://localhost:8080/banner/ 时候，将返回新的v2版本的数据
 
-```json
+```javascripton
 {
     "code": 200,
     "message": "success",

@@ -24,7 +24,7 @@ date: 2018-10-23T10:29:29.089Z
 
 ##### [window.onerror](https://developer.mozilla.org/zh-CN/docs/Web/API/GlobalEventHandlers/onerror)
 
-```js
+```javascript
 window.onerror = function (message, source, lineno, colno, error) {
   /*
     message：错误信息（字符串）。可用于HTML onerror=""处理程序中的event。
@@ -36,7 +36,7 @@ window.onerror = function (message, source, lineno, colno, error) {
 };
 ```
 
-```js
+```javascript
 window.onerror = function () {
   console.log(arguments);
 };
@@ -57,7 +57,7 @@ let info = data.info;
 
 虽然**onerror**无法捕获 Promise 里的错误，但是如果 Promise 里面是被 setTimeout 包裹的 js 还是能捕获的
 
-```js
+```javascript
 window.onerror = function () {
   console.log(arguments);
 };
@@ -102,7 +102,7 @@ p()
 
 ##### Q：如果没有 catch 方法，是否能捕获 Promise 里的错误？
 
-```js
+```javascript
 window.onerror = function () {
   console.log(arguments);
   console.log("onerror");
@@ -133,7 +133,7 @@ try {
 
 我们通过上面的代码发现，Promise 里的错误无论在**try - catch**还是**onerror**里都无法被捕获
 
-```js
+```javascript
 function errorFn() {
   let data;
   let info = data.info;
@@ -175,7 +175,7 @@ try {
 
 ##### [async/await](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/async_function) 通过 **try - catch**
 
-```js
+```javascript
 window.onerror = function () {
   console.log(arguments);
 };
@@ -201,7 +201,7 @@ function p() {
 
 我们通过上面的代码发现，Promise 构造函数里的错误并没有被**onerror**捕获
 
-```js
+```javascript
 window.onerror = function () {
   console.log(arguments);
 };
@@ -229,7 +229,7 @@ get res
 
 虽然 Promise 正常执行，但是当后续的代码出错**onerror**依旧没有被捕获
 
-```js
+```javascript
 function errorFn() {
   let data;
   let info = data.info;
@@ -258,7 +258,7 @@ function p() {
 
 **try - catch**捕获了
 
-```js
+```javascript
 function errorFn() {
   let data;
   let info = data.info;
@@ -294,7 +294,7 @@ function p() {
 
 ##### [Vue.config.errorHandler](https://cn.vuejs.org/v2/api/index.html#errorHandler)
 
-```js
+```javascript
 Vue.config.errorHandler = function (err, vm, info) {
   // handle error
   // `info` 是 Vue 特定的错误信息，比如错误所在的生命周期钩子
@@ -310,7 +310,7 @@ Vue.config.errorHandler = function (err, vm, info) {
 
 在 main.js
 
-```js
+```javascript
 Vue.config.errorHandler = function (err, vm, info) {
   console.log(arguments);
   console.log("vue errorHandler");
@@ -319,7 +319,7 @@ Vue.config.errorHandler = function (err, vm, info) {
 
 在 App.vue
 
-```js
+```javascript
 {
   // ...
   created () {
@@ -347,7 +347,7 @@ js 中的异步很大一部分来自网络请求，那么在这我们用 [axios]
 
 main.js 里添加
 
-```js
+```javascript
 const request = axios.create();
 request.interceptors.response.use((response) => {
   return response;
@@ -368,7 +368,7 @@ Vue.request = (args) => {
 
 在 App.vue
 
-```js
+```javascript
 {
   // ...
   created () {
@@ -390,7 +390,7 @@ api.github.com 会返回 github 的 api 列表，当我们拼错域名，比如�
 
 在 App.vue
 
-```js
+```javascript
 {
   // ...
   created () {
@@ -423,7 +423,7 @@ api.github.com 会返回 github 的 api 列表，当我们拼错域名，比如�
 
 main.js 里添加@Doeke 的思路
 
-```js
+```javascript
 Vue.mixin({
   beforeCreate: function () {
     const methods = this.$options.methods || {};
@@ -456,7 +456,7 @@ Vue.mixin({
 
 在 App.vue
 
-```js
+```javascript
 {
   // ...
   created () {
@@ -489,7 +489,7 @@ Vue.mixin({
 
 在 App.vue
 
-```js
+```javascript
 {
   // ...
   created () {
@@ -537,7 +537,7 @@ npm install raven-js --save
 
 修改 main.js
 
-```js
+```javascript
 // ...
 import Raven from "raven-js";
 import RavenVue from "raven-js/plugins/vue";
@@ -566,7 +566,7 @@ Vue.request = (args) => {
 
 修改 App.vue （我们从最普通的 js 测试起）
 
-```js
+```javascript
 // ...
 created () {
     this.normal()
@@ -594,7 +594,7 @@ created () {
 
 除了默认的数据的收集外，还能收集一些其他数据，比如用户信息
 
-```js
+```javascript
 Raven.setUser({
   name: "miser name",
   id: "miser id",
@@ -611,7 +611,7 @@ Raven.setUser({
 
 我们可以通过[webpack-sentry-plugin](https://www.npmjs.com/package/webpack-sentry-plugin)工具将整个上传过程写进 webpack 里，我们创建一个 vue.config.js 文件
 
-```js
+```javascript
 const SentryPlugin = require("webpack-sentry-plugin");
 
 module.exports = {
@@ -631,7 +631,7 @@ module.exports = {
 
 修改 main.js
 
-```js
+```javascript
 Raven.config("https://1dfc5e63808b41058675b4b3aed4cfb6@sentry.io/1298044", {
   release: "1.2.4-beta", // 新增
 })

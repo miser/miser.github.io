@@ -28,7 +28,7 @@ date: 2018-09-24T06:45:00.000Z
 
 服务器端代码：
 
-```js
+```javascript
 const Koa = require('koa')
 const Router = require('koa-router')
 const views = require('koa-views')

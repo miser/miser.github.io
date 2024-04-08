@@ -213,7 +213,7 @@ setTimeout(() => {
 
 ```
 
-```json
+```javascripton
 // package.json
 {
   "name": "test-perf",

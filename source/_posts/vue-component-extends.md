@@ -32,7 +32,7 @@ date: 2018-11-17 14:45:00
 ### 步骤
 
 通过vue cli工具创建项目
-```js
+```javascript
 vue create vue-component-extedns
 ```
 
@@ -41,7 +41,7 @@ vue create vue-component-extedns
 
 __引入Element-UI__
 
-```js
+```javascript
 // main.js 
 import Vue from 'vue'
 import ElementUI from 'element-ui'
@@ -391,7 +391,7 @@ export default {
 
 刷新页面，就和图二的样子一样了。整个代码并不复杂，核心就是
 
-```js
+```javascript
   components: { Button }
 ```
 

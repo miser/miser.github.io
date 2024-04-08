@@ -18,7 +18,7 @@ tags:
 
 #### 代码层面
 
-```js
+```javascript
 // 监听 路由变化 触发 handleStateChange方法
 const hijackHistory = (): void => {
   window.history.pushState = (state: any, title: string, url?: string, ...rest) => {
