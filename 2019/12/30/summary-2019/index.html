@@ -145,7 +145,7 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <blockquote>
+        <html><head></head><body><blockquote>
 <p>It was the best of times, it was the worst of times.</p>
 </blockquote>
 <p>如果真要用一句话形容2019年工作的话，上述的<strong>双城记</strong>节选我觉得是极好。大概2018年尾的时候，公司的前端团队开始用Node.js做些后端业务等相关的工作并积累经验，与现有的Java基础架构做融合，微服务<a href="https://github.com/Netflix/eureka">Eureka</a>、分布式协调服务<a href="https://zookeeper.apache.org/">ZooKeeper</a>、分布式配置管理平台<a href="https://disconf.readthedocs.io/zh_CN/latest/">Discon</a>、应用监控<a href="https://github.com/dianping/cat">Cat</a>、消息列队<a href="https://rocketmq.apache.org/">RocketMQ</a>、分布式署存储服务<a href="https://github.com/chrislusf/seaweedfs">SeaweedFS</a>、数据库<a href="https://www.mysql.com/cn/">MySQL</a>等等，大量的知识扑面而来。幸好之前有.NET C# + Javascript做Web开发经历，加上一些Node.js开发经验，比如<a href="http://aimianwu.com/">爱眠物</a>等等，上手掌握并不难。基本上每天都有很多东西可以学，上半年忙着产出业务，也忙着封装一些基于<code>Egg.js</code>适合公司项目的基础代码。不过问题也是频发，上面提到的很多东西并非是Node.js生态圈大量使用的，引用一些冷门的第三个类库暴露出了EventLoop被卡住、Memory Leak的情况，下半年忙着优化和排查。</p>
@@ -153,7 +153,7 @@
 
 
 
-<br/>
+<br>
 
 <h3 id="EventLoop问题"><a href="#EventLoop问题" class="headerlink" title="EventLoop问题"></a>EventLoop问题</h3><p>我们的Node.js程序发布到测试或者生产，经常服务端出现大量TCP <code>Close Wait</code>的情况，从TCP的信息反馈把重点都放在了网络层面，因为大量Close Wait导致服务无法响应新的请求，以为是上下游网络的超时时间问题，但是无论如何通过Node.js的Javascript层面做实验都未能出现，后来又查系统级别的配置问题等等，都是没查出一个所以然。</p>
 <p><strong>我之前写的各种Node.js服务都跑的好好的，为什么现在这家公司会出现卡死的问题呢？难道把锅甩给系统环境？</strong></p>
@@ -165,24 +165,24 @@
 <li>每个公司所使用的某个技术栈都有自己的定位，我们也在不同领域做尝试，有倾向业务的、有做基础设施搭建的等，也在寻找Node.js适合当前公司的定位</li>
 <li>经验还是缺乏点，当时运维已经有了相关对Docker的系统监控，加上<code>Cat</code>业务监控感觉能抵挡一段时间，但是万万没想到就是缺少CPU的火焰图和内存堆栈图信息导致排查问题困难重重</li>
 </ol>
-<br/>
+<br>
 
 <h3 id="Memory-Leak问题"><a href="#Memory-Leak问题" class="headerlink" title="Memory Leak问题"></a>Memory Leak问题</h3><p>前后经历了2次较大的内存泄露问题</p>
 <p><strong>陌生类库：</strong> 其实也是知道要谨慎选择类库的使用，但有时候又该怎么说呢…</p>
 <p><strong>Vue SSR：</strong> 这个问题是书写Vue相关代码时候没注意导致的，其作者在Github上也留言指出了相关的<a href="https://github.com/vuejs/vue/issues/5089">解决方法</a></p>
 <p><img src="/images/summary-2019/2.jpg" alt="https://github.com/vuejs/vue/issues/5089"></p>
 <p><strong>目前组内对前端或者Node.js的监控体系在逐步搭建和迭代的过程中，一个监控Hub，通过TCP通信将所有的Node.js进程与其进行长连接，实时双向传输数据，按照命令生成火焰图或者内存堆栈信息。</strong></p>
-<br/>
+<br>
 
 <h3 id="优化了静态资源打包和分发流程"><a href="#优化了静态资源打包和分发流程" class="headerlink" title="优化了静态资源打包和分发流程"></a>优化了静态资源打包和分发流程</h3><p>打包这个东西自然还是基于<code>Webpack</code>的封装，谁让人家NB呢。整体流程之前比较复杂，做了一次重CI的优化，也适合目前的小型团队使用，从中抽取了一套插件式的程序加载流程，整体思想还是抄的<code>Egg.js</code>，谁让人家好用好扩展呢！</p>
 <p><strong>为什么不完全基于Egg.js的插件开发方式？</strong></p>
 <p>团队对底层架构级的东西不能完全基于Egg.js，会有更多多元化的框架引入（看具体场景，尽量少，但万一呢），通过适配层就能让底层代码依附到不同框架上。所以我既不能依附Webpack写太多插件，也不能依附其它的Node.js应用框架，毕竟Node.js五花八门、百家争鸣，我们想办法把他们粘合在一起就好，所以需要一套自己的加载器。</p>
-<br/>
+<br>
 
-<br/>
+<br>
 
 <h2 id="从2019迈向2020"><a href="#从2019迈向2020" class="headerlink" title="从2019迈向2020"></a>从2019迈向2020</h2><p>2019年对我而言确实又坏又好，坏的是工作上的问题一个个来，万幸的是都一个个解决和迭代中了，确实经历多了，学到的东西和成长也就多了。期望2020能把一直想做的BFF层可以慢慢做起来，另外监控等小项目能有机会开源。</p>
-
+</body></html>
     
     </div>
     

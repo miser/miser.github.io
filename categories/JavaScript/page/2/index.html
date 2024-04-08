@@ -153,12 +153,12 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <p>如果不清楚什么是Egg.js，希望能移步到它的<a href="https://eggjs.org/">官网</a>简单看下。另外说它是__约定大于配置__的话，我只能说你真的不了解它，或者说不了解框架，哪个框架没有约定？毕竟没有规矩不成方圆，何况是逻辑性的程序呢？官方列出的特性如下：</p>
+        <html><head></head><body><p>如果不清楚什么是Egg.js，希望能移步到它的<a href="https://eggjs.org/">官网</a>简单看下。另外说它是__约定大于配置__的话，我只能说你真的不了解它，或者说不了解框架，哪个框架没有约定？毕竟没有规矩不成方圆，何况是逻辑性的程序呢？官方列出的特性如下：</p>
 <blockquote>
 <p>1.提供基于 Egg <a href="https://eggjs.org/zh-cn/advanced/framework.html">定制上层框架</a> 的能力<br>2.高度可扩展的<a href="https://eggjs.org/zh-cn/basics/plugin.html">插件机制</a><br>3.内置<a href="https://eggjs.org/zh-cn/advanced/cluster-client.html">多进程管理</a><br>4.基于 <a href="http://koajs.com/">Koa</a> 开发，性能优异<br>5.框架稳定，测试覆盖率高<br>6.<a href="https://eggjs.org/zh-cn/tutorials/progressive.html">渐进式开发</a></p>
 </blockquote>
 <p>第1条，它有那么Koa也有啊。第2条，它有，难道Koa、Express等就没有嘛？第4条，更好的补充了Koa不是更好吗？第5条，难道别的框架就不稳定了？第6条，前端鼓吹渐进式、后端也鼓吹，那究竟什么是渐进式呢？</p>
-<p>在我看来最吸引我的是第3条，__内置多进程管理__，这个在其它主流nodejs框架中是稀缺的特性，此文就简单聊聊它。</p>
+<p>在我看来最吸引我的是第3条，__内置多进程管理__，这个在其它主流nodejs框架中是稀缺的特性，此文就简单聊聊它。</p></body></html>
         <p class="article-more-link">
             <a href="/2019/01/18/egg-cluster/#more">Read More</a>
         </p>
@@ -191,8 +191,8 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <p>在做Web前端开发的时候会有大量的页面复用的地方，从UI布局到JS的逻辑。早年做后端开发的时候，我们通常可以通过面向对象的编程法式，使用抽象类、接口等等，那么现在前端是否也可以如此呢？</p>
-<p>答案自然是肯定的，所以我们找工作面试的时候常被问及关于JS继承的问题，随之ES6出现了期盼已久的Class，一切都在往更为成熟的方向发展。接下我们以<a href="https://vuejs.org/">Vue</a>为例，看看怎么去做继承这件事情。</p>
+        <html><head></head><body><p>在做Web前端开发的时候会有大量的页面复用的地方，从UI布局到JS的逻辑。早年做后端开发的时候，我们通常可以通过面向对象的编程法式，使用抽象类、接口等等，那么现在前端是否也可以如此呢？</p>
+<p>答案自然是肯定的，所以我们找工作面试的时候常被问及关于JS继承的问题，随之ES6出现了期盼已久的Class，一切都在往更为成熟的方向发展。接下我们以<a href="https://vuejs.org/">Vue</a>为例，看看怎么去做继承这件事情。</p></body></html>
         <p class="article-more-link">
             <a href="/2018/11/17/vue-component-extends/#more">Read More</a>
         </p>
@@ -225,11 +225,11 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <h4 id="为什么需要捕获？"><a href="#为什么需要捕获？" class="headerlink" title="为什么需要捕获？"></a>为什么需要捕获？</h4><p>前端代码运行在客户端的浏览器里，当客户端（浏览器）出现任何问题，在没有错误日志的情况下，我们都是不知道问题发生在哪，我们只能依靠猜测或者自己不断尝试才知道，或者永远不知道问题。</p>
-<h4 id="客户端怎么捕获？"><a href="#客户端怎么捕获？" class="headerlink" title="客户端怎么捕获？"></a>客户端怎么捕获？</h4><p>1.通过 window.onerror，可惜只能获得基础的 js 错误，Promise、async&#x2F;await 里的错误无法捕获，它收到同源决策的影响</p>
+        <html><head></head><body><h4 id="为什么需要捕获？"><a href="#为什么需要捕获？" class="headerlink" title="为什么需要捕获？"></a>为什么需要捕获？</h4><p>前端代码运行在客户端的浏览器里，当客户端（浏览器）出现任何问题，在没有错误日志的情况下，我们都是不知道问题发生在哪，我们只能依靠猜测或者自己不断尝试才知道，或者永远不知道问题。</p>
+<h4 id="客户端怎么捕获？"><a href="#客户端怎么捕获？" class="headerlink" title="客户端怎么捕获？"></a>客户端怎么捕获？</h4><p>1.通过 window.onerror，可惜只能获得基础的 js 错误，Promise、async/await 里的错误无法捕获，它收到同源决策的影响</p>
 <p>2.Promise 通过<strong>catch</strong>方法</p>
-<p>3.async&#x2F;await 通过 <strong>try - catch</strong></p>
-<p>4.Vue 可以通过全局 Vue.config.errorHandler 去获得非 Promise、async&#x2F;await 里的错误，可以理解为 Vue 里的 window.onerror</p>
+<p>3.async/await 通过 <strong>try - catch</strong></p>
+<p>4.Vue 可以通过全局 Vue.config.errorHandler 去获得非 Promise、async/await 里的错误，可以理解为 Vue 里的 window.onerror</p></body></html>
         <p class="article-more-link">
             <a href="/2018/10/23/js-capture-error/#more">Read More</a>
         </p>
@@ -262,7 +262,7 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <p>我们常说浏览器是单线程的，那么我们在加载资源的时候页面是在等待加载完成呢？还是继续执行后续的操作？加载不同资源对浏览器的操作会有相同响应吗？我们可以通过一个一个简单的实验测试来了解。</p>
+        <html><head></head><body><p>我们常说浏览器是单线程的，那么我们在加载资源的时候页面是在等待加载完成呢？还是继续执行后续的操作？加载不同资源对浏览器的操作会有相同响应吗？我们可以通过一个一个简单的实验测试来了解。</p></body></html>
         <p class="article-more-link">
             <a href="/2018/09/24/js-css-image-loading/#more">Read More</a>
         </p>

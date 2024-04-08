@@ -149,7 +149,7 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <p>之前写了一篇<a href="https://miser.github.io/2020/02/21/node-perf-heapdump-flame-graph/">收集 Node.js 应用的内存堆栈快照和 CPU 火焰图</a>文章，其中的架构非常粗糙，但是初步算是满足了现在的监控需求。不过随着业务的增长，单台<strong>TCP Server</strong>可定无法满足高可用的需求，一旦出现问题那就没办法持续使用了，所以需要一个重新设计和改造。</p>
+        <html><head></head><body><p>之前写了一篇<a href="https://miser.github.io/2020/02/21/node-perf-heapdump-flame-graph/">收集 Node.js 应用的内存堆栈快照和 CPU 火焰图</a>文章，其中的架构非常粗糙，但是初步算是满足了现在的监控需求。不过随着业务的增长，单台<strong>TCP Server</strong>可定无法满足高可用的需求，一旦出现问题那就没办法持续使用了，所以需要一个重新设计和改造。</p>
 <span id="more"></span>
 
 <p><img src="/images/monitor-hub/image-20200403185942130.png" alt="粗糙的1.0版本"></p>
@@ -179,7 +179,7 @@
 </ul>
 <p><img src="/images/monitor-hub/image-20200403210837664.png" alt="迭代2.0版本"></p>
 <p><strong>综上思考</strong>，Server 依旧做信息的存储和命令的转发工作，Admin Web 依旧是操作命令的入口，而整个 Client 端偏向 Egg.js 的风格。渐渐的整个监控中心就变得像一个微服务集群那样存在和运行，不同阶段有不同阶段的任务目标，讲不定之后会有新的挑战需要迭代。</p>
-
+</body></html>
     
     </div>
     

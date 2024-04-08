@@ -146,7 +146,7 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <p><strong>Node.js 创建子进程的方法常用的有如下几种：</strong></p>
+        <html><head></head><body><p><strong>Node.js 创建子进程的方法常用的有如下几种：</strong></p>
 <p><strong>child_process</strong></p>
 <ul>
 <li><a href="http://nodejs.cn/api/child_process.html#child_process_child_process_exec_command_options_callback">exec</a>: 衍生一个 shell 然后在该 shell 中执行 <code>command</code>，并缓冲任何产生的输出，最大缓存 1024*1024 个字节。</li>
@@ -157,7 +157,7 @@
 <p><strong>cluster</strong></p>
 <ul>
 <li><a href="http://nodejs.cn/api/cluster.html#cluster_cluster_fork_env">fork</a>: 衍生出一个新的工作进程，这只能通过主进程调用。</li>
-</ul>
+</ul></body></html>
         <p class="article-more-link">
             <a href="/2020/04/06/child_process-exec-fork-spawn/#more">Read More</a>
         </p>
@@ -190,7 +190,7 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <p>之前写了一篇<a href="https://miser.github.io/2020/02/21/node-perf-heapdump-flame-graph/">收集 Node.js 应用的内存堆栈快照和 CPU 火焰图</a>文章，其中的架构非常粗糙，但是初步算是满足了现在的监控需求。不过随着业务的增长，单台<strong>TCP Server</strong>可定无法满足高可用的需求，一旦出现问题那就没办法持续使用了，所以需要一个重新设计和改造。</p>
+        <html><head></head><body><p>之前写了一篇<a href="https://miser.github.io/2020/02/21/node-perf-heapdump-flame-graph/">收集 Node.js 应用的内存堆栈快照和 CPU 火焰图</a>文章，其中的架构非常粗糙，但是初步算是满足了现在的监控需求。不过随着业务的增长，单台<strong>TCP Server</strong>可定无法满足高可用的需求，一旦出现问题那就没办法持续使用了，所以需要一个重新设计和改造。</p></body></html>
         <p class="article-more-link">
             <a href="/2020/04/03/monitor-hub/#more">Read More</a>
         </p>
@@ -223,16 +223,16 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <p>在网络上查询<a href="https://libuv.org/">libuv</a>和EventLoop相关信息的时候，经常看到不同的文章所表达的意思差距较多，主要原因有二吧：</p>
+        <html><head></head><body><p>在网络上查询<a href="https://libuv.org/">libuv</a>和EventLoop相关信息的时候，经常看到不同的文章所表达的意思差距较多，主要原因有二吧：</p>
 <ul>
 <li>它们的<code>libuv</code>和<code>V8</code>大版本不同，导致具体的实现略有差异</li>
-<li>另外它们的代码错综复杂，又是大多数JavaScript工作者不擅长的C&#x2F;C++，只是从上而下的看，或许一些细节无法完全理解或是认知的分歧</li>
+<li>另外它们的代码错综复杂，又是大多数JavaScript工作者不擅长的C/C++，只是从上而下的看，或许一些细节无法完全理解或是认知的分歧</li>
 </ul>
 <p>与其受他人影响，不如自己来好好梳理下。</p>
 <p><strong>版本</strong></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// libuv</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> UV_VERSION_MAJOR 1</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> UV_VERSION_MINOR 33</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> UV_VERSION_PATCH 1</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// V8</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> V8_MAJOR_VERSION 7</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> V8_MINOR_VERSION 8</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> V8_BUILD_NUMBER 279</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> V8_PATCH_LEVEL 17</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Node.js</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NODE_MAJOR_VERSION 14</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NODE_MINOR_VERSION 0</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NODE_PATCH_VERSION 0</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c++ hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// libuv</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-keyword">define</span> UV_VERSION_MAJOR 1</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-keyword">define</span> UV_VERSION_MINOR 33</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-keyword">define</span> UV_VERSION_PATCH 1</span></span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// V8</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-keyword">define</span> V8_MAJOR_VERSION 7</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-keyword">define</span> V8_MINOR_VERSION 8</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-keyword">define</span> V8_BUILD_NUMBER 279</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-keyword">define</span> V8_PATCH_LEVEL 17</span></span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// Node.js</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-keyword">define</span> NODE_MAJOR_VERSION 14</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-keyword">define</span> NODE_MINOR_VERSION 0</span></span><br><span class="line"><span class="hljs-meta">#<span class="hljs-keyword">define</span> NODE_PATCH_VERSION 0</span></span><br></pre></td></tr></tbody></table></figure>
 
-<p>没有列出具体版本号的代码分析都是耍流氓，2010年的代码和2020年的代码可能差距甚远，“上古”分析固然在当时是对的，但是在今日也许是错误的。</p>
+<p>没有列出具体版本号的代码分析都是耍流氓，2010年的代码和2020年的代码可能差距甚远，“上古”分析固然在当时是对的，但是在今日也许是错误的。</p></body></html>
         <p class="article-more-link">
             <a href="/2020/03/01/v8-libuv-timer-event-loop/#more">Read More</a>
         </p>
@@ -265,7 +265,7 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <p>如果你在一家对数据安全性很高的公司工作，团队规定不允许提交数据到第三方服务上，甚至连服务器内存、CPU使用情况等监控数据都不行，那对于像<a href="https://cn.aliyun.com/product/nodejs">Alinode</a>这样监控和排查问题的大杀器基本都是无福享用了。大多数情况不得不面临自己开发一套类似监控体制去为生产环境保驾护航。</p>
+        <html><head></head><body><p>如果你在一家对数据安全性很高的公司工作，团队规定不允许提交数据到第三方服务上，甚至连服务器内存、CPU使用情况等监控数据都不行，那对于像<a href="https://cn.aliyun.com/product/nodejs">Alinode</a>这样监控和排查问题的大杀器基本都是无福享用了。大多数情况不得不面临自己开发一套类似监控体制去为生产环境保驾护航。</p></body></html>
         <p class="article-more-link">
             <a href="/2020/02/21/node-perf-heapdump-flame-graph/#more">Read More</a>
         </p>
@@ -298,11 +298,11 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <blockquote>
+        <html><head></head><body><blockquote>
 <p>此文介绍的内容已经算是<code>旧闻</code>了，17年的时候就有大量的文章介绍过了，只是2020年伊始的疫情把人困在家里实在无聊，重新翻来几个视频打发下时间，以下文字算是简单梳理，更多的瑰宝需要我们自己翻阅资料研究，<strong>文章中的很多数据应该都过时了吧，仅用来参考吧。</strong></p>
 </blockquote>
 <p><strong>Parer</strong>和<strong>Compiler</strong>是2个重要的过程和概念，理解它们可以帮助开发者根据业务需求写出对V8或其它JavaScript引擎更为“友善”的代码，毕竟花在这两个过程中的成本是巨大的。</p>
-<p><img src="/images/v8-parser-compiler/v8-pare-compile-cost.png" alt="国外几大网站花在Parser上的时间大约在15-20%"></p>
+<p><img src="/images/v8-parser-compiler/v8-pare-compile-cost.png" alt="国外几大网站花在Parser上的时间大约在15-20%"></p></body></html>
         <p class="article-more-link">
             <a href="/2020/02/08/v8-parser-compiler-javascript/#more">Read More</a>
         </p>

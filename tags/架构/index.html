@@ -153,8 +153,8 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <p>书接上文 <a href="/2020/06/29/node-gateway-ssr-multi-version/">Node.js 服务支持多 SSR 版本</a>，之前的架构只是支持 SSR 应用的版本切换，最近为了支持微前端多版本切换（每个子应用也可自己配置自己的版本号），因为 SSR 和纯前端有较多差别所以又做了一套，之后会做一定合并，抽出底层，上层逻辑以插件形式注入。</p>
-<p><a href="/images/node-gateway-ssr-multi-version-2/FE-Schedule.pptx">前端调度工具 PPT 下载</a></p>
+        <html><head></head><body><p>书接上文 <a href="/2020/06/29/node-gateway-ssr-multi-version/">Node.js 服务支持多 SSR 版本</a>，之前的架构只是支持 SSR 应用的版本切换，最近为了支持微前端多版本切换（每个子应用也可自己配置自己的版本号），因为 SSR 和纯前端有较多差别所以又做了一套，之后会做一定合并，抽出底层，上层逻辑以插件形式注入。</p>
+<p><a href="/images/node-gateway-ssr-multi-version-2/FE-Schedule.pptx">前端调度工具 PPT 下载</a></p></body></html>
         <p class="article-more-link">
             <a href="/2020/11/04/node-gateway-ssr-multi-version-2/#more">Read More</a>
         </p>
@@ -187,10 +187,10 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>通常，系统环境分为生产、测试和开发等多套，测试又可能因为验证不同的业务版本、BUG 部署 N 套， 意味着每套环境都会有一整套系统，从入口网关到大量的微服务节点，还有数据库等等。人力上需要有人去维护它们，无论是用于测试数还是系统的运维工作，每多一套系统都需要额外部署和购买大量资源，其中很多服务节点的版本是相同的，这都大大增加了成本。</p>
+        <html><head></head><body><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>通常，系统环境分为生产、测试和开发等多套，测试又可能因为验证不同的业务版本、BUG 部署 N 套， 意味着每套环境都会有一整套系统，从入口网关到大量的微服务节点，还有数据库等等。人力上需要有人去维护它们，无论是用于测试数还是系统的运维工作，每多一套系统都需要额外部署和购买大量资源，其中很多服务节点的版本是相同的，这都大大增加了成本。</p>
 <p>为了解决这样的问题，我们可以通过网关路由的方式，比如测试环境，所有的应用都部署在一套环境中，通过 HTTP Header 信息将不同的应用通过路由串联起来，大概如下：</p>
 <p>Server A V1 -&gt; Server B V1</p>
-<p>Server A V2 -&gt; Server B 其它版本</p>
+<p>Server A V2 -&gt; Server B 其它版本</p></body></html>
         <p class="article-more-link">
             <a href="/2020/06/29/node-gateway-ssr-multi-version/#more">Read More</a>
         </p>
@@ -223,16 +223,16 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <p><em>文章中主要是一些概念，简单记录这段时间对 Istio 的学习。</em></p>
+        <html><head></head><body><p><em>文章中主要是一些概念，简单记录这段时间对 Istio 的学习。</em></p>
 <p>对于全栈来说，学习 Istio 还是很有必要的，在此过程中还要学习 K8s、Docker 等基本的运维知识，那么在设计 BFF 层时候也会考虑到部署、扩容、金丝雀发布等问题，提升程序的健壮性。</p>
 <h3 id="JavaScript-全栈"><a href="#JavaScript-全栈" class="headerlink" title="JavaScript 全栈"></a>JavaScript 全栈</h3><p>在 JavaScript 流行的今天，各种框架层出不穷，无论是学习前端的 3 架马车（React\Vue\Angular）、还是运用后端的 Node.js 框架（Express\Koa\Egg.js）等，最后你都会前后端通吃，它们被 JavaScript 这门语言串联在了一起，尤其是当你去翻阅大量前端使用的 CLI 工具源码的时候，几乎都有 Express 的影子，所以在 JavaScript 技术栈里，前后端（这里的后端不是指复杂的后端架构和设计）本身并不分家。<em>当然复杂的后端或前端工作并不适合全栈工程师去做，那也是后话了。</em></p>
-<br/>
+<br>
 
 <h3 id="BFF-层"><a href="#BFF-层" class="headerlink" title="BFF 层"></a>BFF 层</h3><p>这些年来提出了 BFF 层的概念，根据业务的不同，不同公司有自己的设计和实现，比如将纯前端从 Nginx 移到了 Node.js Server 运行环境、服务端渲染（SSR）、生成或者拼接业务数据返回给前端使用（Node.js 微服务、GraphQL 等）…</p>
-<br/>
+<br>
 
 <h3 id="Node-js-微服务"><a href="#Node-js-微服务" class="headerlink" title="Node.js 微服务"></a>Node.js 微服务</h3><p>自己也做过很长一段时间的全栈，用 Node.js 开发后端业务，把数据吐给前端，不需要等着后端同事返回数据或者来回沟通的烦恼。现在做后端必定会遇到微服务的概念，不同的微服务有自己的 SDK 等工具帮助完成相关的注册发现，大多数情况下它们对 Java 的支持度最好，Node.js 有时候并不友善，要完善你不得不去写一些代码，比如熔断、报警等等，也是带来大量的开发测试成本。如果不幸公司内部 Java 组选择了不支持 Node.js 的架构，那么简直是灾难。</p>
-<p><strong>微服务的 SDK 基本上和网络通讯相关，下文的网络化可以解决这个问题。</strong></p>
+<p><strong>微服务的 SDK 基本上和网络通讯相关，下文的网络化可以解决这个问题。</strong></p></body></html>
         <p class="article-more-link">
             <a href="/2020/06/28/nodejs-istio-k8s-docker/#more">Read More</a>
         </p>
