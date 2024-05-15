@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://miser.github.io/2024/05/15/20240514-dream/</loc>
+    <lastmod>2024-05-15</lastmod>
+  </url>
+  <url>
     <loc>https://miser.github.io/2020/09/02/ssr-nodejs-thread-test/</loc>
     <lastmod>2024-03-28</lastmod>
   </url>
