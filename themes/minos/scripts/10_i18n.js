@@ -10,6 +10,7 @@ const RFC5646_TAGS = require('./rfc5646');
 
 const Pattern = util.Pattern;
 
+
 function pathJoin(...paths) {
     return paths.join('/');
 }
