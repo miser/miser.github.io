@@ -76,7 +76,7 @@
         text-align: center;
       }
     </style>
-  <meta name="generator" content="Hexo 7.1.1"></head>
+  <meta name="generator" content="Hexo 7.3.0"></head>
   <body>
     
 <nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
@@ -145,7 +145,7 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <html><head></head><body><blockquote>
+        <html><head><link rel="stylesheet" class="aplayer-secondary-style-marker" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="https://cdn.jsdelivr.net/npm/meting/dist/Meting.min.js"></script></head><body><blockquote>
 <p>It was the best of times, it was the worst of times.</p>
 </blockquote>
 <p>如果真要用一句话形容2019年工作的话，上述的<strong>双城记</strong>节选我觉得是极好。大概2018年尾的时候，公司的前端团队开始用Node.js做些后端业务等相关的工作并积累经验，与现有的Java基础架构做融合，微服务<a href="https://github.com/Netflix/eureka">Eureka</a>、分布式协调服务<a href="https://zookeeper.apache.org/">ZooKeeper</a>、分布式配置管理平台<a href="https://disconf.readthedocs.io/zh_CN/latest/">Discon</a>、应用监控<a href="https://github.com/dianping/cat">Cat</a>、消息列队<a href="https://rocketmq.apache.org/">RocketMQ</a>、分布式署存储服务<a href="https://github.com/chrislusf/seaweedfs">SeaweedFS</a>、数据库<a href="https://www.mysql.com/cn/">MySQL</a>等等，大量的知识扑面而来。幸好之前有.NET C# + Javascript做Web开发经历，加上一些Node.js开发经验，比如<a href="http://aimianwu.com/">爱眠物</a>等等，上手掌握并不难。基本上每天都有很多东西可以学，上半年忙着产出业务，也忙着封装一些基于<code>Egg.js</code>适合公司项目的基础代码。不过问题也是频发，上面提到的很多东西并非是Node.js生态圈大量使用的，引用一些冷门的第三个类库暴露出了EventLoop被卡住、Memory Leak的情况，下半年忙着优化和排查。</p>
@@ -205,8 +205,8 @@
 
 
 <div class="comments">
-    <div class="adv">
-  <!-- <ul>
+    <!-- <div class="adv"> -->
+<!-- <ul>
     <li class="img"><img src="/images/give-a-reward.png" alt="reward" /></li>
     <li>
       欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a
@@ -222,9 +222,14 @@
       >
     </li>
   </ul> -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6006630417531788" crossorigin="anonymous"></script>
-  <!-- 尾部广告 -->
-  <!-- <ins
+<!-- 
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
+  ></script> -->
+
+<!-- 尾部广告 -->
+<!-- <ins
     class="adsbygoogle"
     style="display: block"
     data-ad-client="ca-pub-6006630417531788"
@@ -235,7 +240,7 @@
   <script>
     (adsbygoogle = window.adsbygoogle || []).push({});
   </script> -->
-</div>
+<!-- </div> -->
 
     <h3 class="title is-4">Comments</h3>
     

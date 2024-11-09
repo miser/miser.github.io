@@ -80,7 +80,7 @@
         text-align: center;
       }
     </style>
-  <meta name="generator" content="Hexo 7.1.1"></head>
+  <meta name="generator" content="Hexo 7.3.0"></head>
   <body>
     
 <nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
@@ -149,7 +149,7 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <html><head></head><body><p>之前写了一篇<a href="https://miser.github.io/2020/02/21/node-perf-heapdump-flame-graph/">收集 Node.js 应用的内存堆栈快照和 CPU 火焰图</a>文章，其中的架构非常粗糙，但是初步算是满足了现在的监控需求。不过随着业务的增长，单台<strong>TCP Server</strong>可定无法满足高可用的需求，一旦出现问题那就没办法持续使用了，所以需要一个重新设计和改造。</p>
+        <html><head><link rel="stylesheet" class="aplayer-secondary-style-marker" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="https://cdn.jsdelivr.net/npm/meting/dist/Meting.min.js"></script></head><body><p>之前写了一篇<a href="https://miser.github.io/2020/02/21/node-perf-heapdump-flame-graph/">收集 Node.js 应用的内存堆栈快照和 CPU 火焰图</a>文章，其中的架构非常粗糙，但是初步算是满足了现在的监控需求。不过随着业务的增长，单台<strong>TCP Server</strong>可定无法满足高可用的需求，一旦出现问题那就没办法持续使用了，所以需要一个重新设计和改造。</p>
 <span id="more"></span>
 
 <p><img src="/images/monitor-hub/image-20200403185942130.png" alt="粗糙的1.0版本"></p>
@@ -212,8 +212,8 @@
 
 
 <div class="comments">
-    <div class="adv">
-  <!-- <ul>
+    <!-- <div class="adv"> -->
+<!-- <ul>
     <li class="img"><img src="/images/give-a-reward.png" alt="reward" /></li>
     <li>
       欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a
@@ -229,9 +229,14 @@
       >
     </li>
   </ul> -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6006630417531788" crossorigin="anonymous"></script>
-  <!-- 尾部广告 -->
-  <!-- <ins
+<!-- 
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
+  ></script> -->
+
+<!-- 尾部广告 -->
+<!-- <ins
     class="adsbygoogle"
     style="display: block"
     data-ad-client="ca-pub-6006630417531788"
@@ -242,7 +247,7 @@
   <script>
     (adsbygoogle = window.adsbygoogle || []).push({});
   </script> -->
-</div>
+<!-- </div> -->
 
     <h3 class="title is-4">Comments</h3>
     

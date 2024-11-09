@@ -76,7 +76,7 @@
         text-align: center;
       }
     </style>
-  <meta name="generator" content="Hexo 7.1.1"></head>
+  <meta name="generator" content="Hexo 7.3.0"></head>
   <body>
     
 <nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
@@ -153,7 +153,7 @@
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <html><head></head><body><p>libuv 在 v1.36.0 之后移除了 <code>gyp_uv.py</code> (<a href="https://github.com/libuv/libuv/commit/53f3c687fc288708721a5a3d9563febda1b9d2c1">commit</a>)，没办法通过它去创建一个 libuv.a 静态链接库（<a href="https://github.com/libuv/libuv/tree/v1.35.0">v1.35 文档</a>有详细的介绍），现在我们需要通过<code>cmake</code>去创建。</p>
+        <html><head><link rel="stylesheet" class="aplayer-secondary-style-marker" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="https://cdn.jsdelivr.net/npm/meting/dist/Meting.min.js"></script></head><body><p>libuv 在 v1.36.0 之后移除了 <code>gyp_uv.py</code> (<a href="https://github.com/libuv/libuv/commit/53f3c687fc288708721a5a3d9563febda1b9d2c1">commit</a>)，没办法通过它去创建一个 libuv.a 静态链接库（<a href="https://github.com/libuv/libuv/tree/v1.35.0">v1.35 文档</a>有详细的介绍），现在我们需要通过<code>cmake</code>去创建。</p>
 <h3 id="构建静态链接库"><a href="#构建静态链接库" class="headerlink" title="构建静态链接库"></a>构建静态链接库</h3><figure class="highlight plaintext hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// 下载 libuv</span><br><span class="line">git clone https://github.com/libuv/libuv</span><br><span class="line">cd libuv</span><br><span class="line">mkdir -p build</span><br><span class="line">// DCMAKE_BUILD_TYPE 将其设置为 Debug 模式，不然断点没办法进入 libuv 源码中</span><br><span class="line"> (cd build &amp;&amp; cmake -DCMAKE_BUILD_TYPE=Debug ..)</span><br><span class="line">cmake --build build</span><br></pre></td></tr></tbody></table></figure>
 
 <p>之后 build 目录 如下，libuv_a.a 就是我们需要的 静态链接库。<br><img src="/images/debug-libuv/build.jpg" alt="build dir"></p>
