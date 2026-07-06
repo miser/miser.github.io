@@ -1,0 +1,30 @@
+name: Deploy Hexo Blog
+
+on:
+  push:
+    branches: [source]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: source
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm install
+      - run: npx hexo generate
+
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: master
+          publish_dir: ./public
+          force_push: true
+          user_name: github-actions[bot]
+          user_email: github-actions[bot]@users.noreply.github.com
