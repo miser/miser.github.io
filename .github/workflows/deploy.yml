@@ -15,9 +15,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
-      - run: npm install
+      - run: npm ci
+      - run: ls -la node_modules/.bin/hexo
       - run: ./node_modules/.bin/hexo generate
 
       - uses: peaceiris/actions-gh-pages@v4
