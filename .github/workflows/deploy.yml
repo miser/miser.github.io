@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: 20
 
-      - run: npm ci
+      - run: npm install --no-package-lock
       - run: ls -la node_modules/.bin/hexo
       - run: ./node_modules/.bin/hexo generate
 
