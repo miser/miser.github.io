@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head>
+    <meta charset="utf-8" />
+<title>SkVM 如何度量并优化 LLM Skill - Miser 胡言</title>
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, maximum-scale=1"
+/>
+
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css"
+/>
+<meta name="baidu-site-verification" content="CXKjj3fklD" />
+
+<meta name="description" content="SkVM使用指南" />
+ 
+<meta name="keywords" content="SkVM,LLM,Skill" />
+   
+
+<link
+  rel="stylesheet"
+  href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro"
+/>
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css"
+/>
+
+
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css"
+/>
+
+
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"
+/>
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKHJQL3QC0"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-ZKHJQL3QC0');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        /* font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace; */
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      div.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  <meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item "
+               href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section">
+    <div class="container">
+    <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            SkVM 如何度量并优化 LLM Skill
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2026-07-06T10:00:00.000Z" itemprop="datePublished">Jul 6 2026</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <html><head></head><body><h2 id="前言：Skill-迭代中的两个核心焦虑"><a href="#前言：Skill-迭代中的两个核心焦虑" class="headerlink" title="前言：Skill&nbsp;迭代中的两个核心焦虑"></a>前言：Skill&nbsp;迭代中的两个核心焦虑</h2><p>在沉淀了一套&nbsp;Skill&nbsp;体系：一个主&nbsp;Skill&nbsp;负责意图识别与能力路由，多个子&nbsp;Skill&nbsp;负责具体功能执行。随着迭代深入，我遇到了两个越来越突出的问题。</p>
+<p><strong>第一，能力裂化难以感知。</strong>&nbsp;Skill&nbsp;里充斥着复杂的自然语言描述，每次迭代都会调整这些描述。改动后会不会影响其他模块？影响面有多大？仅凭人工&nbsp;Review&nbsp;很难给出确定答案。我们缺少一套可复现的评测机制，把「感觉没问题」变成「数据证明没问题」。</p>
+<p><strong>第二，模型一致性难以保证。</strong>&nbsp;Skill&nbsp;开发者通常基于某个模型编写和验证，在这个模型上跑得通，不等于在其他模型上也能跑得通。推向市场后，用户会调用不同厂商、不同参数的模型；遇到能力较弱的模型，Skill&nbsp;很可能无法完成预期能力。</p>
+<p>因此，我们需要一套面向&nbsp;LLM&nbsp;Agent&nbsp;Skill&nbsp;的评测与优化框架，来防止能力裂化、保证跨模型一致性。</p>
+<p>之前在&nbsp;ATA&nbsp;上看到这篇文章：<a href="https://ata.atatech.org/articles/11020630805">让“Skill优化”从“玄学调参”变成“工程流水线”——SkVM&nbsp;原理分析及评测</a>。研究并实践后发现非常有价值，于是写文记录，欢迎一起学习交流，寻找保证&nbsp;Skill&nbsp;迭代质量的更优方案。</p>
+<blockquote>
+<p><strong>SkVM</strong>&nbsp;是一个面向&nbsp;LLM&nbsp;Agent&nbsp;Skill&nbsp;的编译与运行时系统，目标是让&nbsp;Skill&nbsp;能够在不同模型与&nbsp;Harness&nbsp;之间迁移与复用。 GitHub：<a href="https://github.com/SJTU-IPADS/SkVM">SJTU-IPADS/SkVM</a></p>
+</blockquote>
+<p>接下来，我先以我自己开发的一套&nbsp;Skill&nbsp;为例，直观展示&nbsp;SkVM&nbsp;带来的帮助；再深入到原理层面，拆解它是如何工作的。</p>
+<span id="more"></span>
+
+<h2 id="一、我的实践：一个-Skill-的评测-→-诊断-→-迭代闭环"><a href="#一、我的实践：一个-Skill-的评测-→-诊断-→-迭代闭环" class="headerlink" title="一、我的实践：一个&nbsp;Skill&nbsp;的评测&nbsp;→&nbsp;诊断&nbsp;→&nbsp;迭代闭环"></a>一、我的实践：一个&nbsp;Skill&nbsp;的评测&nbsp;→&nbsp;诊断&nbsp;→&nbsp;迭代闭环</h2><h3 id="1-1-业务背景"><a href="#1-1-业务背景" class="headerlink" title="1.1&nbsp;业务背景"></a>1.1&nbsp;业务背景</h3><p>我开发的这套&nbsp;Skill&nbsp;服务于中台体验平台，核心任务是对&nbsp;T-1&nbsp;的中台埋点数据进行分析。一次典型的分析任务涉及：分析对象、时间跨度、期望指标、结果解读等。实际场景中，系统还要根据用户问题的描述，判断哪些参数需要&nbsp;LLM&nbsp;推测、哪些需要向用户澄清、甚至在信息缺失时决定下一步操作。</p>
+<p>「识别用户意图并解析出上下文所需参数」是一种非常常见且关键的能力。我们就以它为例，介绍&nbsp;SkVM&nbsp;如何帮助我们提升质量。</p>
+<h3 id="1-2-工程能力搭建"><a href="#1-2-工程能力搭建" class="headerlink" title="1.2&nbsp;工程能力搭建"></a>1.2&nbsp;工程能力搭建</h3><p>SkVM&nbsp;对外是一个&nbsp;SDK。为了方便对多个&nbsp;Skill&nbsp;进行测试与数据沉淀，我在它的基础上封装了一个简易工程：</p>
+<figure class="highlight plaintext hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">experience-skvm</span><br><span class="line">├── bench                         # 评测计划配置目录</span><br><span class="line">│   ├── exp-main                  # 主SKILL</span><br><span class="line">│   │   └── plans</span><br><span class="line">│   │       ├── parameter-parsing-plan.yaml           # 参数解析测试任务</span><br><span class="line">│   │       └── ab-v1-vs-jit-v1.yaml                  # 迭代优化测试任务</span><br><span class="line">│   └── exp-data-***              # 其他skill</span><br><span class="line">│       └── plans</span><br><span class="line">│           └── ***.yaml          # 其他测试任务</span><br><span class="line">│</span><br><span class="line">├── scripts                       # 评分脚本目录</span><br><span class="line">│   ├── grade_parameter.py        # 参数解析评分</span><br><span class="line">│   ├── grade_quality.py          # 质量诊断评分</span><br><span class="line">│   ├── grade_query.py            # 查询执行评分</span><br><span class="line">│   ├── grade_report.py           # 报告查询评分</span><br><span class="line">│   └── grade_sql.py              # SQL 生成评分</span><br><span class="line">│</span><br><span class="line">├── skvm-data                     # SkVM 运行数据与产物</span><br><span class="line">│   ├── profiles                  # 性能 Profile 数据</span><br><span class="line">│   ├── reports                   # 评测报告归档</span><br><span class="line">│   │   └── exp-main              # Skill的测试报告</span><br><span class="line">│   ├── skills                    # 各 Skill 多版本定义</span><br><span class="line">│   │   ├── exp-main</span><br><span class="line">│   │   │   ├── v1</span><br><span class="line">│   │   │   └── jit-v1            # Skill 的不同版本</span><br><span class="line">│   │   └── exp-data-***</span><br><span class="line">│   │       ├── v1</span><br><span class="line">│   │       └── jit-v1</span><br><span class="line">│   └── tasks                     # 评测用例集</span><br><span class="line">│       ├── exp-main</span><br><span class="line">│       │   └── parameter-parsing</span><br><span class="line">│       │       └── caseXX/       # 具体测试用例</span><br><span class="line">│       │           ├── task.json</span><br><span class="line">│       │           └── grade.py</span><br><span class="line">│       └── exp-data-***</span><br><span class="line">│           └── sql-generation</span><br><span class="line">│</span><br><span class="line">├── templates                     # 任务与评分模板</span><br><span class="line">│   ├── task-template.json</span><br><span class="line">│   ├── grade-config-template.json</span><br><span class="line">│   └── grade-sql-config-template.json</span><br><span class="line">│</span><br><span class="line">├── .env                          # 本地环境变量</span><br><span class="line">├── .env.example                  # 环境变量示例</span><br><span class="line">├── .gitignore</span><br><span class="line">├── .venv                         # Python 虚拟环境</span><br><span class="line">├── README.md</span><br><span class="line">├── bench.sh                      # 单版本评测脚本</span><br><span class="line">├── bench-ab.sh                   # A/B 对比评测脚本</span><br><span class="line">├── compile.sh                    # 编译/构建脚本</span><br><span class="line">├── jit-optimize.sh               # JIT 优化执行脚本</span><br><span class="line">├── profile.sh                    # 性能采集脚本</span><br><span class="line">├── run-jit-log.sh                # JIT 优化日志脚本</span><br><span class="line">├── run-jit-verify.sh             # JIT 优化验证脚本</span><br></pre></td></tr></tbody></table></figure>
+
+<p><code>bench.sh</code>&nbsp;是对&nbsp;SkVM&nbsp;核心命令的进一步封装，主要完成三件事：</p>
+<ol>
+<li><p>安装&nbsp;<code>skvm</code>&nbsp;命令；</p>
+</li>
+<li><p>封装&nbsp;SkVM&nbsp;调用，使其符合该工程的目录约定；</p>
+</li>
+<li><p>每次评测后，将需要沉淀的数据从&nbsp;<code>~/.skvm</code>&nbsp;复制到工程目录，作为迭代记录。</p>
+</li>
+</ol>
+<h3 id="1-3-执行流程"><a href="#1-3-执行流程" class="headerlink" title="1.3&nbsp;执行流程"></a>1.3&nbsp;执行流程</h3><blockquote>
+<p>下面会提前用到&nbsp;SkVM&nbsp;中的一些概念，例如能力级别（L1–L3）、JIT&nbsp;优化等。后续在「原理」部分会详细介绍。</p>
+</blockquote>
+<p><strong>Step&nbsp;1：定义评测用例（13&nbsp;个&nbsp;task.json）</strong></p>
+<p>每个用例覆盖&nbsp;L1&nbsp;基础到&nbsp;L3&nbsp;高级，包含边界与异常场景，并配有标准答案：</p>
+<figure class="highlight shell hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">{</span><br><span class="line">  // ═══ 元信息 ═══</span><br><span class="line">  "id": "parameter-parsing-case01",       // 唯一标识，用于日志和报告关联</span><br><span class="line">  "name": "L1 基础系统级查询...",          // 人类可读名称</span><br><span class="line">  "category": "parameter-parsing",         // 分类标签（同目录下的 case 共享）</span><br><span class="line">  "difficulty": "easy",                    // 难度等级（仅文档用途，不影响评分）</span><br><span class="line"></span><br><span class="line">  // ═══ Agent 执行配置 ═══</span><br><span class="line">  "prompt": "帮我看下昨天轩辕的整体PV数据\n\n---\n请将你解析出的...",</span><br><span class="line">  //  ↑ 发给被测 skill 的用户消息。"---" 之后是评测框架追加的输出格式要求</span><br><span class="line">  "timeoutMs": 60000,                      // 单 case 超时（60s）</span><br><span class="line">  "maxSteps": 10,                          // Agent 最多执行 10 步 tool call</span><br><span class="line"></span><br><span class="line">  // ═══ 期望输出（供评分参考）═══</span><br><span class="line">  "expected_output": {</span><br><span class="line">    "ds": "20260624",</span><br><span class="line">    "date_range": { "type": "single" },</span><br><span class="line">    "app_name": "轩辕",</span><br><span class="line">    "role_names": [],</span><br><span class="line">    "bu_names": [],</span><br><span class="line">    "data_type": "system",</span><br><span class="line">    "page_codes": [],</span><br><span class="line">    "resolved_by": "experience-data"</span><br><span class="line">  },</span><br><span class="line">  // ↑ 标准答案，grade.py 读取后逐字段对比 Agent 实际输出</span><br><span class="line"></span><br><span class="line">  // ═══ 评分流水线（按顺序执行）═══</span><br><span class="line">  "eval": [</span><br><span class="line">    {</span><br><span class="line">      "id": "output-exists",</span><br><span class="line">      "method": "file-check",              // SkVM 内置评估器</span><br><span class="line">      "path": "output.json",               // 检查 Agent 工作目录下是否存在此文件</span><br><span class="line">      "mode": "json-schema",               // 验证模式：JSON Schema 校验</span><br><span class="line">      "expected": "{...required:[ds,app_name,data_type]}",  // 最低结构要求</span><br><span class="line">      "weight": 0.1                        // 占总分 10%</span><br><span class="line">    },</span><br><span class="line">    {</span><br><span class="line">      "id": "parameter-grading",</span><br><span class="line">      "method": "custom",                  // 自定义评估器</span><br><span class="line">      "evaluatorId": "python-grade",       // 告诉 SkVM 使用 python-grade 协议</span><br><span class="line">      "weight": 0.9                        // 占总分 90%</span><br><span class="line">    }</span><br><span class="line">  ]</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>Step&nbsp;2：定义评分规则（</strong><code>**grade_parameter.py**</code>&nbsp;<strong>本地评分）</strong></p>
+<p>从四个维度打分：完整性、准确性、边界处理、格式合规。规则是确定性的，可复现，不依赖&nbsp;LLM&nbsp;as&nbsp;Judge。</p>
+<p><strong>Step&nbsp;3：基线评测（</strong><code>**skvm&nbsp;bench**</code><strong>）</strong></p>
+<p>跑&nbsp;v1&nbsp;版本的&nbsp;<code>SKILL.md</code>，量化当前能力，暴露问题。</p>
+<p><strong>Step&nbsp;4：JIT&nbsp;优化（</strong><code>**skvm&nbsp;jit-optimize**</code><strong>）</strong></p>
+<p>SkVM&nbsp;自动分析失败原因，生成&nbsp;<code>SKILL.md</code>&nbsp;修改建议，产出&nbsp;<code>jit-v1</code>&nbsp;候选版本。</p>
+<p><strong>Step&nbsp;5：A/B&nbsp;验证并固化</strong></p>
+<p>用同一套&nbsp;case&nbsp;集对比&nbsp;<code>v1</code>&nbsp;与&nbsp;<code>jit-v1</code>，确认提升后固化为正式版本。</p>
+<h3 id="1-4-数据发生了什么变化"><a href="#1-4-数据发生了什么变化" class="headerlink" title="1.4&nbsp;数据发生了什么变化"></a>1.4&nbsp;数据发生了什么变化</h3><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>均分</th>
+<th>case通过率</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>初始版本（未优化）</td>
+<td>0.617</td>
+<td>33%</td>
+</tr>
+<tr>
+<td>JIT&nbsp;优化后（jit-v1）</td>
+<td>0.810</td>
+<td>88%</td>
+</tr>
+<tr>
+<td>对比提升</td>
+<td>+0.193</td>
+<td>+55&nbsp;个百分点</td>
+</tr>
+</tbody></table>
+<p><strong>诊断暴露的&nbsp;4&nbsp;类问题：</strong></p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>影响面</th>
+<th>根因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>date_range</code>&nbsp;格式错误</td>
+<td>2&nbsp;个&nbsp;case</td>
+<td><code>SKILL.md</code>&nbsp;未定义结构化&nbsp;schema</td>
+</tr>
+<tr>
+<td><code>data_type</code>&nbsp;默认值缺失</td>
+<td>3–4&nbsp;个&nbsp;case</td>
+<td>决策规则未显式写入</td>
+</tr>
+<tr>
+<td>枚举外值未校验</td>
+<td>3&nbsp;个&nbsp;case</td>
+<td>缺少&nbsp;validation&nbsp;→&nbsp;clarification&nbsp;流程</td>
+</tr>
+<tr>
+<td>Agent&nbsp;超时/未产出</td>
+<td>3–4&nbsp;个&nbsp;case</td>
+<td>prompt&nbsp;过长&nbsp;/&nbsp;步骤数不足</td>
+</tr>
+</tbody></table>
+<h3 id="1-5-所有-Skill-测试结果"><a href="#1-5-所有-Skill-测试结果" class="headerlink" title="1.5&nbsp;所有&nbsp;Skill&nbsp;测试结果"></a>1.5&nbsp;所有&nbsp;Skill&nbsp;测试结果</h3><table>
+<thead>
+<tr>
+<th>Skill</th>
+<th>Baseline</th>
+<th>JIT</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>main（主&nbsp;Skill：能力路由与核心参数解析）</td>
+<td>0.617</td>
+<td>0.810</td>
+<td>显著提升，JIT&nbsp;版本已固化</td>
+</tr>
+<tr>
+<td>quality（质量诊断）</td>
+<td>0.528</td>
+<td>0.961</td>
+<td>提升&nbsp;82%，JIT&nbsp;版本已固化</td>
+</tr>
+<tr>
+<td>sql（SQL&nbsp;生成）</td>
+<td>0.760</td>
+<td>0.775</td>
+<td>仅提升&nbsp;1.5%，放弃&nbsp;JIT&nbsp;版本</td>
+</tr>
+<tr>
+<td>query（查询执行）</td>
+<td>0.780</td>
+<td>退化</td>
+<td>放弃&nbsp;JIT&nbsp;版本</td>
+</tr>
+<tr>
+<td>report（报告生成）</td>
+<td>0.960</td>
+<td>skip</td>
+<td>逻辑较简单，暂不投入测试成本</td>
+</tr>
+</tbody></table>
+<h3 id="1-6-使用-SkVM-的感受"><a href="#1-6-使用-SkVM-的感受" class="headerlink" title="1.6&nbsp;使用&nbsp;SkVM&nbsp;的感受"></a>1.6&nbsp;使用&nbsp;SkVM&nbsp;的感受</h3><p><strong>对&nbsp;Skill&nbsp;的直接价值：</strong></p>
+<ul>
+<li><p>从「凭感觉觉得还行」变成&nbsp;<strong>0.617&nbsp;→&nbsp;0.810&nbsp;的量化证据</strong>；</p>
+</li>
+<li><p>每次修改&nbsp;<code>SKILL.md</code>&nbsp;后都可回归验证，<strong>防止迭代引发能力裂化</strong>；</p>
+</li>
+<li><p>JIT&nbsp;优化自动发现问题并生成修复建议，<strong>人工只需&nbsp;Review&nbsp;和决策</strong>。</p>
+</li>
+</ul>
+<p><strong>对团队的方法论价值：</strong></p>
+<ul>
+<li><p><strong>可复现</strong>：同一&nbsp;case&nbsp;集&nbsp;+&nbsp;确定性评分&nbsp;→&nbsp;任何人、任何时间都能跑出一致结果；</p>
+</li>
+<li><p><strong>可对比</strong>：A/B&nbsp;报告直接展示&nbsp;v1&nbsp;vs&nbsp;jit-v1，不再依赖主观判断；</p>
+</li>
+<li><p><strong>可积累</strong>：case&nbsp;库持续扩展，质量门槛只升不降。</p>
+</li>
+</ul>
+<p>SkVM&nbsp;让&nbsp;LLM&nbsp;Skill&nbsp;的质量从<strong>黑盒感知</strong>变成<strong>白盒度量</strong>：定义标准&nbsp;→&nbsp;量化现状&nbsp;→&nbsp;自动优化&nbsp;→&nbsp;验证提升&nbsp;→&nbsp;固化成果，形成可持续的质量飞轮。</p>
+<h1 id="二、SkVM-原理解读"><a href="#二、SkVM-原理解读" class="headerlink" title="二、SkVM&nbsp;原理解读"></a>二、SkVM&nbsp;原理解读</h1><p>前文主要介绍了&nbsp;<code>jit-optimize</code>&nbsp;的使用效果，但&nbsp;SkVM&nbsp;的能力远不止于此。它包含四个核心子系统：<strong>Profiler、Compiler、JIT-boost、JIT-optimize</strong>。</p>
+<h3 id="2-1-整体架构"><a href="#2-1-整体架构" class="headerlink" title="2.1&nbsp;整体架构"></a>2.1&nbsp;整体架构</h3><p>SkVM（Skill&nbsp;Virtual&nbsp;Machine）是一个&nbsp;LLM&nbsp;Agent&nbsp;Skill&nbsp;编译与优化系统，通过「分析模型能力&nbsp;→&nbsp;编译适配&nbsp;→&nbsp;运行时优化」的三层架构，让&nbsp;Skill&nbsp;能自动适配不同&nbsp;LLM&nbsp;模型。</p>
+<figure class="highlight plaintext hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────────────────┐</span><br><span class="line">│                          SkVM 完整流水线                              │</span><br><span class="line">└─────────────────────────────────────────────────────────────────────┘</span><br><span class="line"></span><br><span class="line">① Profiler ─────► TCP (能力档案)</span><br><span class="line">                    │</span><br><span class="line">                    ▼</span><br><span class="line">② Compiler ─────► 编译后的 Skill 变体 (适配弱模型)</span><br><span class="line">                    │</span><br><span class="line">                    ▼</span><br><span class="line">③ Runtime ──────► Agent 执行 Skill</span><br><span class="line">                    │</span><br><span class="line">          ┌─────────┴──────────┐</span><br><span class="line">          ▼                    ▼</span><br><span class="line">④ JIT-boost               ⑤ JIT-optimize</span><br><span class="line">   (运行时拦截)               (多轮迭代)</span><br><span class="line">   重复调用→直接执行          执行证据→改进Skill</span><br><span class="line">   延迟：~10ms               周期：分钟/小时</span><br><span class="line">   无需重编译                 产出新Proposal</span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>子系统</th>
+<th>运行时机</th>
+<th>输入</th>
+<th>输出</th>
+<th>是否调LLM</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Profiler</td>
+<td>首次使用模型</td>
+<td>模型+Adapter</td>
+<td>TCP</td>
+<td>是（26×3次）</td>
+</tr>
+<tr>
+<td>Compiler</td>
+<td>部署前</td>
+<td>Skill&nbsp;+&nbsp;TCP</td>
+<td>适配变体</td>
+<td>是（3个Pass）</td>
+</tr>
+<tr>
+<td>JIT-boost</td>
+<td>每次Agent调用</td>
+<td>LLM&nbsp;response</td>
+<td>直接执行结果</td>
+<td>编译时是，运行时否</td>
+</tr>
+<tr>
+<td>JIT-optimize</td>
+<td>离线/后台</td>
+<td>Skill&nbsp;+&nbsp;执行日志</td>
+<td>改进后的Skill</td>
+<td>是（优化器Agent）</td>
+</tr>
+</tbody></table>
+<p><strong>核心设计哲学</strong>：借用传统编译器的&nbsp;AOT&nbsp;+&nbsp;JIT&nbsp;分层思想，但操作对象不是机器码，而是<strong>自然语言&nbsp;Skill&nbsp;指令</strong>。Profiler&nbsp;相当于「目标平台探测」，Compiler&nbsp;相当于「交叉编译」，JIT-boost&nbsp;相当于「热点内联」，JIT-optimize&nbsp;相当于「PGO（Profile-Guided&nbsp;Optimization）」。</p>
+<blockquote>
+<p>说明：架构图里画了&nbsp;5&nbsp;个编号，是因为把&nbsp;Runtime&nbsp;也作为独立一层列出；日常讨论时常说「四个核心子系统」，是指&nbsp;Profiler、Compiler、JIT-boost、JIT-optimize，两者并不矛盾。</p>
+</blockquote>
+<h2 id="2-2-Profiler：能力画像系统"><a href="#2-2-Profiler：能力画像系统" class="headerlink" title="2.2&nbsp;Profiler：能力画像系统"></a>2.2&nbsp;Profiler：能力画像系统</h2><h4 id="2-2-1-谁的能力画像"><a href="#2-2-1-谁的能力画像" class="headerlink" title="2.2.1&nbsp;谁的能力画像"></a>2.2.1&nbsp;谁的能力画像</h4><p>Profiler&nbsp;评测的是&nbsp;<strong>LLM&nbsp;+&nbsp;Harness&nbsp;组合</strong>&nbsp;在&nbsp;26&nbsp;个维度上的实际表现，最终生成&nbsp;TCP（Target&nbsp;Capability&nbsp;Profile）。示例可参考：<a href="https://github.com/SJTU-IPADS/SkVM-data/blob/d92112ae03aa6d50e5ab02c9db63d60058ac215d/profiles/openclaw/openrouter--qwen--qwen3.6-plus/latest.json">openclaw&nbsp;+&nbsp;qwen3.6&nbsp;的&nbsp;TCP</a>。</p>
+<p>我直接使用了社区现成的&nbsp;Profile，没有自己评测，以节省时间和&nbsp;Token&nbsp;成本。</p>
+<figure class="highlight typescript hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-comment">// 26个原语，每个分L1/L2/L3三级</span></span><br><span class="line"><span class="hljs-keyword">type</span> <span class="title class_">Level</span> = <span class="hljs-string">"L0"</span> | <span class="hljs-string">"L1"</span> | <span class="hljs-string">"L2"</span> | <span class="hljs-string">"L3"</span></span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// TCP = 最终产物：模型能力档案</span></span><br><span class="line"><span class="hljs-keyword">interface</span> TCP {</span><br><span class="line">  <span class="hljs-attr">model</span>: <span class="hljs-built_in">string</span>          <span class="hljs-comment">// "anthropic/claude-sonnet-4.6"</span></span><br><span class="line">  <span class="hljs-attr">harness</span>: <span class="hljs-built_in">string</span>        <span class="hljs-comment">// "bare-agent"</span></span><br><span class="line">  <span class="hljs-attr">capabilities</span>: <span class="title class_">Record</span>&lt;<span class="hljs-built_in">string</span>, <span class="title class_">Level</span>&gt;  <span class="hljs-comment">// { "gen.code.python": "L2", ... }</span></span><br><span class="line"></span><br><span class="line">  <span class="hljs-attr">details</span>: <span class="title class_">PrimitiveProfileDetail</span>[]</span><br><span class="line"></span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="hljs-comment">// 每个Generator生成测试实例</span></span><br><span class="line"><span class="hljs-keyword">interface</span> <span class="title class_">MicrobenchmarkInstance</span> {</span><br><span class="line">  <span class="hljs-attr">prompt</span>: <span class="hljs-built_in">string</span>                        <span class="hljs-comment">// 给LLM的指令</span></span><br><span class="line">  <span class="hljs-attr">setupFiles</span>?: <span class="title class_">Record</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">string</span>&gt;   <span class="hljs-comment">// 预置文件</span></span><br><span class="line">  <span class="hljs-attr">eval</span>: <span class="title class_">EvalCriterion</span>                   <span class="hljs-comment">// 评判标准</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight markdown hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">generators/</span><br><span class="line">├── 代码生成类 (5个)</span><br><span class="line">│   ├─ gen-code-python.ts</span><br><span class="line">│   ├─ gen-code-javascript.ts</span><br><span class="line">│   ├─ gen-code-html.ts</span><br><span class="line">│   ├─ gen-code-shell.ts</span><br><span class="line">│   └─ gen-code-sql.ts</span><br><span class="line">│</span><br><span class="line">├── 文本生成类 (4个)</span><br><span class="line">│   ├─ gen-text-long.ts</span><br><span class="line">│   ├─ gen-text-prose.ts</span><br><span class="line">│   ├─ gen-text-structured.ts</span><br><span class="line">│   └─ gen-regex.ts</span><br><span class="line">│</span><br><span class="line">├── 推理类 (5个)</span><br><span class="line">│   ├─ reason-analysis.ts</span><br><span class="line">│   ├─ reason-arithmetic.ts</span><br><span class="line">│   ├─ reason-logic.ts</span><br><span class="line">│   ├─ reason-planning.ts</span><br><span class="line">│   └─ reason-spatial.ts</span><br><span class="line">│</span><br><span class="line">├── 工具使用类 (8个)</span><br><span class="line">│   ├─ tool-exec.ts</span><br><span class="line">│   ├─ tool-file-read.ts</span><br><span class="line">│   ├─ tool-file-write.ts</span><br><span class="line">│   ├─ tool-web.ts</span><br><span class="line">│   ├─ tool-browser.ts</span><br><span class="line">│   ├─ tool-call-batch.ts</span><br><span class="line">│   ├─ tool-call-format.ts</span><br><span class="line">│   └─ tool-call-batch.ts</span><br><span class="line">│</span><br><span class="line">└── 指令遵循类 (4个)</span><br><span class="line"><span class="hljs-code">    ├─ follow-constraint.ts</span></span><br><span class="line"><span class="hljs-code">    ├─ follow-delegation.ts</span></span><br><span class="line"><span class="hljs-code">    ├─ follow-format.ts</span></span><br><span class="line"><span class="hljs-code">    ├─ follow-procedure.ts</span></span><br><span class="line"><span class="hljs-code">    └─ follow-style.ts</span></span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="2-2-2-解决什么问题"><a href="#2-2-2-解决什么问题" class="headerlink" title="2.2.2&nbsp;解决什么问题"></a>2.2.2&nbsp;解决什么问题</h4><p>Skill&nbsp;运行在「LLM&nbsp;+&nbsp;Harness」环境中，不同组合的能力直接影响&nbsp;Skill&nbsp;的最终表现。因此需要先刻画运行环境的能力，再与&nbsp;Skill&nbsp;所需能力对比，才能有的放矢地优化。</p>
+<p>如果&nbsp;Skill&nbsp;在不同&nbsp;LLM&nbsp;+&nbsp;Harness&nbsp;组合下都表现良好，那么放到市场中供任何人使用都不会有大的问题。这就是解决本文开头第二个问题——如何保证&nbsp;Skill&nbsp;描述的能力一致性。</p>
+<h4 id="2-2-3-执行流程"><a href="#2-2-3-执行流程" class="headerlink" title="2.2.3&nbsp;执行流程"></a>2.2.3&nbsp;执行流程</h4><figure class="highlight python hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">profile(model, harness):</span><br><span class="line">  <span class="hljs-keyword">if</span> 缓存存在 → <span class="hljs-keyword">return</span> 缓存TCP</span><br><span class="line">  </span><br><span class="line">  <span class="hljs-keyword">for</span> each primitive <span class="hljs-keyword">in</span> 26_PRIMITIVES:    // gen.code.python, tool.<span class="hljs-built_in">exec</span>, ...</span><br><span class="line">    generator = getGenerator(primitive)</span><br><span class="line">    highestLevel = <span class="hljs-string">"L0"</span></span><br><span class="line">    </span><br><span class="line">    <span class="hljs-keyword">for</span> level <span class="hljs-keyword">in</span> [L1, L2, L3]:           // 从易到难</span><br><span class="line">      instances = generator.generate(level) × <span class="hljs-number">3</span>  // 生成<span class="hljs-number">3</span>个随机实例</span><br><span class="line">      </span><br><span class="line">      <span class="hljs-keyword">for</span> each instance:</span><br><span class="line">        result = adapter.run(instance.prompt, workDir)  // Agent 执行</span><br><span class="line">        score  = evaluate(instance.<span class="hljs-built_in">eval</span>, result)        // 评分</span><br><span class="line">      </span><br><span class="line">      <span class="hljs-keyword">if</span> 通过率 == <span class="hljs-number">100</span>%:</span><br><span class="line">        highestLevel = level              // 升级！</span><br><span class="line">      <span class="hljs-keyword">else</span>:</span><br><span class="line">        <span class="hljs-keyword">break</span>                             // 停止，当前level不通过</span><br><span class="line">    </span><br><span class="line">    tcp.capabilities[primitive] = highestLevel</span><br><span class="line">  </span><br><span class="line">  save(tcp) → ~/.skvm/profiles/</span><br><span class="line">  <span class="hljs-keyword">return</span> tcp</span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>关键点</strong>：L1→L2→L3&nbsp;逐级递进，比如&nbsp;<code>gen.code.python</code>&nbsp;的&nbsp;L1&nbsp;可能是”写&nbsp;Hello&nbsp;World”，L3&nbsp;可能是”实现并发&nbsp;HTTP&nbsp;服务器”。</p>
+<h2 id="2-3-Compiler：AOT-编译器"><a href="#2-3-Compiler：AOT-编译器" class="headerlink" title="2.3&nbsp;Compiler：AOT&nbsp;编译器"></a>2.3&nbsp;Compiler：AOT&nbsp;编译器</h2><h4 id="2-3-1-解决什么问题"><a href="#2-3-1-解决什么问题" class="headerlink" title="2.3.1&nbsp;解决什么问题"></a>2.3.1&nbsp;解决什么问题</h4><p>Compiler&nbsp;将&nbsp;Skill&nbsp;针对特定模型的能力缺口进行重写，产出适配后的&nbsp;Skill&nbsp;变体，主要面向<strong>弱模型场景</strong>。</p>
+<blockquote>
+<p>个人建议：如果后续还要用&nbsp;JIT-optimize&nbsp;继续优化，可以考虑跳过&nbsp;Compiler&nbsp;AOT&nbsp;这一步。因为编译后的&nbsp;Skill&nbsp;变体往往会因为「能力降级」而比原始&nbsp;Skill&nbsp;更复杂，反而增加后续&nbsp;JIT&nbsp;优化的难度。</p>
+</blockquote>
+<p>我开发的这套&nbsp;Skill&nbsp;目标是在&nbsp;QoderWork&nbsp;里使用，没有弱模型场景，所以直接跳过了&nbsp;Compiler&nbsp;AOT。</p>
+<h4 id="2-3-2-举例：把「代码审查」Skill-从强模型适配到弱模型"><a href="#2-3-2-举例：把「代码审查」Skill-从强模型适配到弱模型" class="headerlink" title="2.3.2&nbsp;举例：把「代码审查」Skill&nbsp;从强模型适配到弱模型"></a>2.3.2&nbsp;举例：把「代码审查」Skill&nbsp;从强模型适配到弱模型</h4><p><strong>原始&nbsp;Skill</strong></p>
+<figure class="highlight markdown hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-section"># Code Review Skill</span></span><br><span class="line"></span><br><span class="line"><span class="hljs-section">## 任务</span></span><br><span class="line">审查用户提交的代码变更，找出 bug、安全漏洞和性能问题。</span><br><span class="line"></span><br><span class="line"><span class="hljs-section">## 步骤</span></span><br><span class="line"><span class="hljs-bullet">1.</span> 读取 git diff 内容</span><br><span class="line"><span class="hljs-bullet">2.</span> 分析每个变更文件的上下文（读取相关引用文件）</span><br><span class="line"><span class="hljs-bullet">3.</span> 综合推理潜在影响，生成结构化审查报告：</span><br><span class="line"><span class="hljs-bullet">   -</span> 按严重程度分级（Critical/Warning/Info）</span><br><span class="line"><span class="hljs-bullet">   -</span> 给出修复建议代码片段</span><br><span class="line"><span class="hljs-bullet">   -</span> 评估变更对系统整体架构的影响</span><br><span class="line"></span><br><span class="line"><span class="hljs-section">## 输出格式</span></span><br><span class="line">生成 <span class="hljs-code">`review.json`</span>，包含 findings 数组</span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>Step&nbsp;1：extractSCR&nbsp;——&nbsp;LLM&nbsp;分析&nbsp;Skill&nbsp;需要什么能力</strong></p>
+<figure class="highlight plaintext hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">SCR = {</span><br><span class="line">  purposes: [{</span><br><span class="line">    id: "code-review",</span><br><span class="line">    primitives: [</span><br><span class="line">      { id: "tool.file.read",    minLevel: "L2" },  // 读多文件+上下文</span><br><span class="line">      { id: "reason.analysis",   minLevel: "L3" },  // 综合推理架构影响</span><br><span class="line">      { id: "gen.code.python",   minLevel: "L2" },  // 生成修复代码</span><br><span class="line">      { id: "follow.format",     minLevel: "L2" },  // 结构化 JSON 输出</span><br><span class="line">      { id: "gen.text.structured", minLevel: "L2" } // 生成分级报告</span><br><span class="line">    ]</span><br><span class="line">  }]</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>Step&nbsp;2：Gap&nbsp;分析&nbsp;——&nbsp;对比模型实际能力</strong></p>
+<p>目标模型&nbsp;TCP（比如&nbsp;Qwen3-7B）：</p>
+<figure class="highlight markdown hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">tool.file.read:      L2 ✓</span><br><span class="line">reason.analysis:     L1 ✗ (需要L3，只有L1)</span><br><span class="line">gen.code.python:     L1 ✗ (需要L2，只有L1)</span><br><span class="line">follow.format:       L2 ✓</span><br><span class="line">gen.text.structured: L1 ✗ (需要L2，只有L1)</span><br></pre></td></tr></tbody></table></figure>
+
+<p>Gap&nbsp;结果：</p>
+<figure class="highlight markdown hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">reason.analysis:     需要L3 → 实际L1  （差2级，严重）</span><br><span class="line">gen.code.python:     需要L2 → 实际L1  （差1级）</span><br><span class="line">gen.text.structured: 需要L2 → 实际L1  （差1级）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>Step&nbsp;3：Rewrite&nbsp;——&nbsp;LLM&nbsp;重写&nbsp;Skill&nbsp;补偿缺口</strong></p>
+<p>编译后的变体：</p>
+<figure class="highlight c hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"># Code Review <span class="title function_">Skill</span> <span class="hljs-params">(Compiled <span class="hljs-keyword">for</span> Qwen3<span class="hljs-number">-7B</span>)</span></span><br><span class="line"></span><br><span class="line">## 任务</span><br><span class="line">审查用户提交的代码变更，找出明显的 bug 和问题。</span><br><span class="line"></span><br><span class="line">## 步骤</span><br><span class="line">1. 读取 git diff 内容</span><br><span class="line">2. 对每个变更文件，**逐个**检查以下清单：</span><br><span class="line">   □ 是否有未处理的 null/undefined？</span><br><span class="line">   □ 是否有明显的逻辑错误（条件反转、死循环）？</span><br><span class="line">   □ 是否有安全风险（SQL拼接、eval使用）？</span><br><span class="line">   □ 是否有资源泄漏（未关闭的文件/连接）？</span><br><span class="line">3. 对每个发现的问题，按以下模板输出：</span><br><span class="line"></span><br><span class="line">## 输出格式</span><br><span class="line">生成 `review.json`，严格按以下模板填写：</span><br><span class="line"></span><br><span class="line">```json</span><br><span class="line">{</span><br><span class="line">  <span class="hljs-string">"findings"</span>: [</span><br><span class="line">    {</span><br><span class="line">      <span class="hljs-string">"file"</span>: <span class="hljs-string">"文件路径"</span>,</span><br><span class="line">      <span class="hljs-string">"line"</span>: 行号,</span><br><span class="line">      <span class="hljs-string">"severity"</span>: <span class="hljs-string">"critical 或 warning"</span>,</span><br><span class="line">      <span class="hljs-string">"issue"</span>: <span class="hljs-string">"一句话描述问题"</span>,</span><br><span class="line">      <span class="hljs-string">"suggestion"</span>: <span class="hljs-string">"一句话描述如何修复"</span></span><br><span class="line">    }</span><br><span class="line">  ]</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>变体做了什么</strong></p>
+<table>
+<thead>
+<tr>
+<th>原始要求</th>
+<th>Gap</th>
+<th>编译后的降级策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>“综合推理架构影响”&nbsp;(reason.analysis&nbsp;L3)</td>
+<td>差2级</td>
+<td><strong>直接删除</strong>这个要求，改为逐文件检查清单</td>
+</tr>
+<tr>
+<td>“生成修复代码片段”&nbsp;(gen.code.python&nbsp;L2)</td>
+<td>差1级</td>
+<td><strong>降级为</strong>“一句话描述修复方向”（文本即可）</td>
+</tr>
+<tr>
+<td>“生成分级结构化报告”&nbsp;(gen.text.structured&nbsp;L2)</td>
+<td>差1级</td>
+<td><strong>提供固定模板</strong>，只需填空（follow.format&nbsp;L2&nbsp;够用）</td>
+</tr>
+</tbody></table>
+<p><strong>关键点</strong>：把「需要高级推理能力」的开放式任务，改写成「只需要基础能力」的结构化&nbsp;/&nbsp;清单式任务。牺牲一部分深度，换取弱模型也能可靠完成。</p>
+<h2 id="2-4-JIT-boost：运行时代码固化"><a href="#2-4-JIT-boost：运行时代码固化" class="headerlink" title="2.4&nbsp;JIT-boost：运行时代码固化"></a>2.4&nbsp;JIT-boost：运行时代码固化</h2><h4 id="2-4-1-解决什么问题"><a href="#2-4-1-解决什么问题" class="headerlink" title="2.4.1&nbsp;解决什么问题"></a>2.4.1&nbsp;解决什么问题</h4><p>在对&nbsp;Skill&nbsp;进行评测的过程中，会触发大量&nbsp;LLM&nbsp;调用，带来两个问题：一是时间和&nbsp;Token&nbsp;成本巨大；二是短时间大量调用可能触发模型接口限流，造成工作流阻塞和费用激增。而实际上，很多调用返回的结果是可以被缓存或固化的。</p>
+<p>JIT-boost&nbsp;是一个运行时热点探测器：当发现&nbsp;Agent&nbsp;反复让&nbsp;LLM&nbsp;生成同类型的工具调用时，直接提取并固化调用模板，后续用预编译的脚本替代&nbsp;LLM&nbsp;调用，绕过不必要的&nbsp;LLM&nbsp;调用。</p>
+<h4 id="2-4-2-举例：JSON-格式化助手"><a href="#2-4-2-举例：JSON-格式化助手" class="headerlink" title="2.4.2&nbsp;举例：JSON&nbsp;格式化助手"></a>2.4.2&nbsp;举例：JSON&nbsp;格式化助手</h4><p>前&nbsp;3&nbsp;次&nbsp;LLM&nbsp;正常思考并返回命令，第&nbsp;4&nbsp;次起直接执行&nbsp;<code>python&nbsp;-m&nbsp;json.tool</code>：结果一样，但延迟从&nbsp;30&nbsp;秒降到&nbsp;10&nbsp;毫秒。</p>
+<figure class="highlight markdown hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">第 1 次 Agent 调用:</span><br><span class="line">  用户: "把 data.json 格式化"</span><br><span class="line">  LLM 返回: tool<span class="hljs-emphasis">_call("bash", { command: "python3 -m json.tool data.json &gt; formatted.json" })</span></span><br><span class="line"><span class="hljs-emphasis">  </span></span><br><span class="line"><span class="hljs-emphasis">  Solidifier 对比: "python3 -m json.tool" 匹配 codeSignature ✓</span></span><br><span class="line"><span class="hljs-emphasis">  → consecutive = 1</span></span><br><span class="line"><span class="hljs-emphasis"></span></span><br><span class="line"><span class="hljs-emphasis">第 2 次 Agent 调用:</span></span><br><span class="line"><span class="hljs-emphasis">  用户: "把 config.json 美化一下"</span></span><br><span class="line"><span class="hljs-emphasis">  LLM 返回: tool_</span>call("bash", { command: "python3 -m json.tool config.json &gt; pretty.json" })</span><br><span class="line">  </span><br><span class="line">  → consecutive = 2</span><br><span class="line"></span><br><span class="line">第 3 次 Agent 调用:</span><br><span class="line">  用户: "format output.json"</span><br><span class="line">  LLM 返回: tool<span class="hljs-emphasis">_call("bash", { command: "python3 -m json.tool output.json &gt; result.json" })</span></span><br><span class="line"><span class="hljs-emphasis">  </span></span><br><span class="line"><span class="hljs-emphasis">  → consecutive = 3 → ★ PROMOTED! ★</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>某次短路执行失败了</p>
+<figure class="highlight markdown hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">第 7 次:</span><br><span class="line">  用户: "format 一下那个 broken.json"（文件其实有语法错误）</span><br><span class="line">  </span><br><span class="line">  Solidifier 执行模板 → python3 报错!</span><br><span class="line">  → fallbackCount = 1（记录失败）</span><br><span class="line">  → 回退本次，让 LLM 正常处理</span><br><span class="line"></span><br><span class="line">如果连续失败 3 次:</span><br><span class="line">  → DEMOTED! 回退到监控状态</span><br><span class="line">  → 重新观察，不再冒然拦截</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>状态机全景</strong></p>
+<figure class="highlight markdown hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-code">      ┌──────────────────────────────────────────┐</span></span><br><span class="line"><span class="hljs-code">      │                                          │</span></span><br><span class="line"><span class="hljs-code">      ▼                                          │</span></span><br><span class="line"><span class="hljs-code">┌───────────┐   连续匹配3次      ┌───────────┐    │</span></span><br><span class="line"><span class="hljs-code">│ MONITORING │ ──────────────► │ PROMOTED  │    │</span></span><br><span class="line"><span class="hljs-code">│ (观察中)   │                  │ (已激活)   │    │</span></span><br><span class="line"><span class="hljs-code">└───────────┘                  └─────┬─────┘    │</span></span><br><span class="line"><span class="hljs-code">      ▲                              │          │</span></span><br><span class="line"><span class="hljs-code">      │          连续失败3次           │          │</span></span><br><span class="line"><span class="hljs-code">      └──────────────────────────────┘          │</span></span><br><span class="line"><span class="hljs-code">                                                │</span></span><br><span class="line"><span class="hljs-code">      不匹配时: consecutive 归零 ─────────────────┘</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>对比效果</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>无&nbsp;JIT-Boost</strong></th>
+<th><strong>有&nbsp;JIT-Boost（已推升）</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>“format&nbsp;data.json”</td>
+<td>调&nbsp;LLM&nbsp;→&nbsp;思考&nbsp;→&nbsp;返回命令&nbsp;→&nbsp;执行</td>
+<td>直接执行命令</td>
+</tr>
+<tr>
+<td>延迟</td>
+<td>~3-8&nbsp;秒</td>
+<td>~10-50&nbsp;毫秒</td>
+</tr>
+<tr>
+<td>Token&nbsp;消耗</td>
+<td>~500&nbsp;tokens</td>
+<td>0&nbsp;tokens</td>
+</tr>
+<tr>
+<td>成本</td>
+<td>~$0.003</td>
+<td>$0</td>
+</tr>
+<tr>
+<td>质量</td>
+<td>LLM&nbsp;可能输出略有不同</td>
+<td>100%&nbsp;确定性（同一模板）</td>
+</tr>
+</tbody></table>
+<h2 id="2-5-JIT-optimize：Skill-迭代优化"><a href="#2-5-JIT-optimize：Skill-迭代优化" class="headerlink" title="2.5&nbsp;JIT-optimize：Skill&nbsp;迭代优化"></a>2.5&nbsp;JIT-optimize：Skill&nbsp;迭代优化</h2><h4 id="2-5-1-解决什么问题"><a href="#2-5-1-解决什么问题" class="headerlink" title="2.5.1&nbsp;解决什么问题"></a>2.5.1&nbsp;解决什么问题</h4><p>通过一个个&nbsp;Test&nbsp;Case&nbsp;对&nbsp;Skill&nbsp;进行多轮循环评测和优化，基于执行证据自动改进&nbsp;Skill&nbsp;内容，防止能力裂化，甚至提升迭代质量。</p>
+<h4 id="2-5-2-执行流程"><a href="#2-5-2-执行流程" class="headerlink" title="2.5.2&nbsp;执行流程"></a>2.5.2&nbsp;执行流程</h4><figure class="highlight plaintext hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">jitOptimize(config)</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">┌─ Round 0 (Baseline) ─────────────────────────────┐</span><br><span class="line">│  1. 加载原始 Skill                                 │</span><br><span class="line">│  2. 解析任务 → train集 + test集(held-out)           │</span><br><span class="line">│  3. 对每个任务执行 runsPerTask 次                   │</span><br><span class="line">│  4. 收集 Evidence (score + criteria + 对话日志)    │</span><br><span class="line">│  5. 计算 baselineScore                            │</span><br><span class="line">└──────────────────────────────────────────────────┘</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">┌─ Round 1..N (优化循环) ──────────────────────────┐</span><br><span class="line">│                                                    │</span><br><span class="line">│  ┌─① 优化器Agent─────────────────────────┐        │</span><br><span class="line">│  │ 输入: 当前Skill + TRAIN证据 + 历史       │        │</span><br><span class="line">│  │ (注意: TEST证据不给优化器看！)            │        │</span><br><span class="line">│  │                                         │        │</span><br><span class="line">│  │ 优化器读取证据，诊断根因，编辑Skill      │        │</span><br><span class="line">│  │ 输出: submission.json                   │        │</span><br><span class="line"></span><br><span class="line">│  │   { rootCause, changes[], confidence }  │        │</span><br><span class="line"></span><br><span class="line">│  └─────────────────────────────────────────┘        │</span><br><span class="line">│                    │                                 │</span><br><span class="line">│                    ▼                                 │</span><br><span class="line">│  ┌─② 应用变更─────────────────────────────┐        │</span><br><span class="line">│  │ 将优化器的edits应用到Skill文件            │        │</span><br><span class="line">│  │ 快照保存到 round-N/ 目录                 │        │</span><br><span class="line">│  └─────────────────────────────────────────┘        │</span><br><span class="line">│                    │                                 │</span><br><span class="line">│                    ▼                                 │</span><br><span class="line">│  ┌─③ 重新执行─────────────────────────────┐        │</span><br><span class="line">│  │ 用新Skill跑 train+test 全部任务          │        │</span><br><span class="line">│  │ 收集新一轮 Evidence                      │        │</span><br><span class="line">│  │ 计算 trainScore + testScore              │        │</span><br><span class="line">│  └─────────────────────────────────────────┘        │</span><br><span class="line">│                    │                                 │</span><br><span class="line">│                    ▼                                 │</span><br><span class="line">│  收敛检查: testScore ≥ 0.95 ? → 提前退出           │</span><br><span class="line">└──────────────────────────────────────────────────┘</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">┌─ Best Round 选择 ────────────────────────────────┐</span><br><span class="line">│  for each round:                                   │</span><br><span class="line">│    ① 改进 ≥ minImprovement (2%) ?                  │</span><br><span class="line">│    ② 任何单个task回归 ≤ 20% ?                       │</span><br><span class="line">│    ③ 分数相同时，成本更低 ≥ 15% ?                   │</span><br><span class="line">│  → 选出最优round                                   │</span><br><span class="line">└──────────────────────────────────────────────────┘</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">  输出: Proposal { bestRound, proposalDir, status: "pending" }</span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="2-5-3-评分机制（执行-→-打分-→-汇总）"><a href="#2-5-3-评分机制（执行-→-打分-→-汇总）" class="headerlink" title="2.5.3&nbsp;评分机制（执行&nbsp;→&nbsp;打分&nbsp;→&nbsp;汇总）"></a>2.5.3&nbsp;评分机制（执行&nbsp;→&nbsp;打分&nbsp;→&nbsp;汇总）</h4><p><strong>评估器类型</strong></p>
+<p>每个任务都有一组评估标准，由不同类型的评估器执行：</p>
+<table>
+<thead>
+<tr>
+<th>评估器</th>
+<th>工作方式</th>
+<th>分数</th>
+<th>典型场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>script</code></td>
+<td>在工作目录执行命令，读取输出分数</td>
+<td>0~1</td>
+<td><code>python3&nbsp;check.py</code></td>
+</tr>
+<tr>
+<td><code>file-check</code></td>
+<td>检查文件是否存在/内容匹配</td>
+<td>0&nbsp;或&nbsp;1</td>
+<td>检查&nbsp;<code>output.json</code></td>
+</tr>
+<tr>
+<td><code>llm-judge</code></td>
+<td>调用&nbsp;LLM&nbsp;按&nbsp;rubric&nbsp;打分</td>
+<td>0~1</td>
+<td>“代码是否处理了边界情况”</td>
+</tr>
+<tr>
+<td><code>custom</code></td>
+<td>自定义&nbsp;Python&nbsp;脚本</td>
+<td>0~1</td>
+<td><code>grade.py</code>&nbsp;返回分数</td>
+</tr>
+</tbody></table>
+<p><strong>评分公式</strong></p>
+<figure class="highlight plaintext hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">单次运行分数 = Σ(criterion.weight × criterion.score) / Σ(criterion.weight)</span><br><span class="line"></span><br><span class="line">例：</span><br><span class="line">  script(weight=0.4):     score=1.0  →  0.40</span><br><span class="line">  file-check(weight=0.3): score=1.0  →  0.30</span><br><span class="line">  llm-judge(weight=0.3):  score=0.5  →  0.15</span><br><span class="line">  ──────────────────────────────────────────</span><br><span class="line">  本次分数 = 0.85</span><br><span class="line"></span><br><span class="line">多次运行同一任务 → 取平均</span><br><span class="line">多个任务 → 再取平均 → roundScore</span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>Tainted（污染）运行</strong></p>
+<p>如果一次运行因<strong>基础设施问题</strong>失败（超时、崩溃、adapter&nbsp;挂了），而非&nbsp;Skill&nbsp;质量问题，该运行被标记为&nbsp;tainted：</p>
+<ul>
+<li><p>Tainted&nbsp;运行的分数<strong>不计入</strong>&nbsp;roundScore</p>
+</li>
+<li><p>如果一轮中所有运行都是&nbsp;tainted&nbsp;→&nbsp;整轮终止</p>
+</li>
+<li><p>优化器在证据中能看到&nbsp;“TAINTED”&nbsp;标记，但不会据此优化（因为不是&nbsp;Skill&nbsp;的锅）</p>
+</li>
+</ul>
+<p><strong>Train/Test&nbsp;分组</strong></p>
+<figure class="highlight plaintext hljs"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">任务集</span><br><span class="line">├── TRAIN（~70%）→ 证据提供给优化器，优化器据此改 Skill</span><br><span class="line">└── TEST（~30%） → 优化器看不到！用来验证改进是否泛化</span><br><span class="line"></span><br><span class="line">为什么分？防过拟合。</span><br><span class="line">如果优化器只针对 TRAIN 硬编码答案，TEST 分数不会提高。</span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+
+<p>框架既支持指定集合，也支持让&nbsp;LLM&nbsp;自动生成。</p>
+<p><strong>重要澄清：评分不感知&nbsp;L1/L2/L3</strong></p>
+<p>JIT-optimize&nbsp;的评分与&nbsp;Profiler&nbsp;的&nbsp;L1/L2/L3&nbsp;能力分级<strong>完全无关</strong>：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Profiler&nbsp;评分</th>
+<th>JIT-optimize&nbsp;评分</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>关心什么</td>
+<td>模型在&nbsp;26&nbsp;原语上的能力等级</td>
+<td>任务执行的结果质量</td>
+</tr>
+<tr>
+<td>感知&nbsp;L1-L3？</td>
+<td>是</td>
+<td>否</td>
+</tr>
+<tr>
+<td>评分方式</td>
+<td>逐级测试通过率</td>
+<td>文件对不对、脚本跑通吗、LLM&nbsp;判官觉得好吗</td>
+</tr>
+<tr>
+<td>输出</td>
+<td>TCP：<code>gen.code.python:&nbsp;"L2"</code></td>
+<td>分数：<code>0.85</code></td>
+</tr>
+</tbody></table>
+<p>JIT-optimize&nbsp;不管你用什么方式做到的，只看<strong>做到了没有</strong>。正是因为它的独立性，所以我可以直接用它来做测试，而不用让其他模块参与。</p>
+<h3 id="2-6-LLM-输出稳定性保障机制"><a href="#2-6-LLM-输出稳定性保障机制" class="headerlink" title="2.6&nbsp;LLM&nbsp;输出稳定性保障机制"></a>2.6&nbsp;LLM&nbsp;输出稳定性保障机制</h3><p>SkVM&nbsp;里很多地方都依赖&nbsp;LLM&nbsp;提取信息或产出结果，而&nbsp;LLM&nbsp;每次执行都有不确定性。SkVM&nbsp;的设计<strong>不追求单次&nbsp;LLM&nbsp;调用的确定性，而是通过系统级机制容忍和对冲不确定性</strong>。</p>
+<h4 id="2-6-1-六层稳定性策略"><a href="#2-6-1-六层稳定性策略" class="headerlink" title="2.6.1&nbsp;六层稳定性策略"></a>2.6.1&nbsp;六层稳定性策略</h4><table>
+<thead>
+<tr>
+<th>层次</th>
+<th>策略</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单次调用</td>
+<td>Schema&nbsp;约束&nbsp;+&nbsp;Zod&nbsp;校验</td>
+<td>tool_use&nbsp;模式锁定输出格式，枚举值固定</td>
+</tr>
+<tr>
+<td>多次调用</td>
+<td>聚合统计</td>
+<td>Bench/Profiler&nbsp;多次运行取平均值</td>
+</tr>
+<tr>
+<td>多版本</td>
+<td>竞争选优</td>
+<td>JIT-optimize&nbsp;多轮产出，pickBestRound&nbsp;选最好</td>
+</tr>
+<tr>
+<td>系统级</td>
+<td>确定性计算夹层</td>
+<td>Gap&nbsp;分析等核心逻辑不涉及&nbsp;LLM</td>
+</tr>
+<tr>
+<td>运行时</td>
+<td>阈值容错</td>
+<td>JIT-boost&nbsp;连续&nbsp;3&nbsp;次匹配才信任</td>
+</tr>
+<tr>
+<td>最终兜底</td>
+<td>实测评分说了算</td>
+<td>不管中间过程，Bench&nbsp;分数决定是否采纳</td>
+</tr>
+</tbody></table>
+<h4 id="2-6-2-具体机制"><a href="#2-6-2-具体机制" class="headerlink" title="2.6.2&nbsp;具体机制"></a>2.6.2&nbsp;具体机制</h4><ol>
+<li><p><strong>结构化输出约束</strong>：extractSCR&nbsp;使用&nbsp;tool_use&nbsp;+&nbsp;Zod，输出结构被锁死</p>
+</li>
+<li><p><strong>多次运行聚合</strong>：Profiler/Bench&nbsp;对同一任务跑多次取平均，消除单次波动</p>
+</li>
+<li><p><strong>竞争选优</strong>：JIT-optimize&nbsp;不信任单一结果，多轮竞争选最好</p>
+</li>
+<li><p><strong>确定性计算隔离</strong>：<code>analyzeGaps()</code>&nbsp;等关键逻辑是纯计算，100%&nbsp;确定性</p>
+</li>
+<li><p><strong>阈值容错</strong>：JIT-boost&nbsp;需要连续&nbsp;3&nbsp;次匹配才晋升，过滤偶发模式</p>
+</li>
+<li><p><strong>评测兜底</strong>：所有优化产物最终都过&nbsp;Bench&nbsp;评测，分数不达标则丢弃</p>
+</li>
+</ol>
+<h2 id="三、总结"><a href="#三、总结" class="headerlink" title="三、总结"></a>三、总结</h2><p>在&nbsp;Skill&nbsp;的日常开发中，「如何保证复杂逻辑描述不出现能力裂化」和「如何保证不同模型下的推理一致性」是两大难题。不确定性会直接影响&nbsp;Skill&nbsp;的交付结果。</p>
+<p>引入&nbsp;SkVM&nbsp;后，它通过四个模块提供了系统性的解法：</p>
+<ul>
+<li><p><strong>Profiler</strong>&nbsp;刻画目标&nbsp;LLM&nbsp;+&nbsp;Harness&nbsp;的能力画像；</p>
+</li>
+<li><p><strong>Compiler</strong>&nbsp;根据能力差异重新编译&nbsp;Skill，使其适配弱模型；</p>
+</li>
+<li><p><strong>JIT-boost</strong>&nbsp;在运行时固化热点调用，降低成本与延迟；</p>
+</li>
+<li><p><strong>JIT-optimize</strong>&nbsp;对沉淀的&nbsp;Test&nbsp;Case&nbsp;进行多轮测试，找出调优依据并自动改进&nbsp;Skill。</p>
+</li>
+</ul>
+<p>在具体的实践中，我已经看到了&nbsp;Skill&nbsp;的优化结果：主&nbsp;Skill&nbsp;均分从&nbsp;0.617&nbsp;提升到&nbsp;0.810，质量诊断&nbsp;Skill&nbsp;提升&nbsp;82%，同时也节省了大量手工测试时间，开发质量和效率都有明显提升。</p>
+<p>需要强调的是，<strong>0.810&nbsp;并不是终点，而是一个新的起点</strong>。这个分数本身说明&nbsp;Skill&nbsp;仍有约&nbsp;19%&nbsp;的场景没有完全达标，还有继续优化的空间。借助&nbsp;SkVM&nbsp;的评测与&nbsp;JIT-optimize&nbsp;闭环，我可以继续扩展&nbsp;Test&nbsp;Case、诊断剩余失败根因、生成新一轮优化版本，直到达到业务可接受的阈值。</p>
+<p>后续我会继续迭代目前的工程能力，把更多&nbsp;Skill&nbsp;纳入这套评测体系，并探索&nbsp;0.810&nbsp;→&nbsp;0.90+&nbsp;的路径，也欢迎一起交流。</p>
+</body></html>
+    
+    </div>
+    
+    <div class="columns is-variable is-1 is-multiline is-mobile">
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/Skill/">#Skill</a></span>
+    
+        <span class="column is-narrow"><a class="tag is-light article-tag" href="/tags/LLM/">#LLM</a></span>
+    
+    </div>
+    
+    
+    <div class="columns is-mobile is-multiline article-nav">
+        <span class="column is-12-mobile is-half-desktop is-hidden-mobile article-nav-prev">
+            
+        </span>
+        <span class="column is-12-mobile is-half-desktop  article-nav-next">
+            
+            <a href="/2024/11/06/me/">我</a>
+            
+        </span>
+    </div>
+    
+</article>
+
+
+
+<div class="comments">
+    <!-- <div class="adv"> -->
+<!-- <ul>
+    <li class="img"><img src="/images/give-a-reward.png" alt="reward" /></li>
+    <li>
+      欢迎加入<a href="https://oriente.com/" target="_blank">Oriente</a
+      >前端组，<a
+        href="https://www.lagou.com/jobs/4927018.html?source=pl&i=pl-3"
+        target="_blank"
+        >岗位信息</a
+      >
+    </li>
+    <li>
+      同时也欢迎光顾我的小店<a href="http://aimianwu.com" target="_blank"
+        >爱眠物</a
+      >
+    </li>
+  </ul> -->
+<!-- 
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
+  ></script> -->
+
+<!-- 尾部广告 -->
+<!-- <ins
+    class="adsbygoogle"
+    style="display: block"
+    data-ad-client="ca-pub-6006630417531788"
+    data-ad-slot="2988625841"
+    data-ad-format="auto"
+    data-full-width-responsive="true"
+  ></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script> -->
+<!-- </div> -->
+
+    <h3 class="title is-4">Comments</h3>
+    
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://miser.github.io/2026/07/06/SkVM%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/';
+        this.page.identifier = '2026/07/06/SkVM使用指南/';
+        
+        this.language = 'en';
+        
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'mblof' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</div>
+
+    </div>
+</section> <footer class="footer">
+  <div class="container">
+    <div class="columns content">
+      <div class="column is-narrow has-text-centered">
+        &copy; 2026 Miser&nbsp; Powered by
+        <a href="http://hexo.io/" target="_blank">Hexo</a> &
+        <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+      </div>
+      <div class="column is-hidden-mobile"></div>
+
+       
+    </div>
+  </div>
+</footer>
+ <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+
+<script src="/js/script.js"></script>
+ 
+  </body>
+</html>

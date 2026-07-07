@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html class="has-navbar-fixed-top">
+  <head>
+    <meta charset="utf-8" />
+<title>Tag: LLM - Miser 胡言</title>
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, maximum-scale=1"
+/>
+
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.css"
+/>
+<meta name="baidu-site-verification" content="CXKjj3fklD" />
+    
+
+<link
+  rel="stylesheet"
+  href="//fonts.googleapis.com/css?family=Ovo|Source+Code+Pro"
+/>
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css"
+/>
+
+
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/css/justifiedGallery.min.css"
+/>
+
+
+<link
+  rel="stylesheet"
+  href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"
+/>
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+<script defer src="//use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+      
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKHJQL3QC0"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-ZKHJQL3QC0');
+</script>
+
+  
+
+    <style type="text/css">
+      body {
+        /* font-family: Consolas, Mononoki, "Roboto Sans", "Liberation Mono",
+          monospace; */
+        color: #586e75;
+        line-height: 1.6;
+        background-color: #fdf6e3;
+      }
+      .gallery-item .caption {
+        text-align: center;
+      }
+      div.adv {
+        margin-bottom: 60px;
+      }
+      ul .img {
+        text-align: center;
+      }
+    </style>
+  <meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    
+<nav class="navbar is-transparent is-fixed-top navbar-main" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item navbar-logo" href="/">
+                
+                    
+                    胡言
+                    
+                
+            </a>
+            <div class="navbar-burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="navbar-menu navbar-start">
+            
+            <a class="navbar-item "
+               href="/archives">Archives</a>
+            
+        </div>
+        
+        <div class="navbar-menu navbar-end">
+            
+            
+            
+            <a class="navbar-item" title="Twitter" href="https://twitter.com/ud_miser">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+               
+            <a class="navbar-item" title="GitHub" href="https://github.com/miser">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+               
+            
+        </div>
+    </div>
+</nav>
+ <section class="section section-heading">
+    <div class="container">
+        <div class="content">
+            <h5>#LLM</h5>
+        </div>
+    </div>
+</section>
+<section class="section">
+    <div class="container">
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="/2026/07/06/SkVM%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/" itemprop="url">SkVM 如何度量并优化 LLM Skill</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            <time datetime="2026-07-06T10:00:00.000Z" itemprop="datePublished">Jul 6 2026</time>
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+        </span>
+        
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <html><head></head><body><h2 id="前言：Skill-迭代中的两个核心焦虑"><a href="#前言：Skill-迭代中的两个核心焦虑" class="headerlink" title="前言：Skill&nbsp;迭代中的两个核心焦虑"></a>前言：Skill&nbsp;迭代中的两个核心焦虑</h2><p>在沉淀了一套&nbsp;Skill&nbsp;体系：一个主&nbsp;Skill&nbsp;负责意图识别与能力路由，多个子&nbsp;Skill&nbsp;负责具体功能执行。随着迭代深入，我遇到了两个越来越突出的问题。</p>
+<p><strong>第一，能力裂化难以感知。</strong>&nbsp;Skill&nbsp;里充斥着复杂的自然语言描述，每次迭代都会调整这些描述。改动后会不会影响其他模块？影响面有多大？仅凭人工&nbsp;Review&nbsp;很难给出确定答案。我们缺少一套可复现的评测机制，把「感觉没问题」变成「数据证明没问题」。</p>
+<p><strong>第二，模型一致性难以保证。</strong>&nbsp;Skill&nbsp;开发者通常基于某个模型编写和验证，在这个模型上跑得通，不等于在其他模型上也能跑得通。推向市场后，用户会调用不同厂商、不同参数的模型；遇到能力较弱的模型，Skill&nbsp;很可能无法完成预期能力。</p>
+<p>因此，我们需要一套面向&nbsp;LLM&nbsp;Agent&nbsp;Skill&nbsp;的评测与优化框架，来防止能力裂化、保证跨模型一致性。</p>
+<p>之前在&nbsp;ATA&nbsp;上看到这篇文章：<a href="https://ata.atatech.org/articles/11020630805">让“Skill优化”从“玄学调参”变成“工程流水线”——SkVM&nbsp;原理分析及评测</a>。研究并实践后发现非常有价值，于是写文记录，欢迎一起学习交流，寻找保证&nbsp;Skill&nbsp;迭代质量的更优方案。</p>
+<blockquote>
+<p><strong>SkVM</strong>&nbsp;是一个面向&nbsp;LLM&nbsp;Agent&nbsp;Skill&nbsp;的编译与运行时系统，目标是让&nbsp;Skill&nbsp;能够在不同模型与&nbsp;Harness&nbsp;之间迁移与复用。 GitHub：<a href="https://github.com/SJTU-IPADS/SkVM">SJTU-IPADS/SkVM</a></p>
+</blockquote>
+<p>接下来，我先以我自己开发的一套&nbsp;Skill&nbsp;为例，直观展示&nbsp;SkVM&nbsp;带来的帮助；再深入到原理层面，拆解它是如何工作的。</p></body></html>
+        <p class="article-more-link">
+            <a href="/2026/07/06/SkVM%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/#more">Read More</a>
+        </p>
+    
+    </div>
+    
+    
+</article>
+
+
+
+    
+    
+    </div>
+</section> <footer class="footer">
+  <div class="container">
+    <div class="columns content">
+      <div class="column is-narrow has-text-centered">
+        &copy; 2026 Miser&nbsp; Powered by
+        <a href="http://hexo.io/" target="_blank">Hexo</a> &
+        <a href="http://github.com/ppoffice/hexo-theme-minos">Minos</a>
+      </div>
+      <div class="column is-hidden-mobile"></div>
+
+       
+    </div>
+  </div>
+</footer>
+ <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+
+<!-- test if the browser is outdated -->
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/outdated-browser/1.1.5/outdatedbrowser.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // plugin function, place inside DOM ready function
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        })
+    });
+</script>
+
+<script>
+    window.FontAwesomeConfig = {
+        searchPseudoElements: true
+    }
+    moment.locale("en-AU");
+</script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+    MathJax.Hub.Config({
+        "HTML-CSS": {matchFontHeight: false},
+        SVG: {matchFontHeight: false},
+        CommonHTML: {matchFontHeight: false}
+    });
+</script>
+
+    
+    
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.8/js/lightgallery-all.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/justifiedGallery/3.6.5/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    (function ($) {
+        $(document).ready(function () {
+            if (typeof($.fn.lightGallery) === 'function') {
+                $('.article.gallery').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof($.fn.justifiedGallery) === 'function') {
+                $('.justified-gallery').justifiedGallery();
+            }
+        });
+    })(jQuery);
+</script>
+
+    
+    
+
+    
+
+
+
+<script src="/js/script.js"></script>
+ 
+  </body>
+</html>

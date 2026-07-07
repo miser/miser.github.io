@@ -181,14 +181,6 @@ a.tag.article-tag {
   overflow-y: auto;
 }
 
-.article {
-  /*.caption {
-        display: block;
-        color: darkgray;
-        font-size: .95rem;
-        text-align: center;
-    }*/
-}
 .article + .article {
   padding-top: 2rem;
   border-top: 1px solid #dbdbdb;
@@ -279,6 +271,14 @@ a.tag.article-tag {
   .article .article-nav .article-nav-next {
     text-align: center;
   }
+}
+.article {
+  /*.caption {
+        display: block;
+        color: darkgray;
+        font-size: .95rem;
+        text-align: center;
+    }*/
 }
 .article a[target=_blank]:after {
   display: none;
