@@ -121,7 +121,7 @@ plugins:
 navbar_links:
   Twitter:
     icon: fab fa-twitter
-    url: https://twitter.com/ud_miser
+    url: https://x.com/dev_miser
   GitHub:
     icon: fab fa-github
     url: https://github.com/miser

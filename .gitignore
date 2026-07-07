@@ -11,3 +11,4 @@ db.json
 *.log
 public/
 .deploy*
+.qoder
